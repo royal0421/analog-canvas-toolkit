@@ -1,0 +1,1146 @@
+{
+  "documents": [
+    {
+      "annotations": [
+        {
+          "id": "instance-label-IREF",
+          "kind": "instance-label",
+          "alignment": "end",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "IREF",
+            "localOffset": {
+              "x": -18,
+              "y": 5
+            },
+            "fallbackPosition": {
+              "x": 162,
+              "y": 145
+            }
+          },
+          "binding": {
+            "kind": "instance-schematic-name",
+            "instanceId": "IREF"
+          }
+        },
+        {
+          "id": "instance-label-QREF",
+          "kind": "instance-label",
+          "alignment": "end",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "QREF",
+            "localOffset": {
+              "x": -8,
+              "y": 5
+            },
+            "fallbackPosition": {
+              "x": 172,
+              "y": 215
+            }
+          },
+          "binding": {
+            "kind": "instance-schematic-name",
+            "instanceId": "QREF"
+          }
+        },
+        {
+          "id": "instance-label-Q1",
+          "kind": "instance-label",
+          "alignment": "end",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "Q1",
+            "localOffset": {
+              "x": -8,
+              "y": -36
+            },
+            "fallbackPosition": {
+              "x": 292,
+              "y": 174
+            }
+          },
+          "binding": {
+            "kind": "instance-schematic-name",
+            "instanceId": "Q1"
+          }
+        },
+        {
+          "id": "instance-label-Q2",
+          "kind": "instance-label",
+          "alignment": "end",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "Q2",
+            "localOffset": {
+              "x": -8,
+              "y": -36
+            },
+            "fallbackPosition": {
+              "x": 392,
+              "y": 174
+            }
+          },
+          "binding": {
+            "kind": "instance-schematic-name",
+            "instanceId": "Q2"
+          }
+        },
+        {
+          "id": "instance-label-Q3",
+          "kind": "instance-label",
+          "alignment": "end",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "Q3",
+            "localOffset": {
+              "x": -8,
+              "y": -36
+            },
+            "fallbackPosition": {
+              "x": 492,
+              "y": 174
+            }
+          },
+          "binding": {
+            "kind": "instance-schematic-name",
+            "instanceId": "Q3"
+          }
+        },
+        {
+          "id": "label-vcc",
+          "kind": "power-label",
+          "netId": "net-vcc",
+          "alignment": "start",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "VDD",
+            "localOffset": {
+              "x": 18,
+              "y": 5
+            },
+            "fallbackPosition": {
+              "x": 198,
+              "y": 105
+            }
+          },
+          "content": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "italic",
+                    "children": [
+                      {
+                        "kind": "span",
+                        "style": "bold",
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "CC"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "connectivityEvidence": [
+        {
+          "id": "cev-vdd-property",
+          "kind": "name-claim",
+          "netId": "net-vcc",
+          "name": "VCC",
+          "owner": {
+            "kind": "explicit-net-property"
+          },
+          "scope": "global",
+          "powerDomain": "vdd"
+        },
+        {
+          "id": "cev-vdd-marker",
+          "kind": "name-claim",
+          "netId": "net-vcc",
+          "name": "VCC",
+          "owner": {
+            "kind": "power-marker",
+            "objectId": "VDD"
+          },
+          "scope": "global",
+          "powerDomain": "vdd"
+        }
+      ],
+      "constraints": [],
+      "drafting": {
+        "objects": [
+          {
+            "id": "arrow-icopy",
+            "kind": "arrow",
+            "locked": false,
+            "zIndex": 0,
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 400,
+                "y": 100
+              }
+            },
+            "from": {
+              "kind": "free",
+              "position": {
+                "x": 400,
+                "y": 100
+              }
+            },
+            "to": {
+              "kind": "free",
+              "position": {
+                "x": 400,
+                "y": 140
+              }
+            },
+            "styleOverride": {
+              "arrowHead": "filled",
+              "arrowHeadScale": 1.0
+            }
+          },
+          {
+            "id": "note-icopy",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 412,
+                "y": 122
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "italic",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "I"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "span",
+                  "style": "subscript",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "copy"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": " = 3 "
+                    }
+                  ]
+                },
+                {
+                  "kind": "span",
+                  "style": "italic",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "I"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "span",
+                  "style": "subscript",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "REF"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "id": "document-main",
+      "instances": [
+        {
+          "id": "VDD",
+          "symbolId": "vdd-port",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 180,
+              "y": 100
+            },
+            "rotation": 0
+          },
+          "schematicReference": "VDD"
+        },
+        {
+          "id": "IREF",
+          "symbolId": "current-source",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 180,
+              "y": 140
+            },
+            "rotation": 0
+          },
+          "schematicReference": "IREF",
+          "schematicName": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "I"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "REF"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "netlist": {
+            "binding": {
+              "kind": "primitive",
+              "deviceClass": "current-source"
+            },
+            "parameters": {},
+            "reference": "IREF"
+          }
+        },
+        {
+          "id": "QREF",
+          "symbolId": "npn",
+          "placement": {
+            "mirror": "x",
+            "position": {
+              "x": 180,
+              "y": 210
+            },
+            "rotation": 0
+          },
+          "schematicReference": "QREF",
+          "schematicName": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Q"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "REF"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "Q1",
+          "symbolId": "npn",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 300,
+              "y": 210
+            },
+            "rotation": 0
+          },
+          "schematicReference": "Q1",
+          "schematicName": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Q"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "Q2",
+          "symbolId": "npn",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 400,
+              "y": 210
+            },
+            "rotation": 0
+          },
+          "schematicReference": "Q2",
+          "schematicName": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Q"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "2"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "Q3",
+          "symbolId": "npn",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 500,
+              "y": 210
+            },
+            "rotation": 0
+          },
+          "schematicReference": "Q3",
+          "schematicName": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Q"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "3"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "GNDR",
+          "symbolId": "ground",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 180,
+              "y": 250
+            },
+            "rotation": 0
+          },
+          "schematicReference": "GNDR"
+        },
+        {
+          "id": "GND1",
+          "symbolId": "ground",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 300,
+              "y": 250
+            },
+            "rotation": 0
+          },
+          "schematicReference": "GND1"
+        },
+        {
+          "id": "GND2",
+          "symbolId": "ground",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 400,
+              "y": 250
+            },
+            "rotation": 0
+          },
+          "schematicReference": "GND2"
+        },
+        {
+          "id": "GND3",
+          "symbolId": "ground",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 500,
+              "y": 250
+            },
+            "rotation": 0
+          },
+          "schematicReference": "GND3"
+        }
+      ],
+      "junctions": [
+        {
+          "id": "JA",
+          "netId": "net-b",
+          "position": {
+            "x": 180,
+            "y": 170
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JB",
+          "netId": "net-b",
+          "position": {
+            "x": 240,
+            "y": 210
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JC1",
+          "netId": "net-c",
+          "position": {
+            "x": 300,
+            "y": 140
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JC2",
+          "netId": "net-c",
+          "position": {
+            "x": 400,
+            "y": 140
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JC3",
+          "netId": "net-c",
+          "position": {
+            "x": 500,
+            "y": 140
+          },
+          "role": "branch"
+        }
+      ],
+      "layoutGroups": [],
+      "name": "Main",
+      "netlist": {
+        "formalParameters": [],
+        "name": "Fig_9_26c",
+        "terminals": []
+      },
+      "nets": [
+        {
+          "id": "net-vcc",
+          "terminals": [
+            {
+              "instanceId": "VDD",
+              "pinName": "P"
+            },
+            {
+              "instanceId": "IREF",
+              "pinName": "+"
+            }
+          ]
+        },
+        {
+          "id": "net-b",
+          "terminals": [
+            {
+              "instanceId": "IREF",
+              "pinName": "-"
+            },
+            {
+              "instanceId": "QREF",
+              "pinName": "C"
+            },
+            {
+              "instanceId": "QREF",
+              "pinName": "B"
+            },
+            {
+              "instanceId": "Q1",
+              "pinName": "B"
+            },
+            {
+              "instanceId": "Q2",
+              "pinName": "B"
+            },
+            {
+              "instanceId": "Q3",
+              "pinName": "B"
+            }
+          ]
+        },
+        {
+          "id": "net-c",
+          "terminals": [
+            {
+              "instanceId": "Q1",
+              "pinName": "C"
+            },
+            {
+              "instanceId": "Q2",
+              "pinName": "C"
+            },
+            {
+              "instanceId": "Q3",
+              "pinName": "C"
+            }
+          ]
+        },
+        {
+          "id": "net-gnd-1",
+          "terminals": [
+            {
+              "instanceId": "QREF",
+              "pinName": "E"
+            },
+            {
+              "instanceId": "GNDR",
+              "pinName": "0"
+            }
+          ]
+        },
+        {
+          "id": "net-gnd-2",
+          "terminals": [
+            {
+              "instanceId": "Q1",
+              "pinName": "E"
+            },
+            {
+              "instanceId": "GND1",
+              "pinName": "0"
+            }
+          ]
+        },
+        {
+          "id": "net-gnd-3",
+          "terminals": [
+            {
+              "instanceId": "Q2",
+              "pinName": "E"
+            },
+            {
+              "instanceId": "GND2",
+              "pinName": "0"
+            }
+          ]
+        },
+        {
+          "id": "net-gnd-4",
+          "terminals": [
+            {
+              "instanceId": "Q3",
+              "pinName": "E"
+            },
+            {
+              "instanceId": "GND3",
+              "pinName": "0"
+            }
+          ]
+        }
+      ],
+      "noConnects": [],
+      "presentation": {
+        "compactness": "compact",
+        "grid": 10,
+        "styleProfileId": "razavi-textbook-v1",
+        "styleOverrides": {
+          "symbolStrokeScale": 1.5,
+          "wireStrokeScale": 1.5,
+          "annotationStrokeScale": 1.5,
+          "junctionRadiusScale": 1.3,
+          "fontScale": 2.0
+        }
+      },
+      "revision": 0,
+      "routes": [
+        {
+          "id": "r-a-iref",
+          "netId": "net-b",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "IREF",
+            "pinName": "-"
+          },
+          "legs": [
+            {
+              "id": "route-leg-6df9f6f482dc2bd7",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JA"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-a-qc",
+          "netId": "net-b",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JA"
+          },
+          "legs": [
+            {
+              "id": "route-leg-c715b7697bfed754",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "QREF",
+                  "pinName": "C"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-tie",
+          "netId": "net-b",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JA"
+          },
+          "legs": [
+            {
+              "id": "route-leg-0a6da4a8219d4561",
+              "mode": "manual",
+              "to": {
+                "kind": "bend",
+                "bendId": "route-bend-0a6da4a8219d4561",
+                "position": {
+                  "x": 240,
+                  "y": 170
+                }
+              }
+            },
+            {
+              "id": "route-leg-cf12c3a7a12a53da",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JB"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-b-ref",
+          "netId": "net-b",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "QREF",
+            "pinName": "B"
+          },
+          "legs": [
+            {
+              "id": "route-leg-d655d51ea7269d81",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JB"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-b-q1",
+          "netId": "net-b",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JB"
+          },
+          "legs": [
+            {
+              "id": "route-leg-444a6cfb036d6d99",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "Q1",
+                  "pinName": "B"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-b-q2",
+          "netId": "net-b",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "Q1",
+            "pinName": "B"
+          },
+          "legs": [
+            {
+              "id": "route-leg-0d34a72c0188ec41",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "Q2",
+                  "pinName": "B"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-b-q3",
+          "netId": "net-b",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "Q2",
+            "pinName": "B"
+          },
+          "legs": [
+            {
+              "id": "route-leg-28b0b20c8d5795d7",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "Q3",
+                  "pinName": "B"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-c-q1",
+          "netId": "net-c",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "Q1",
+            "pinName": "C"
+          },
+          "legs": [
+            {
+              "id": "route-leg-b4e87a1de5bc0e03",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JC1"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-c-b1",
+          "netId": "net-c",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JC1"
+          },
+          "legs": [
+            {
+              "id": "route-leg-4db02744dba4d8ed",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JC2"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-c-q2",
+          "netId": "net-c",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JC2"
+          },
+          "legs": [
+            {
+              "id": "route-leg-e63104a482f792c0",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "Q2",
+                  "pinName": "C"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-c-b2",
+          "netId": "net-c",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JC2"
+          },
+          "legs": [
+            {
+              "id": "route-leg-c4f6ce24024c9ca4",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JC3"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-c-q3",
+          "netId": "net-c",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JC3"
+          },
+          "legs": [
+            {
+              "id": "route-leg-7b52b7fe617ffe11",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "Q3",
+                  "pinName": "C"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "sourceStatus": "in-sync"
+    }
+  ],
+  "externalSubcircuitDefinitions": [],
+  "id": "project-razavi-fig-9-26c",
+  "name": "Razavi Fig. 9.26(c) — BJT current mirror with combined outputs",
+  "schemaVersion": 30,
+  "source": {
+    "dialect": "none",
+    "entry": null,
+    "files": [],
+    "sourcePolicy": "copy"
+  },
+  "structureRevision": 0,
+  "symbolLibrary": {
+    "hash": "razavi-reference-v1",
+    "id": "razavi-symbols",
+    "version": "1"
+  },
+  "topDocumentId": "document-main"
+}

@@ -1,0 +1,763 @@
+{
+  "documents": [
+    {
+      "annotations": [
+        {
+          "id": "instance-label-R",
+          "kind": "instance-label",
+          "alignment": "end",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "R",
+            "localOffset": {
+              "x": -14,
+              "y": 5
+            },
+            "fallbackPosition": {
+              "x": 176,
+              "y": 175
+            }
+          },
+          "binding": {
+            "kind": "cell-terminal-name",
+            "terminalId": "t-r"
+          }
+        },
+        {
+          "id": "instance-label-S",
+          "kind": "instance-label",
+          "alignment": "end",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "S",
+            "localOffset": {
+              "x": -14,
+              "y": 5
+            },
+            "fallbackPosition": {
+              "x": 176,
+              "y": 275
+            }
+          },
+          "binding": {
+            "kind": "cell-terminal-name",
+            "terminalId": "t-s"
+          }
+        },
+        {
+          "id": "instance-label-Q",
+          "kind": "instance-label",
+          "alignment": "start",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "Q",
+            "localOffset": {
+              "x": 14,
+              "y": 5
+            },
+            "fallbackPosition": {
+              "x": 334,
+              "y": 185
+            }
+          },
+          "binding": {
+            "kind": "cell-terminal-name",
+            "terminalId": "t-q"
+          }
+        },
+        {
+          "id": "instance-label-QB",
+          "kind": "instance-label",
+          "alignment": "start",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "QB",
+            "localOffset": {
+              "x": 14,
+              "y": 5
+            },
+            "fallbackPosition": {
+              "x": 334,
+              "y": 265
+            }
+          },
+          "binding": {
+            "kind": "cell-terminal-name",
+            "terminalId": "t-qb"
+          }
+        }
+      ],
+      "connectivityEvidence": [],
+      "constraints": [],
+      "drafting": {
+        "objects": [
+          {
+            "id": "xc-1",
+            "kind": "construction-line",
+            "locked": false,
+            "zIndex": 0,
+            "lineStyle": "dashed",
+            "styleOverride": {
+              "lineStyle": "solid"
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 210,
+                "y": 210
+              }
+            },
+            "points": [
+              {
+                "x": 210,
+                "y": 210
+              },
+              {
+                "x": 290,
+                "y": 230
+              }
+            ]
+          },
+          {
+            "id": "xc-2",
+            "kind": "construction-line",
+            "locked": false,
+            "zIndex": 0,
+            "lineStyle": "dashed",
+            "styleOverride": {
+              "lineStyle": "solid"
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 210,
+                "y": 230
+              }
+            },
+            "points": [
+              {
+                "x": 210,
+                "y": 230
+              },
+              {
+                "x": 290,
+                "y": 210
+              }
+            ]
+          }
+        ]
+      },
+      "id": "document-main",
+      "instances": [
+        {
+          "id": "G1",
+          "symbolId": "nor-gate",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 250,
+              "y": 180
+            },
+            "rotation": 0
+          },
+          "schematicReference": "G1",
+          "schematicName": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "G"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "G2",
+          "symbolId": "nor-gate",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 250,
+              "y": 260
+            },
+            "rotation": 0
+          },
+          "schematicReference": "G2",
+          "schematicName": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "G"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "2"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "R",
+          "symbolId": "port",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 190,
+              "y": 170
+            },
+            "rotation": 0
+          }
+        },
+        {
+          "id": "S",
+          "symbolId": "port",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 190,
+              "y": 270
+            },
+            "rotation": 0
+          }
+        },
+        {
+          "id": "Q",
+          "symbolId": "port",
+          "placement": {
+            "mirror": "x",
+            "position": {
+              "x": 320,
+              "y": 180
+            },
+            "rotation": 0
+          }
+        },
+        {
+          "id": "QB",
+          "symbolId": "port",
+          "placement": {
+            "mirror": "x",
+            "position": {
+              "x": 320,
+              "y": 260
+            },
+            "rotation": 0
+          }
+        }
+      ],
+      "junctions": [
+        {
+          "id": "JQ",
+          "netId": "net-q",
+          "position": {
+            "x": 290,
+            "y": 180
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JQ2",
+          "netId": "net-q",
+          "position": {
+            "x": 290,
+            "y": 210
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JQB",
+          "netId": "net-qb",
+          "position": {
+            "x": 290,
+            "y": 260
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JQB2",
+          "netId": "net-qb",
+          "position": {
+            "x": 290,
+            "y": 230
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JF1",
+          "netId": "net-f1",
+          "position": {
+            "x": 210,
+            "y": 210
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JF2",
+          "netId": "net-f2",
+          "position": {
+            "x": 210,
+            "y": 230
+          },
+          "role": "branch"
+        }
+      ],
+      "layoutGroups": [],
+      "name": "Main",
+      "netlist": {
+        "formalParameters": [],
+        "name": "SRLatch",
+        "terminals": [
+          {
+            "id": "t-r",
+            "name": "R",
+            "netId": "net-r",
+            "direction": "input",
+            "interfaceInstanceIds": [
+              "R"
+            ]
+          },
+          {
+            "id": "t-s",
+            "name": "S",
+            "netId": "net-s",
+            "direction": "input",
+            "interfaceInstanceIds": [
+              "S"
+            ]
+          },
+          {
+            "id": "t-q",
+            "name": "Q",
+            "netId": "net-q",
+            "direction": "output",
+            "interfaceInstanceIds": [
+              "Q"
+            ]
+          },
+          {
+            "id": "t-qb",
+            "name": "Q_bar",
+            "netId": "net-qb",
+            "direction": "output",
+            "interfaceInstanceIds": [
+              "QB"
+            ]
+          }
+        ]
+      },
+      "nets": [
+        {
+          "id": "net-r",
+          "terminals": [
+            {
+              "instanceId": "R",
+              "pinName": "P"
+            },
+            {
+              "instanceId": "G1",
+              "pinName": "A"
+            }
+          ]
+        },
+        {
+          "id": "net-s",
+          "terminals": [
+            {
+              "instanceId": "S",
+              "pinName": "P"
+            },
+            {
+              "instanceId": "G2",
+              "pinName": "B"
+            }
+          ]
+        },
+        {
+          "id": "net-q",
+          "terminals": [
+            {
+              "instanceId": "G1",
+              "pinName": "Y"
+            },
+            {
+              "instanceId": "Q",
+              "pinName": "P"
+            }
+          ]
+        },
+        {
+          "id": "net-qb",
+          "terminals": [
+            {
+              "instanceId": "G2",
+              "pinName": "Y"
+            },
+            {
+              "instanceId": "QB",
+              "pinName": "P"
+            }
+          ]
+        },
+        {
+          "id": "net-f1",
+          "terminals": [
+            {
+              "instanceId": "G1",
+              "pinName": "B"
+            }
+          ]
+        },
+        {
+          "id": "net-f2",
+          "terminals": [
+            {
+              "instanceId": "G2",
+              "pinName": "A"
+            }
+          ]
+        }
+      ],
+      "noConnects": [],
+      "presentation": {
+        "compactness": "compact",
+        "grid": 10,
+        "styleProfileId": "razavi-textbook-v1",
+        "styleOverrides": {
+          "symbolStrokeScale": 1.5,
+          "wireStrokeScale": 1.5,
+          "annotationStrokeScale": 1.5,
+          "junctionRadiusScale": 1.3,
+          "fontScale": 2.0
+        }
+      },
+      "revision": 0,
+      "routes": [
+        {
+          "id": "r-r",
+          "netId": "net-r",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "R",
+            "pinName": "P"
+          },
+          "legs": [
+            {
+              "id": "route-leg-c5fffa7d8c761990",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "G1",
+                  "pinName": "A"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-s",
+          "netId": "net-s",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "S",
+            "pinName": "P"
+          },
+          "legs": [
+            {
+              "id": "route-leg-78ceac25cc230bd9",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "G2",
+                  "pinName": "B"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-q1",
+          "netId": "net-q",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "G1",
+            "pinName": "Y"
+          },
+          "legs": [
+            {
+              "id": "route-leg-d9b5c81aae8bad06",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JQ"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-q2",
+          "netId": "net-q",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JQ"
+          },
+          "legs": [
+            {
+              "id": "route-leg-556ac99223ebc729",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "Q",
+                  "pinName": "P"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-q3",
+          "netId": "net-q",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JQ"
+          },
+          "legs": [
+            {
+              "id": "route-leg-7165ca86da2caf6f",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JQ2"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-qb1",
+          "netId": "net-qb",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "G2",
+            "pinName": "Y"
+          },
+          "legs": [
+            {
+              "id": "route-leg-f4a8594cdb78d260",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JQB"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-qb2",
+          "netId": "net-qb",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JQB"
+          },
+          "legs": [
+            {
+              "id": "route-leg-7cc716e851927f0f",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "QB",
+                  "pinName": "P"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-qb3",
+          "netId": "net-qb",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JQB"
+          },
+          "legs": [
+            {
+              "id": "route-leg-a2215459e510eb11",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JQB2"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-f1",
+          "netId": "net-f1",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "G1",
+            "pinName": "B"
+          },
+          "legs": [
+            {
+              "id": "route-leg-f18801a3267b5a71",
+              "mode": "manual",
+              "to": {
+                "kind": "bend",
+                "bendId": "route-bend-f18801a3267b5a71",
+                "position": {
+                  "x": 210,
+                  "y": 190
+                }
+              }
+            },
+            {
+              "id": "route-leg-b1da949f287106aa",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JF1"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-f2",
+          "netId": "net-f2",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "G2",
+            "pinName": "A"
+          },
+          "legs": [
+            {
+              "id": "route-leg-6d9fdd192aeace85",
+              "mode": "manual",
+              "to": {
+                "kind": "bend",
+                "bendId": "route-bend-6d9fdd192aeace85",
+                "position": {
+                  "x": 210,
+                  "y": 250
+                }
+              }
+            },
+            {
+              "id": "route-leg-797cc6a5ba1c717f",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JF2"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "sourceStatus": "in-sync"
+    }
+  ],
+  "externalSubcircuitDefinitions": [],
+  "id": "project-lab2-srlatch",
+  "name": "Lab 2 SR latch (cross-coupled NOR)",
+  "schemaVersion": 30,
+  "source": {
+    "dialect": "none",
+    "entry": null,
+    "files": [],
+    "sourcePolicy": "copy"
+  },
+  "structureRevision": 0,
+  "symbolLibrary": {
+    "hash": "razavi-reference-v1",
+    "id": "razavi-symbols",
+    "version": "1"
+  },
+  "topDocumentId": "document-main"
+}

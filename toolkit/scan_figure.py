@@ -75,6 +75,106 @@ def merge_lines(raw, tol=2):
     return out
 
 
+def mos_pairs(vbars):
+    """Find MOS devices in a schematic that does NOT use razavi-v1's filled
+    bars (SOP lane 3a: Sedra, Gray, paper figures).
+
+    In every other common house style a MOS is drawn as two parallel vertical
+    strokes of the SAME height -- the gate plate and the channel -- a few pixels
+    apart, with the drain and source leads coming off the channel side.  So:
+    pair up equal-span vertical runs, then decide which member is the channel by
+    which one the D/S column is nearer.  The gate plate is the other one, and
+    that is what fixes `mirror` -- the single reading that used to have to be
+    done by eye, and the one that costs a redraw when it is wrong.
+
+    Returns [(cx, cy, mirror, ds_col, gate_x, body_h)], sorted left to right.
+    """
+    cand = []
+    for i, a in enumerate(vbars):
+        for bb in vbars[i + 1:]:
+            # Concentric and about the same height -- NOT "both ends line up".
+            # House styles draw the gate plate a little shorter than the
+            # channel (2026-08-29: 52 px against 59, which an end-tolerance of
+            # 3 px threw away and the figure came back with no transistors).
+            ha = a["a1"] - a["a0"] + 1
+            hb = bb["a1"] - bb["a0"] + 1
+            if abs((a["a0"] + a["a1"]) - (bb["a0"] + bb["a1"])) / 2.0 > 5:
+                continue
+            if not 0.72 <= float(ha) / hb <= 1.4:
+                continue
+            d = abs(a["mid"] - bb["mid"])
+            if not (8 <= d <= 30):
+                continue
+            if a["thick"] < 3 or bb["thick"] < 3:
+                continue
+            top, bot = min(a["a0"], bb["a0"]), max(a["a1"], bb["a1"])
+            body = bot - top + 1
+            # A device is a tall, narrow pair; the label glyphs that also pair
+            # up ("M" next to a subscript) are nearly as wide as they are tall.
+            # Measured on the 19-device figure: real 67/16 = 4.2, text 34/29 =
+            # 1.2.  Without this the scan reported the labels as transistors.
+            if body < 2.5 * d:
+                continue
+            mean = (a["mid"] + bb["mid"]) / 2.0
+            # the D/S column: a run that passes the body by, off to one side
+            col = None
+            for r in vbars:
+                if r is a or r is bb:
+                    continue
+                gap = abs(r["mid"] - mean)
+                if not (15 <= gap <= 4 * d):
+                    continue
+                # What separates the drain/source column from the gate riser is
+                # WHERE it meets the device: D and S leave from the two ENDS of
+                # the channel, while a gate riser runs past the device's middle.
+                # (Neither "nearest" nor "longest" alone gets this right: the
+                # nearest run to M_B is a scrap, and the longest run next to
+                # M_8/M_9/M_10/M_12 is their shared gate riser.  Both mistakes
+                # flip `mirror`, which costs a full redraw.)
+                cy = (top + bot) / 2.0
+                if r["a0"] <= cy <= r["a1"]:
+                    continue
+                if not (abs(r["a1"] - top) <= 15 or abs(r["a0"] - bot) <= 15):
+                    continue
+                if col is None or gap < abs(col["mid"] - mean):
+                    col = r
+            if col is None:
+                continue
+            chan, gate = ((a, bb) if abs(a["mid"] - col["mid"])
+                          < abs(bb["mid"] - col["mid"]) else (bb, a))
+            cand.append({"cx": (chan["mid"] + gate["mid"]) / 2.0,
+                         "cy": (top + bot) / 2.0, "d": d, "body": body,
+                         "mirror": "x" if gate["mid"] > chan["mid"] else "none",
+                         "col": col["mid"], "gate": gate["mid"],
+                         "strokes": (id(a), id(bb))})
+    if not cand:
+        return []
+
+    # Every MOS in one figure is drawn at the same size, so the true devices
+    # all share one stroke separation and one body height.  Anything off those
+    # two modes is a coincidental pairing (ground-symbol edges, bubble arcs,
+    # a lead that happens to span the same rows) -- without this filter the
+    # 19-device figure that this was built on reported 38.
+    def mode(key, q):
+        vals = sorted(round(c[key] / q) * q for c in cand)
+        return max(set(vals), key=vals.count)
+
+    dm, bm = mode("d", 1), mode("body", 2)
+    keep = [c for c in cand
+            if abs(c["d"] - dm) <= 3 and abs(c["body"] - bm) <= 0.1 * bm]
+
+    # A stroke belongs to exactly one device: take the best-fitting pairs first.
+    keep.sort(key=lambda c: (abs(c["d"] - dm), abs(c["body"] - bm)))
+    used, out = set(), []
+    for c in keep:
+        if used & set(c["strokes"]):
+            continue
+        used |= set(c["strokes"])
+        out.append((c["cx"], c["cy"], c["mirror"], c["col"], c["gate"],
+                    c["body"]))
+    return sorted(out)
+
+
 def solid_blobs(b, k=9):
     """Centres of every fully-black k x k square, clustered."""
     h = k // 2
@@ -191,28 +291,22 @@ def main(path, ref=None):
         for (y0, y1) in runs(b[:, x], 30):
             raw.append((x, y0, y1))
     vbars = merge_lines(raw)
-    bars = [r for r in vbars if r["thick"] >= 6]
-    if not bars:
-        print("no filled bars found -- is this a MOS schematic?")
-        scale = None
-    else:
+    # A razavi-v1 channel bar is thick AND SHORT -- 25 drawing units, so never
+    # more than about a sixth of the figure.  Thickness alone is not enough:
+    # a figure drawn with heavy 8 px strokes has WIRES that pass `thick >= 6`,
+    # and the tallest of those then sets a nonsense scale (2026-08-29: a
+    # 397 px wire was read as the 25-unit channel bar, giving 15.9 px/unit and
+    # one transistor at x = -43).
+    bars = [r for r in vbars
+            if r["thick"] >= 6 and (r["a1"] - r["a0"] + 1) <= 0.25 * H]
+    # Read it as razavi-v1 first; keep the rows so we can tell whether that
+    # reading actually produced anything before committing to it.
+    rows, tall, scale = [], None, None
+    if bars:
         tall = max(r["a1"] - r["a0"] + 1 for r in bars)
         scale = tall / CHANNEL_H_UNITS
-        print("scale: %.3f px/unit  (tallest bar %d px = channel bar 25 units)"
-              % (scale, tall))
-    if ref:
-        px, units = (float(v) for v in ref.split(":"))
-        scale = px / units
-        print("scale: %.3f px/unit  (--ref %g px = %g units)"
-              % (scale, px, units))
-
-    if scale:
-        chans = [r for r in bars
-                 if (r["a1"] - r["a0"] + 1) > 0.88 * tall]
+        chans = [r for r in bars if (r["a1"] - r["a0"] + 1) > 0.88 * tall]
         gates = [r for r in bars if r not in chans]
-        print("\nMOS devices (mirror from gate-bar side):")
-        print("  %-9s %-9s %-7s %-9s %-9s" %
-              ("centre_x", "centre_y", "mirror", "D/S col", "gate pin"))
         for c in sorted(chans, key=lambda r: r["mid"]):
             cy = (c["a0"] + c["a1"]) / 2.0
             g = min((r for r in gates
@@ -224,9 +318,45 @@ def main(path, ref=None):
             mirror = "x" if g["mid"] > c["mid"] else "none"
             sgn = -1.0 if mirror == "x" else 1.0
             cx = c["mid"] - sgn * CHAN_BAR_CENTRE * scale
-            print("  %-9.1f %-9.1f %-7s %-9.1f %-9.1f"
-                  % (cx, cy, mirror, cx + sgn * 10 * scale,
-                     cx - sgn * 20 * scale))
+            rows.append((cx, cy, mirror, cx + sgn * 10 * scale,
+                         cx - sgn * 20 * scale))
+
+    if rows:
+        print("scale: %.3f px/unit  (tallest bar %d px = channel bar 25 units)"
+              % (scale, tall))
+        print("\nMOS devices (mirror from gate-bar side):")
+        print("  %-9s %-9s %-7s %-9s %-9s" %
+              ("centre_x", "centre_y", "mirror", "D/S col", "gate pin"))
+        for r in rows:
+            print("  %-9.1f %-9.1f %-7s %-9.1f %-9.1f" % r)
+    else:
+        # Either no filled bars at all, or they paired into nothing -- a
+        # heavy-stroke figure can produce "bars" that are really wires.  Either
+        # way this is not razavi-v1: fall back to the two-parallel-strokes
+        # reading, which also hands us a scale (the body IS the channel bar).
+        bars, scale = [], None
+        pairs = mos_pairs(vbars)
+        if pairs:
+            body = sorted(p[5] for p in pairs)[len(pairs) // 2]   # modal-ish
+            scale = body / CHANNEL_H_UNITS
+            print("no filled bars -- generic style; %d MOS found by paired "
+                  "strokes" % len(pairs))
+            print("scale: %.3f px/unit  (body %d px = channel bar 25 units)"
+                  % (scale, body))
+            print("\nMOS devices (mirror from gate-plate side; type comes from"
+                  " the bubble -- read that off the image):")
+            print("  %-9s %-9s %-7s %-9s %-9s" %
+                  ("centre_x", "centre_y", "mirror", "D/S col", "gate pin"))
+            for cx, cy, mir, col, gx, _h in pairs:
+                print("  %-9.1f %-9.1f %-7s %-9.1f %-9.1f"
+                      % (cx, cy, mir, col, gx))
+        else:
+            print("no MOS found -- is this a MOS schematic?")
+    if ref:
+        px, units = (float(v) for v in ref.split(":"))
+        scale = px / units
+        print("scale: %.3f px/unit  (--ref %g px = %g units)"
+              % (scale, px, units))
 
     # ---- wires --------------------------------------------------------------
     for axis, label, minlen in ((0, "HORIZONTAL", 40), (1, "VERTICAL", 40)):

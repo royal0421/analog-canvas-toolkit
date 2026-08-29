@@ -21,6 +21,7 @@ enforces automatically are:
          - LABEL AMBIGUOUS       : the neighbour on the label's side must be
                                    >= 20 from the text, or the reader cannot
                                    tell which device the label names
+  §3E  a component may not sit on a wire belonging to another net
   §6   junctions may not share a coordinate with a terminal (zero-length route)
 """
 import json, os, hashlib, re, math
@@ -477,6 +478,21 @@ class Schematic(object):
         if owner:
             self._text_owner[tid] = owner
 
+    def construction(self, cid, x0, y0, x1, y1):
+        """A drafting line, for the one thing routes cannot draw: a DIAGONAL.
+
+        Analog Canvas routes are orthogonal only (the editor enforces it too),
+        so a textbook X -- cross-coupled drains -- has no routable form.
+        Construction lines do not conduct: the two devices stay on separate
+        nets, so an exported netlist loses that connection.  Fine for figures.
+        """
+        self.drafting.append({
+            "id": cid, "kind": "construction-line", "locked": False,
+            "zIndex": 0, "lineStyle": "dashed",
+            "styleOverride": {"lineStyle": "solid"},
+            "anchor": {"kind": "free", "position": {"x": x0, "y": y0}},
+            "points": [{"x": x0, "y": y0}, {"x": x1, "y": y1}]})
+
     def arrow(self, aid, x0, y0, x1, y1, head_scale=1.0):
         """Current arrow.  NEVER add strokeScale here: annotationStrokeScale
         already puts the shaft at the wire weight (SOP §6B)."""
@@ -601,6 +617,8 @@ class Schematic(object):
         if verbose:
             self._leg_audit(long_haul)
             self._label_audit()
+            n = self._wire_clearance()
+            print("components sitting on another net's wire: %d" % n)
             self._crowding()
             self._density(density_ref)
         self._preview(viewbox)
@@ -805,6 +823,32 @@ class Schematic(object):
             print("  ! %d pair(s) closer than %d units"
                   % (len(tight), CROWD_MIN))
 
+    def _wire_clearance(self):
+        """A component must not sit on a wire belonging to a DIFFERENT net.
+
+        The other three checks compare component-to-component and label-to-wire,
+        which left the worst kind of collision unwatched: 2026-08-29 a port's
+        pin landed exactly on another net's gate wire, so the drawing showed a
+        connection that does not exist.  The user found it by eye.  Nothing
+        automatic would have.
+        """
+        bad = 0
+        net_of = {r["id"]: r["netId"] for r in self.routes}
+        for iid in sorted(self.placed):
+            box = self.ink(iid)
+            on = {n["id"] for n in self.nets
+                  for t in n["terminals"] if t["instanceId"] == iid}
+            for rid, x0, y0, x1, y1 in self.segments():
+                if net_of.get(rid) in on:
+                    continue          # its own wiring: touching is the point
+                g = _box_gap(box, (x0, y0, x1, y1))
+                if g < CROWD_MIN:
+                    print("  ! %s sits %.1f from wire %s of another net "
+                          "(%s) -- reads as a connection that is not there"
+                          % (iid, g, rid, net_of.get(rid)))
+                    bad += 1
+        return bad
+
     def _density(self, ref=None):
         """ref = (instance_id, original_percent).  The density rule is a
         COMPARISON with the textbook page (user, 2026-08-29): measure the
@@ -884,6 +928,17 @@ class Schematic(object):
             P.append('<line x1="%g" y1="%g" x2="%g" y2="%g" stroke-width="%g"/>'
                      % (x0, y0, x1, y1, lw))
         for o in self.drafting:
+            if o["kind"] == "construction-line":
+                # Draw these at wire weight: they stand in for wire the router
+                # cannot make (a diagonal), so the preview has to show them or
+                # the eyeball check is looking at a different picture than the
+                # editor will (SOP section 8, rule 5).
+                p = o["points"]
+                P.append('<polyline points="%s" stroke-width="%g" '
+                         'fill="none"/>'
+                         % (" ".join("%g,%g" % (q["x"], q["y"]) for q in p),
+                            1.6 * S))
+                continue
             if o["kind"] != "arrow":
                 continue
             fx, fy = o["from"]["position"]["x"], o["from"]["position"]["y"]
@@ -899,10 +954,23 @@ class Schematic(object):
                     ty - h * math.sin(ang) + hw * math.cos(ang))]
             P.append('<polygon points="%s" fill="#111" stroke="none"/>'
                      % " ".join("%.2f,%.2f" % q for q in tri))
+        # A junction is only PAINTED when three different directions meet at
+        # it -- that is the editor's rule (SOP 3A rule 0b).  The preview used
+        # to dot every junction, which put a round blob on each end of the
+        # power rail where the real export has a square end (user, 2026-08-30).
+        dirs = {}
+        for _rid, x0, y0, x1, y1 in self.segments():
+            for (px, py), (qx, qy) in (((x0, y0), (x1, y1)),
+                                       ((x1, y1), (x0, y0))):
+                d = (0 if qx == px else (1 if qx > px else -1),
+                     0 if qy == py else (1 if qy > py else -1))
+                dirs.setdefault((px, py), set()).add(d)
         for j in self.junctions:
+            p = (j["position"]["x"], j["position"]["y"])
+            if len(dirs.get(p, ())) < 3:
+                continue
             P.append('<circle cx="%g" cy="%g" r="%g" fill="#111" '
-                     'stroke="none"/>' % (j["position"]["x"],
-                                          j["position"]["y"], 2.8 * J))
+                     'stroke="none"/>' % (p[0], p[1], 2.8 * J))
         P.append('</g><g font-family="' + FONT_STACK + '" fill="#111">')
         base = BASE_FONT * FONT_SCALE * LABEL_SIZE
         for _lid, rt, x, y, align, _o in self.label_records():

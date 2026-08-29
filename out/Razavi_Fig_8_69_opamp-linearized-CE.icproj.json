@@ -1,0 +1,933 @@
+{
+  "documents": [
+    {
+      "annotations": [
+        {
+          "id": "instance-label-Q1",
+          "kind": "instance-label",
+          "alignment": "start",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "Q1",
+            "localOffset": {
+              "x": 8,
+              "y": 5
+            },
+            "fallbackPosition": {
+              "x": 428,
+              "y": 225
+            }
+          },
+          "binding": {
+            "kind": "instance-schematic-name",
+            "instanceId": "Q1"
+          }
+        },
+        {
+          "id": "instance-label-VOUT",
+          "kind": "instance-label",
+          "alignment": "start",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "VOUT",
+            "localOffset": {
+              "x": 14,
+              "y": 5
+            },
+            "fallbackPosition": {
+              "x": 484,
+              "y": 185
+            }
+          },
+          "binding": {
+            "kind": "cell-terminal-name",
+            "terminalId": "terminal-vout"
+          }
+        }
+      ],
+      "connectivityEvidence": [],
+      "constraints": [],
+      "drafting": {
+        "objects": [
+          {
+            "id": "note-vcc",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 445,
+                "y": 110
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "italic",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "V"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "span",
+                  "style": "subscript",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "italic",
+                      "children": [
+                        {
+                          "kind": "span",
+                          "style": "bold",
+                          "children": [
+                            {
+                              "kind": "text",
+                              "value": "CC"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": " = 2.5 V"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "note-rc",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 433,
+                "y": 155
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "500 Ω"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "note-re",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 433,
+                "y": 295
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "100 Ω"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "note-vin",
+            "kind": "text",
+            "alignment": "end",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 242,
+                "y": 275
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "italic",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "V"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "span",
+                  "style": "subscript",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "in"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "note-x",
+            "kind": "text",
+            "alignment": "end",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 379,
+                "y": 280
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "italic",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "X"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "id": "document-main",
+      "instances": [
+        {
+          "id": "VCC",
+          "symbolId": "vdd-port",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 420,
+              "y": 110
+            },
+            "rotation": 0
+          },
+          "schematicReference": "VCC"
+        },
+        {
+          "id": "R500",
+          "symbolId": "resistor",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 420,
+              "y": 150
+            },
+            "rotation": 0
+          },
+          "schematicReference": "R500",
+          "schematicName": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "R"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "C"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "netlist": {
+            "binding": {
+              "kind": "primitive",
+              "deviceClass": "resistor"
+            },
+            "parameters": {},
+            "reference": "R500"
+          }
+        },
+        {
+          "id": "Q1",
+          "symbolId": "npn",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 420,
+              "y": 220
+            },
+            "rotation": 0
+          },
+          "schematicReference": "Q1",
+          "schematicName": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Q"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "R100",
+          "symbolId": "resistor",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 420,
+              "y": 290
+            },
+            "rotation": 0
+          },
+          "schematicReference": "R100",
+          "schematicName": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "R"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "E"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "netlist": {
+            "binding": {
+              "kind": "primitive",
+              "deviceClass": "resistor"
+            },
+            "parameters": {},
+            "reference": "R100"
+          }
+        },
+        {
+          "id": "OA",
+          "symbolId": "opamp-inputs-swapped",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 350,
+              "y": 220
+            },
+            "rotation": 0
+          },
+          "schematicReference": "OA"
+        },
+        {
+          "id": "VIN",
+          "symbolId": "voltage-source",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 270,
+              "y": 270
+            },
+            "rotation": 0
+          },
+          "schematicReference": "VIN"
+        },
+        {
+          "id": "GND1",
+          "symbolId": "ground",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 420,
+              "y": 320
+            },
+            "rotation": 0
+          },
+          "schematicReference": "GND1"
+        },
+        {
+          "id": "GND2",
+          "symbolId": "ground",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 270,
+              "y": 310
+            },
+            "rotation": 0
+          },
+          "schematicReference": "GND2"
+        },
+        {
+          "id": "VOUT",
+          "symbolId": "port",
+          "placement": {
+            "mirror": "x",
+            "position": {
+              "x": 470,
+              "y": 180
+            },
+            "rotation": 0
+          }
+        }
+      ],
+      "junctions": [
+        {
+          "id": "JOUT",
+          "netId": "net-out",
+          "position": {
+            "x": 420,
+            "y": 180
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JX",
+          "netId": "net-x",
+          "position": {
+            "x": 420,
+            "y": 260
+          },
+          "role": "branch"
+        }
+      ],
+      "layoutGroups": [],
+      "name": "Main",
+      "netlist": {
+        "formalParameters": [],
+        "name": "Fig_8_69",
+        "terminals": [
+          {
+            "id": "terminal-vout",
+            "name": "V_out",
+            "netId": "net-out",
+            "direction": "output",
+            "interfaceInstanceIds": [
+              "VOUT"
+            ]
+          }
+        ]
+      },
+      "nets": [
+        {
+          "id": "net-vcc",
+          "terminals": [
+            {
+              "instanceId": "VCC",
+              "pinName": "P"
+            },
+            {
+              "instanceId": "R500",
+              "pinName": "1"
+            }
+          ]
+        },
+        {
+          "id": "net-out",
+          "terminals": [
+            {
+              "instanceId": "R500",
+              "pinName": "2"
+            },
+            {
+              "instanceId": "Q1",
+              "pinName": "C"
+            },
+            {
+              "instanceId": "VOUT",
+              "pinName": "P"
+            }
+          ]
+        },
+        {
+          "id": "net-base",
+          "terminals": [
+            {
+              "instanceId": "OA",
+              "pinName": "OUT"
+            },
+            {
+              "instanceId": "Q1",
+              "pinName": "B"
+            }
+          ]
+        },
+        {
+          "id": "net-x",
+          "terminals": [
+            {
+              "instanceId": "Q1",
+              "pinName": "E"
+            },
+            {
+              "instanceId": "R100",
+              "pinName": "1"
+            },
+            {
+              "instanceId": "OA",
+              "pinName": "IN-"
+            }
+          ]
+        },
+        {
+          "id": "net-in",
+          "terminals": [
+            {
+              "instanceId": "VIN",
+              "pinName": "+"
+            },
+            {
+              "instanceId": "OA",
+              "pinName": "IN+"
+            }
+          ]
+        },
+        {
+          "id": "net-gnd-1",
+          "terminals": [
+            {
+              "instanceId": "R100",
+              "pinName": "2"
+            },
+            {
+              "instanceId": "GND1",
+              "pinName": "0"
+            }
+          ]
+        },
+        {
+          "id": "net-gnd-2",
+          "terminals": [
+            {
+              "instanceId": "VIN",
+              "pinName": "-"
+            },
+            {
+              "instanceId": "GND2",
+              "pinName": "0"
+            }
+          ]
+        }
+      ],
+      "noConnects": [],
+      "presentation": {
+        "compactness": "compact",
+        "grid": 10,
+        "styleProfileId": "razavi-textbook-v1",
+        "styleOverrides": {
+          "symbolStrokeScale": 1.5,
+          "wireStrokeScale": 1.5,
+          "annotationStrokeScale": 1.5,
+          "junctionRadiusScale": 1.3,
+          "fontScale": 2.0
+        }
+      },
+      "revision": 0,
+      "routes": [
+        {
+          "id": "r-out-rc",
+          "netId": "net-out",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "R500",
+            "pinName": "2"
+          },
+          "legs": [
+            {
+              "id": "route-leg-92381ddc630fe82e",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JOUT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-out-c",
+          "netId": "net-out",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JOUT"
+          },
+          "legs": [
+            {
+              "id": "route-leg-fcc535387d4669b1",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "Q1",
+                  "pinName": "C"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-out-port",
+          "netId": "net-out",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JOUT"
+          },
+          "legs": [
+            {
+              "id": "route-leg-78881ccb023541ab",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "VOUT",
+                  "pinName": "P"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-base",
+          "netId": "net-base",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "OA",
+            "pinName": "OUT"
+          },
+          "legs": [
+            {
+              "id": "route-leg-bbfab40a6445e7d9",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "Q1",
+                  "pinName": "B"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-x-e",
+          "netId": "net-x",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "Q1",
+            "pinName": "E"
+          },
+          "legs": [
+            {
+              "id": "route-leg-17c165c89b18d69a",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JX"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-x-re",
+          "netId": "net-x",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JX"
+          },
+          "legs": [
+            {
+              "id": "route-leg-610f1c8f4f2d5709",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "R100",
+                  "pinName": "1"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-x-fb",
+          "netId": "net-x",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JX"
+          },
+          "legs": [
+            {
+              "id": "route-leg-695b554312d08d67",
+              "mode": "manual",
+              "to": {
+                "kind": "bend",
+                "bendId": "route-bend-695b554312d08d67",
+                "position": {
+                  "x": 300,
+                  "y": 260
+                }
+              }
+            },
+            {
+              "id": "route-leg-9ea86b1b8d299027",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "OA",
+                  "pinName": "IN-"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-in",
+          "netId": "net-in",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "VIN",
+            "pinName": "+"
+          },
+          "legs": [
+            {
+              "id": "route-leg-523634e7b45076b5",
+              "mode": "manual",
+              "to": {
+                "kind": "bend",
+                "bendId": "route-bend-523634e7b45076b5",
+                "position": {
+                  "x": 270,
+                  "y": 210
+                }
+              }
+            },
+            {
+              "id": "route-leg-8dd2b867fee552ec",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "OA",
+                  "pinName": "IN+"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-g2",
+          "netId": "net-gnd-2",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "VIN",
+            "pinName": "-"
+          },
+          "legs": [
+            {
+              "id": "route-leg-67b1d46b48fd5c13",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "GND2",
+                  "pinName": "0"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "sourceStatus": "in-sync"
+    }
+  ],
+  "externalSubcircuitDefinitions": [],
+  "id": "project-razavi-fig-8-69",
+  "name": "Razavi Fig. 8.69 — op amp linearising a common-emitter stage",
+  "schemaVersion": 30,
+  "source": {
+    "dialect": "none",
+    "entry": null,
+    "files": [],
+    "sourcePolicy": "copy"
+  },
+  "structureRevision": 0,
+  "symbolLibrary": {
+    "hash": "razavi-reference-v1",
+    "id": "razavi-symbols",
+    "version": "1"
+  },
+  "topDocumentId": "document-main"
+}

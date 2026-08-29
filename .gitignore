@@ -4,8 +4,7 @@ toolkit/model.mjs
 toolkit/model.mjs.*.bak
 toolkit/model-dep-*.mjs
 
-# Generated output
-out/*.icproj.json
+# Generated output (the finished .icproj.json in out/ ARE tracked)
 toolkit/preview_*.svg
 
 # Python
