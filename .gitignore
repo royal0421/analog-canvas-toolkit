@@ -1,0 +1,13 @@
+# Upstream assets -- fetched, never redistributed (see README "來源")
+toolkit/sym/
+toolkit/model.mjs
+toolkit/model.mjs.*.bak
+toolkit/model-dep-*.mjs
+
+# Generated output
+out/*.icproj.json
+toolkit/preview_*.svg
+
+# Python
+__pycache__/
+*.pyc
