@@ -51,27 +51,27 @@
           }
         },
         {
-          "id": "instance-label-M5",
+          "id": "instance-label-M1",
           "kind": "instance-label",
-          "alignment": "start",
+          "alignment": "end",
           "locked": false,
           "rotation": 0,
           "sizeScale": 0.58,
           "anchor": {
             "kind": "object",
-            "objectId": "M5",
+            "objectId": "M1",
             "localOffset": {
-              "x": 18,
+              "x": -20,
               "y": 5
             },
             "fallbackPosition": {
-              "x": 228,
-              "y": 275
+              "x": 190,
+              "y": 235
             }
           },
           "binding": {
             "kind": "instance-schematic-name",
-            "instanceId": "M5"
+            "instanceId": "M1"
           }
         },
         {
@@ -89,8 +89,8 @@
               "y": 5
             },
             "fallbackPosition": {
-              "x": 346,
-              "y": 305
+              "x": 336,
+              "y": 295
             }
           },
           "binding": {
@@ -198,22 +198,22 @@
             "anchor": {
               "kind": "free",
               "position": {
-                "x": 320,
-                "y": 250
+                "x": 310,
+                "y": 230
               }
             },
             "from": {
               "kind": "free",
               "position": {
-                "x": 320,
-                "y": 250
+                "x": 310,
+                "y": 230
               }
             },
             "to": {
               "kind": "free",
               "position": {
-                "x": 280,
-                "y": 250
+                "x": 272,
+                "y": 230
               }
             },
             "styleOverride": {
@@ -235,8 +235,8 @@
             "anchor": {
               "kind": "free",
               "position": {
-                "x": 300,
-                "y": 238
+                "x": 290,
+                "y": 216
               }
             },
             "content": {
@@ -284,22 +284,22 @@
             "anchor": {
               "kind": "free",
               "position": {
-                "x": 196,
-                "y": 346
+                "x": 229,
+                "y": 291
               }
             },
             "from": {
               "kind": "free",
               "position": {
-                "x": 196,
-                "y": 346
+                "x": 229,
+                "y": 291
               }
             },
             "to": {
               "kind": "free",
               "position": {
-                "x": 196,
-                "y": 322
+                "x": 229,
+                "y": 267
               }
             },
             "styleOverride": {
@@ -321,8 +321,8 @@
             "anchor": {
               "kind": "free",
               "position": {
-                "x": 188,
-                "y": 346
+                "x": 278,
+                "y": 309
               }
             },
             "content": {
@@ -488,18 +488,18 @@
           }
         },
         {
-          "id": "M5",
+          "id": "M1",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "none",
+            "mirror": "x",
             "position": {
               "x": 210,
-              "y": 270
+              "y": 230
             },
             "rotation": 0
           },
           "symbolVariantId": "textbook-3terminal",
-          "schematicReference": "M5",
+          "schematicReference": "M1",
           "schematicName": {
             "runs": [
               {
@@ -528,7 +528,7 @@
                     "children": [
                       {
                         "kind": "text",
-                        "value": "5"
+                        "value": "1"
                       }
                     ]
                   }
@@ -547,8 +547,8 @@
           "placement": {
             "mirror": "none",
             "position": {
-              "x": 220,
-              "y": 330
+              "x": 200,
+              "y": 290
             },
             "rotation": 0
           },
@@ -604,8 +604,8 @@
           "placement": {
             "mirror": "none",
             "position": {
-              "x": 330,
-              "y": 300
+              "x": 320,
+              "y": 290
             },
             "rotation": 0
           },
@@ -661,8 +661,8 @@
           "placement": {
             "mirror": "none",
             "position": {
-              "x": 220,
-              "y": 360
+              "x": 200,
+              "y": 320
             },
             "rotation": 0
           },
@@ -674,8 +674,8 @@
           "placement": {
             "mirror": "none",
             "position": {
-              "x": 330,
-              "y": 330
+              "x": 320,
+              "y": 320
             },
             "rotation": 0
           },
@@ -705,7 +705,7 @@
           "id": "JT2",
           "netId": "net-top",
           "position": {
-            "x": 190,
+            "x": 200,
             "y": 100
           },
           "role": "branch"
@@ -741,8 +741,8 @@
           "id": "JS",
           "netId": "net-g3",
           "position": {
-            "x": 100,
-            "y": 300
+            "x": 120,
+            "y": 260
           },
           "role": "branch"
         },
@@ -750,8 +750,8 @@
           "id": "JS2",
           "netId": "net-g3",
           "position": {
-            "x": 220,
-            "y": 300
+            "x": 200,
+            "y": 260
           },
           "role": "branch"
         },
@@ -759,8 +759,8 @@
           "id": "JX",
           "netId": "net-x",
           "position": {
-            "x": 270,
-            "y": 250
+            "x": 260,
+            "y": 230
           },
           "role": "branch"
         }
@@ -788,8 +788,8 @@
               "pinName": "S"
             },
             {
-              "instanceId": "M5",
-              "pinName": "G"
+              "instanceId": "M1",
+              "pinName": "D"
             },
             {
               "instanceId": "M3",
@@ -809,7 +809,7 @@
               "pinName": "G"
             },
             {
-              "instanceId": "M5",
+              "instanceId": "M1",
               "pinName": "S"
             },
             {
@@ -826,8 +826,8 @@
               "pinName": "D"
             },
             {
-              "instanceId": "M5",
-              "pinName": "D"
+              "instanceId": "M1",
+              "pinName": "G"
             },
             {
               "instanceId": "VX",
@@ -855,7 +855,7 @@
               "pinName": "0"
             },
             {
-              "instanceId": "M5",
+              "instanceId": "M1",
               "pinName": "B"
             }
           ]
@@ -1009,7 +1009,7 @@
           ]
         },
         {
-          "id": "r-t-m5g",
+          "id": "r-t-m1d",
           "netId": "net-top",
           "start": {
             "kind": "junction",
@@ -1017,14 +1017,14 @@
           },
           "legs": [
             {
-              "id": "route-leg-35ef9d6fe09dfc83",
+              "id": "route-leg-6184ad82d9e7fc01",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
                 "endpoint": {
                   "kind": "terminal",
-                  "instanceId": "M5",
-                  "pinName": "G"
+                  "instanceId": "M1",
+                  "pinName": "D"
                 }
               }
             }
@@ -1089,7 +1089,7 @@
                 "kind": "bend",
                 "bendId": "route-bend-886d373587d8377c",
                 "position": {
-                  "x": 100,
+                  "x": 120,
                   "y": 170
                 }
               }
@@ -1129,16 +1129,16 @@
           ]
         },
         {
-          "id": "r-g-m5s",
+          "id": "r-g-m1s",
           "netId": "net-g3",
           "start": {
             "kind": "terminal",
-            "instanceId": "M5",
+            "instanceId": "M1",
             "pinName": "S"
           },
           "legs": [
             {
-              "id": "route-leg-b2e926e9dec302ca",
+              "id": "route-leg-3936b908f255d206",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
@@ -1185,18 +1185,6 @@
               "id": "route-leg-01551e7eddebbf00",
               "mode": "manual",
               "to": {
-                "kind": "bend",
-                "bendId": "route-bend-01551e7eddebbf00",
-                "position": {
-                  "x": 270,
-                  "y": 190
-                }
-              }
-            },
-            {
-              "id": "route-leg-77a4d506446fff2d",
-              "mode": "manual",
-              "to": {
                 "kind": "endpoint",
                 "endpoint": {
                   "kind": "junction",
@@ -1207,22 +1195,22 @@
           ]
         },
         {
-          "id": "r-x-m5",
+          "id": "r-x-m1g",
           "netId": "net-x",
           "start": {
-            "kind": "terminal",
-            "instanceId": "M5",
-            "pinName": "D"
+            "kind": "junction",
+            "junctionId": "JX"
           },
           "legs": [
             {
-              "id": "route-leg-fe3bbc6f23590e35",
+              "id": "route-leg-206ef046e7835dd3",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
                 "endpoint": {
-                  "kind": "junction",
-                  "junctionId": "JX"
+                  "kind": "terminal",
+                  "instanceId": "M1",
+                  "pinName": "G"
                 }
               }
             }
@@ -1243,8 +1231,8 @@
                 "kind": "bend",
                 "bendId": "route-bend-2308cb7339cb46ef",
                 "position": {
-                  "x": 330,
-                  "y": 250
+                  "x": 320,
+                  "y": 230
                 }
               }
             },
