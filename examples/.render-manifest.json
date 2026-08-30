@@ -1,6 +1,6 @@
 {
  "BJT-current-mirror_circuit-block.png": "4160164eed6c8dd9c0fa08d130019b8443205232b4366f08c9f0082c610281bb",
- "CDR_architecture.png": "e43a4a780a15732f191f3371e52d83db2c27fdf3fbe13e6cf80265cacca90bd3",
+ "CDR_architecture.png": "8ad3069901d32919489fcab1f9ffa1ee5e295acbdb4b39325d24cc563c2a3755",
  "Comparator_latched_19T.png": "94dbe20e382a1f56201efd07e5e2664b041e000ce90f662bb9a72bd1ef4e30ac",
  "Constant-gm_bias_resistorless.png": "05767ecc2305f23133c538b2264f0eacf578c1bffe469ea000f90cbf3f7a9b11",
  "Constant-gm_bias_with-resistor.png": "b240139b0317570e65d09f1f97163edd249e16e7e5cfec33f97011c529d1b4ce",
@@ -11,7 +11,7 @@
  "HW2_constant-gm_VREF.png": "65e8badfa12c26af3325260a6e2c9f918b990a5eedea10598f63bb8c2ff6dbab",
  "Handdrawn_LC-tank_small-signal.png": "c133cc41c8df1bf4eab35e1819eb0b509bbf20df9c6b485f0944f270a3d52fbc",
  "Handdrawn_bridge-rectifier.png": "ac4629ed318c96cf2066dab4402f014c631de909c5a1c753cbb6a8bdb15a5f09",
- "Handdrawn_cascode-node_Cgs3-probe.png": "a7bc9259b2b75716e66dd7f5d57604e32ef04096feb578a9ffc93265fd3c67f2",
+ "Handdrawn_cascode-node_Cgs3-probe.png": "d8fcfa3d4b2803df88e0de3f22326942a16d0e4c9f033f5f1b7c775c5aae645a",
  "Handdrawn_two-stage-BJT_small-signal.png": "9da46bc7be8e801fe52c87be6a6c672b989f5bd5702593994ee2fa1df922d6f9",
  "Lab2_NAND2_transistor-level.png": "79c38e2084d61c871916350d466108d12a21f1a425395996cf2579a3e6fc1105",
  "Lab2_NOR2_transistor-level.png": "e3f70213bf8234ac91dbbe66971d20e2d4a04911b1242e7703b03c01059d963d",

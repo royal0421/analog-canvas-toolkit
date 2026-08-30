@@ -99,10 +99,10 @@ f.power_label("label-vdd", "net-top", "jvdd-end", 12, 6, "V_DD")
 # I_x rides the V_x lead -- the test current, taken BEFORE it splits between
 # M_3 and M_1.  (The user marks it with the editor's own route-marker at
 # t=0.5, normalOffset -14; a drafting arrow on the same leg draws the same.)
-f.arrow("arrow-ix", 310, 230, 272, 230)
+f.arrow("arrow-ix", 316, 230, 266, 230)
 f.text("n-ix", 290, 216, "middle", name("I_x"))
 # 1/g_m5 points at the source below M_1
-f.arrow("arrow-gm", 229, 291, 229, 267)
+f.arrow("arrow-gm", 229, 315, 229, 255)
 f.text("n-gm", 278, 309, "end",
        {"runs": plain("1/")["runs"] + name("g_m5")["runs"]})
 

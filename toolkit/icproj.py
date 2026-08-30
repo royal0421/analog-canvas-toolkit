@@ -578,9 +578,20 @@ class Schematic(object):
             "anchor": {"kind": "free", "position": {"x": x0, "y": y0}},
             "points": [{"x": x0, "y": y0}, {"x": x1, "y": y1}]})
 
+    MIN_ARROW = 45          # head is 16.57 long; below ~45 it is all head
+
     def arrow(self, aid, x0, y0, x1, y1, head_scale=1.0, color=None):
         """Current arrow.  NEVER add strokeScale here: annotationStrokeScale
-        already puts the shaft at the wire weight (SOP §6B)."""
+        already puts the shaft at the wire weight (SOP §6B).
+
+        The head is a FIXED 16.57 units long, so a short arrow is nearly all
+        head and reads as a fat triangle -- the user spotted it twice.  Warn
+        below MIN_ARROW rather than silently drawing a stub.
+        """
+        n = abs(x1 - x0) + abs(y1 - y0)
+        if n < self.MIN_ARROW:
+            print("  ~ arrow %s is only %d long; the head alone is 16.6, so it"
+                  " will look stubby (aim for %d+)" % (aid, n, self.MIN_ARROW))
         self.drafting.append({
             "id": aid, "kind": "arrow", "locked": False, "zIndex": 0,
             "anchor": {"kind": "free", "position": {"x": x0, "y": y0}},

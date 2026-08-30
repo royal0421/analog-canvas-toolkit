@@ -145,7 +145,7 @@ f.text("n-x", 575, 200, "end", "X", owner="VI")
 f.text("n-vc", 715, 146, "start", "V_cont")
 f.text("t-vi", 635, 134, "middle", plain("V/I"), owner="VI")
 # the feedback arrow rides the last leg, pointing into the dashed block
-f.arrow("arrow-fb", 320, 340, 320, 305)
+f.arrow("arrow-fb", 320, 348, 320, 300)
 
 f.build(long_haul={"r-in0", "r-a3", "r-c1", "r-b2", "r-b3", "r-d1", "r-d3",
                    "r-y", "r-x", "r-v1", "r-v3", "r-v5", "r-k1", "r-k3",

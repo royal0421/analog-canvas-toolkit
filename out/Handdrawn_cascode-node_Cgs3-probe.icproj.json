@@ -198,21 +198,21 @@
             "anchor": {
               "kind": "free",
               "position": {
-                "x": 310,
+                "x": 316,
                 "y": 230
               }
             },
             "from": {
               "kind": "free",
               "position": {
-                "x": 310,
+                "x": 316,
                 "y": 230
               }
             },
             "to": {
               "kind": "free",
               "position": {
-                "x": 272,
+                "x": 266,
                 "y": 230
               }
             },
@@ -285,21 +285,21 @@
               "kind": "free",
               "position": {
                 "x": 229,
-                "y": 291
+                "y": 315
               }
             },
             "from": {
               "kind": "free",
               "position": {
                 "x": 229,
-                "y": 291
+                "y": 315
               }
             },
             "to": {
               "kind": "free",
               "position": {
                 "x": 229,
-                "y": 267
+                "y": 255
               }
             },
             "styleOverride": {
