@@ -42,7 +42,7 @@ f.passive("CGS3", "capacitor", 150, 140, "C_GS3")
 f.mos("M3", "pmos", 250, 170, "none", "M_3")
 f.mos("M5", "nmos", 210, 270, "none", "M_5")
 f.isrc("IGM", 220, 330, "I_gm")
-f.place("VX", "voltage-source", 320, 300, extra={
+f.place("VX", "voltage-source", 330, 300, extra={
     "schematicReference": "VX", "schematicName": name("V_x"),
     "netlist": {"binding": {"kind": "primitive",
                             "deviceClass": "voltage-source"},
@@ -51,7 +51,7 @@ f.gnd("GI", 220, 360)
 # The page draws the top line thick and running PAST both end taps: that is
 # a power rail, not a vdd-port (user, 2026-08-30; SOP 7 already said "if
 # there is a rail, do not use vdd-port" -- I used one anyway).
-f.gnd("GX", 320, 330)
+f.gnd("GX", 330, 330)
 
 # ---------------------------------------------------------------- junctions
 RAIL = [130, 150, 190, 260, 280]      # 20 of overhang past each end tap
@@ -63,7 +63,7 @@ for jid, net, x, y in (("jvdd-start", "net-top", 130, 100),
                        ("JG", "net-g3", 150, 170),    # C_GS3 down onto the
                        ("JS", "net-g3", 100, 300),    # M_3 gate wire, and that
                        ("JS2", "net-g3", 220, 300),   # wire down to M_5 src
-                       ("JX", "net-x", 300, 250)):    # wire down to M_5's src
+                       ("JX", "net-x", 270, 250)):    # wire down to M_5's src
     f.junction(jid, net, x, y)
 
 # -------------------------------------------------------------------- nets
@@ -89,9 +89,10 @@ f.route("r-g-m5s", "net-g3", T("M5", "S"), [("to", Jn("JS2"))])
 f.route("r-g-igm", "net-g3", Jn("JS2"), [("to", T("IGM", "+"))])
 
 f.route("r-x-m3", "net-x", T("M3", "D"),
-        [("bend", 300, 190), ("to", Jn("JX"))])
+        [("bend", 270, 190), ("to", Jn("JX"))])
 f.route("r-x-m5", "net-x", T("M5", "D"), [("to", Jn("JX"))])
-f.route("r-x-vx", "net-x", Jn("JX"), [("bend", 320, 250), ("to", T("VX", "+"))])
+f.route("r-x-vx", "net-x", Jn("JX"),
+        [("bend", 330, 250), ("to", T("VX", "+"))])
 # I_gm and V_x sit pin-on-pin on their ground symbols, so neither needs a wire
 
 # ------------------------------------------------------------- annotations
@@ -100,9 +101,11 @@ f.inst_label("M3", 18, 5, "start")
 f.inst_label("M5", 18, 5, "start")
 f.inst_label("VX", 16, 5, "start")
 f.power_label("label-vdd", "net-top", "jvdd-end", 12, 6, "V_DD")
-# I_x flows leftwards into the probed node, on the bus V_x drives
-f.arrow("arrow-ix", 300, 250, 260, 250)
-f.text("n-ix", 280, 238, "middle", name("I_x"))
+# I_x is the test current V_x pushes in, so it belongs on V_x's OWN lead --
+# not on M_5's drain branch, where the current has already split
+# (user, 2026-08-31).  That is where the page puts it too.
+f.arrow("arrow-ix", 320, 250, 280, 250)
+f.text("n-ix", 300, 238, "middle", name("I_x"))
 # the red pen: 1/g_m5 is what the source below M_5 stands for
 # hard up against the source it annotates: the space on its right
 # belongs to V_x's ground, so the note goes on the left
@@ -118,7 +121,9 @@ f.build(long_haul={"r-vdd-rail-2",  # 70: the rail on to M_3's source
                                    #         draws it
                    "r-g-bus",      # 120: and back across under M_5
                    "r-x-m3",       # 50+60: M_3's drain doglegs onto the bus
-                   "r-x-m5"},      # 80: the bus over to the corner
+                   "r-x-m5",       # 50: the bus over to the corner
+                   "r-x-vx"},      # 60: V_x's lead, long enough to
+                                   #     carry the I_x arrow
         rail_ends={"jvdd-start", "jvdd-end"},
         viewbox=(50, 40, 340, 350),
         # plain on purpose: "1/" is arithmetic, not a device name

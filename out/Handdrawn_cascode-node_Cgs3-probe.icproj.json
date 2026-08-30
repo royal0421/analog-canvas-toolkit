@@ -89,7 +89,7 @@
               "y": 5
             },
             "fallbackPosition": {
-              "x": 336,
+              "x": 346,
               "y": 305
             }
           },
@@ -198,21 +198,21 @@
             "anchor": {
               "kind": "free",
               "position": {
-                "x": 300,
+                "x": 320,
                 "y": 250
               }
             },
             "from": {
               "kind": "free",
               "position": {
-                "x": 300,
+                "x": 320,
                 "y": 250
               }
             },
             "to": {
               "kind": "free",
               "position": {
-                "x": 260,
+                "x": 280,
                 "y": 250
               }
             },
@@ -235,7 +235,7 @@
             "anchor": {
               "kind": "free",
               "position": {
-                "x": 280,
+                "x": 300,
                 "y": 238
               }
             },
@@ -604,7 +604,7 @@
           "placement": {
             "mirror": "none",
             "position": {
-              "x": 320,
+              "x": 330,
               "y": 300
             },
             "rotation": 0
@@ -674,7 +674,7 @@
           "placement": {
             "mirror": "none",
             "position": {
-              "x": 320,
+              "x": 330,
               "y": 330
             },
             "rotation": 0
@@ -759,7 +759,7 @@
           "id": "JX",
           "netId": "net-x",
           "position": {
-            "x": 300,
+            "x": 270,
             "y": 250
           },
           "role": "branch"
@@ -1188,7 +1188,7 @@
                 "kind": "bend",
                 "bendId": "route-bend-01551e7eddebbf00",
                 "position": {
-                  "x": 300,
+                  "x": 270,
                   "y": 190
                 }
               }
@@ -1243,7 +1243,7 @@
                 "kind": "bend",
                 "bendId": "route-bend-2308cb7339cb46ef",
                 "position": {
-                  "x": 320,
+                  "x": 330,
                   "y": 250
                 }
               }
