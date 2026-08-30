@@ -89,3 +89,5 @@ audits: legs 0 | labels 0 | on-wire 0 | tees 0   (all must be 0)
 電路圖編輯器與符號資產屬於 [cascode-ai/analog-canvas](https://github.com/cascode-ai/analog-canvas)。
 本 repo 只包含自己寫的產生器、稽核規則與 SOP；上游的 `sym/*.json` 與 `model.mjs`
 由 `fetch_symbols.py` / `refresh_model.py` 在本機取得，不重新散布。
+
+`examples/` 與 `out/` 的圖均為以本工具**重新繪製**，用於展示輸出效果；電路拓樸取自公開文獻與教科書，並非原圖的重製。
