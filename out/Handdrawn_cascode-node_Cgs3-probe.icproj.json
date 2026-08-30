@@ -108,14 +108,14 @@
           "sizeScale": 0.58,
           "anchor": {
             "kind": "object",
-            "objectId": "VDD",
+            "objectId": "jvdd-end",
             "localOffset": {
-              "x": 14,
+              "x": 12,
               "y": 6
             },
             "fallbackPosition": {
-              "x": 234,
-              "y": 86
+              "x": 292,
+              "y": 106
             }
           },
           "content": {
@@ -181,7 +181,7 @@
           "name": "VDD",
           "owner": {
             "kind": "power-marker",
-            "objectId": "VDD"
+            "objectId": "jvdd-end"
           },
           "scope": "global",
           "powerDomain": "vdd"
@@ -669,19 +669,6 @@
           "schematicReference": "GI"
         },
         {
-          "id": "VDD",
-          "symbolId": "vdd-port",
-          "placement": {
-            "mirror": "none",
-            "position": {
-              "x": 220,
-              "y": 80
-            },
-            "rotation": 0
-          },
-          "schematicReference": "VDD"
-        },
-        {
           "id": "GX",
           "symbolId": "ground",
           "placement": {
@@ -696,6 +683,15 @@
         }
       ],
       "junctions": [
+        {
+          "id": "jvdd-start",
+          "netId": "net-top",
+          "position": {
+            "x": 130,
+            "y": 100
+          },
+          "role": "branch"
+        },
         {
           "id": "JT",
           "netId": "net-top",
@@ -719,6 +715,15 @@
           "netId": "net-top",
           "position": {
             "x": 260,
+            "y": 100
+          },
+          "role": "branch"
+        },
+        {
+          "id": "jvdd-end",
+          "netId": "net-top",
+          "position": {
+            "x": 280,
             "y": 100
           },
           "role": "branch"
@@ -789,10 +794,6 @@
             {
               "instanceId": "M3",
               "pinName": "B"
-            },
-            {
-              "instanceId": "VDD",
-              "pinName": "P"
             }
           ]
         },
@@ -876,7 +877,29 @@
       "revision": 0,
       "routes": [
         {
-          "id": "r-t-1",
+          "id": "r-vdd-rail-0",
+          "netId": "net-top",
+          "start": {
+            "kind": "junction",
+            "junctionId": "jvdd-start"
+          },
+          "legs": [
+            {
+              "id": "route-leg-db0553928f8bda77",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JT"
+                }
+              }
+            }
+          ],
+          "presentation": "power-rail"
+        },
+        {
+          "id": "r-vdd-rail-1",
           "netId": "net-top",
           "start": {
             "kind": "junction",
@@ -884,7 +907,7 @@
           },
           "legs": [
             {
-              "id": "route-leg-537c694df77c8741",
+              "id": "route-leg-bf89e1638fa5710f",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
@@ -894,10 +917,11 @@
                 }
               }
             }
-          ]
+          ],
+          "presentation": "power-rail"
         },
         {
-          "id": "r-t-2",
+          "id": "r-vdd-rail-2",
           "netId": "net-top",
           "start": {
             "kind": "junction",
@@ -905,30 +929,7 @@
           },
           "legs": [
             {
-              "id": "route-leg-28d78fc440676c20",
-              "mode": "manual",
-              "to": {
-                "kind": "endpoint",
-                "endpoint": {
-                  "kind": "terminal",
-                  "instanceId": "VDD",
-                  "pinName": "P"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "id": "r-t-3",
-          "netId": "net-top",
-          "start": {
-            "kind": "terminal",
-            "instanceId": "VDD",
-            "pinName": "P"
-          },
-          "legs": [
-            {
-              "id": "route-leg-de5d39db228633d0",
+              "id": "route-leg-94653d73be81dffe",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
@@ -938,7 +939,30 @@
                 }
               }
             }
-          ]
+          ],
+          "presentation": "power-rail"
+        },
+        {
+          "id": "r-vdd-rail-3",
+          "netId": "net-top",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JT3"
+          },
+          "legs": [
+            {
+              "id": "route-leg-d8f2f5f40e277750",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "jvdd-end"
+                }
+              }
+            }
+          ],
+          "presentation": "power-rail"
         },
         {
           "id": "r-t-c",

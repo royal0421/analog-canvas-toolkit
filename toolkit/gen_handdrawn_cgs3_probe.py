@@ -29,7 +29,7 @@ f = Schematic(
     "CgsProbe",
     out_proj=os.path.join(OUT, "Handdrawn_cascode-node_Cgs3-probe.icproj.json"),
     out_svg=os.path.join(HERE, "preview_cgs3probe.svg"),
-    supply_net="net-top", rail_end="VDD", supply_name="VDD",
+    supply_net="net-top", rail_end="jvdd-end", supply_name="VDD",
     nmos_bulk_net="net-gnd")
 
 # ---------------------------------------------------------------- placement
@@ -48,16 +48,18 @@ f.place("VX", "voltage-source", 320, 300, extra={
                             "deviceClass": "voltage-source"},
                 "parameters": {}, "reference": "VX"}})
 f.gnd("GI", 220, 360)
-# the page draws the top wire bare, but it is plainly V_DD: M_3's source and
-# M_5's gate both sit on it (user, 2026-08-30)
-f.place("VDD", "vdd-port", 220, 80,
-        extra={"schematicReference": "VDD"})
+# The page draws the top line thick and running PAST both end taps: that is
+# a power rail, not a vdd-port (user, 2026-08-30; SOP 7 already said "if
+# there is a rail, do not use vdd-port" -- I used one anyway).
 f.gnd("GX", 320, 330)
 
 # ---------------------------------------------------------------- junctions
-for jid, net, x, y in (("JT", "net-top", 150, 100),   # rail: C_GS3 tap
+RAIL = [130, 150, 190, 260, 280]      # 20 of overhang past each end tap
+for jid, net, x, y in (("jvdd-start", "net-top", 130, 100),
+                       ("JT", "net-top", 150, 100),   # rail: C_GS3 tap
                        ("JT2", "net-top", 190, 100),  # rail: M_5 gate riser
                        ("JT3", "net-top", 260, 100),  # rail: M_3 source
+                       ("jvdd-end", "net-top", 280, 100),
                        ("JG", "net-g3", 150, 170),    # C_GS3 down onto the
                        ("JS", "net-g3", 100, 300),    # M_3 gate wire, and that
                        ("JS2", "net-g3", 220, 300),   # wire down to M_5 src
@@ -65,8 +67,7 @@ for jid, net, x, y in (("JT", "net-top", 150, 100),   # rail: C_GS3 tap
     f.junction(jid, net, x, y)
 
 # -------------------------------------------------------------------- nets
-f.net("net-top", [("CGS3", "1"), ("M3", "S"), ("M5", "G"), ("M3", "B"),
-                  ("VDD", "P")])
+f.net("net-top", [("CGS3", "1"), ("M3", "S"), ("M5", "G"), ("M3", "B")])
 f.net("net-g3", [("CGS3", "2"), ("M3", "G"), ("M5", "S"), ("IGM", "+")])
 f.net("net-x", [("M3", "D"), ("M5", "D"), ("VX", "+")])
 f.net("net-gnd", [("IGM", "-"), ("GI", "0"), ("VX", "-"), ("GX", "0"),
@@ -74,9 +75,7 @@ f.net("net-gnd", [("IGM", "-"), ("GI", "0"), ("VX", "-"), ("GX", "0"),
 
 # ------------------------------------------------------------------ routes
 T, Jn = f.term, f.jn
-f.route("r-t-1", "net-top", Jn("JT"), [("to", Jn("JT2"))])
-f.route("r-t-2", "net-top", Jn("JT2"), [("to", T("VDD", "P"))])
-f.route("r-t-3", "net-top", T("VDD", "P"), [("to", Jn("JT3"))])
+f.rail("net-top", 100, RAIL, prefix="r-vdd-rail")
 f.route("r-t-c", "net-top", Jn("JT"), [("to", T("CGS3", "1"))])
 f.route("r-t-m3", "net-top", Jn("JT3"), [("to", T("M3", "S"))])
 f.route("r-t-m5g", "net-top", Jn("JT2"), [("to", T("M5", "G"))])
@@ -100,7 +99,7 @@ f.inst_label("CGS3", -16, 5, "end")
 f.inst_label("M3", 18, 5, "start")
 f.inst_label("M5", 18, 5, "start")
 f.inst_label("VX", 16, 5, "start")
-f.power_label("label-vdd", "net-top", "VDD", 14, 6, "V_DD")
+f.power_label("label-vdd", "net-top", "jvdd-end", 12, 6, "V_DD")
 # I_x flows leftwards into the probed node, on the bus V_x drives
 f.arrow("arrow-ix", 300, 250, 260, 250)
 f.text("n-ix", 280, 238, "middle", name("I_x"))
@@ -111,7 +110,7 @@ f.arrow("arrow-gm", 196, 346, 196, 322)
 f.text("n-gm", 188, 346, "end",
        {"runs": plain("1/")["runs"] + name("g_m5")["runs"]})
 
-f.build(long_haul={"r-t-3",        # 70: the rail across to M_3's source
+f.build(long_haul={"r-vdd-rail-2",  # 70: the rail on to M_3's source
                    "r-t-m3",       # 50: and down to it
                    "r-t-m5g",      # 170: the gate riser down to M_5
                    "r-g-m3",       # 80: the gate wire across to M_3
@@ -120,6 +119,7 @@ f.build(long_haul={"r-t-3",        # 70: the rail across to M_3's source
                    "r-g-bus",      # 120: and back across under M_5
                    "r-x-m3",       # 50+60: M_3's drain doglegs onto the bus
                    "r-x-m5"},      # 80: the bus over to the corner
+        rail_ends={"jvdd-start", "jvdd-end"},
         viewbox=(50, 40, 340, 350),
         # plain on purpose: "1/" is arithmetic, not a device name
         expect_differ={"n-gm"})
