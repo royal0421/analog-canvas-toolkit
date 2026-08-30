@@ -97,9 +97,96 @@
             "kind": "instance-schematic-name",
             "instanceId": "VX"
           }
+        },
+        {
+          "id": "label-vdd",
+          "kind": "power-label",
+          "netId": "net-top",
+          "alignment": "start",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "VDD",
+            "localOffset": {
+              "x": 14,
+              "y": 6
+            },
+            "fallbackPosition": {
+              "x": 234,
+              "y": 86
+            }
+          },
+          "content": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "italic",
+                    "children": [
+                      {
+                        "kind": "span",
+                        "style": "bold",
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "DD"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
         }
       ],
-      "connectivityEvidence": [],
+      "connectivityEvidence": [
+        {
+          "id": "cev-vdd-property",
+          "kind": "name-claim",
+          "netId": "net-top",
+          "name": "VDD",
+          "owner": {
+            "kind": "explicit-net-property"
+          },
+          "scope": "global",
+          "powerDomain": "vdd"
+        },
+        {
+          "id": "cev-vdd-marker",
+          "kind": "name-claim",
+          "netId": "net-top",
+          "name": "VDD",
+          "owner": {
+            "kind": "power-marker",
+            "objectId": "VDD"
+          },
+          "scope": "global",
+          "powerDomain": "vdd"
+        }
+      ],
       "constraints": [],
       "drafting": {
         "objects": [
@@ -582,6 +669,19 @@
           "schematicReference": "GI"
         },
         {
+          "id": "VDD",
+          "symbolId": "vdd-port",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 220,
+              "y": 80
+            },
+            "rotation": 0
+          },
+          "schematicReference": "VDD"
+        },
+        {
           "id": "GX",
           "symbolId": "ground",
           "placement": {
@@ -689,6 +789,10 @@
             {
               "instanceId": "M3",
               "pinName": "B"
+            },
+            {
+              "instanceId": "VDD",
+              "pinName": "P"
             }
           ]
         },
@@ -802,6 +906,29 @@
           "legs": [
             {
               "id": "route-leg-28d78fc440676c20",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "VDD",
+                  "pinName": "P"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-t-3",
+          "netId": "net-top",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "VDD",
+            "pinName": "P"
+          },
+          "legs": [
+            {
+              "id": "route-leg-de5d39db228633d0",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
