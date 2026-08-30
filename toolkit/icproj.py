@@ -39,7 +39,8 @@ LABEL_SIZE = 0.58          # BASE = 17.53 units = Razavi's own label
                            # off a textbook page can be used directly --
                            # no more 1.2x correction factor.
 FONT_SCALE = 2.0
-SCHEMA_VERSION = 30        # keep in step with refresh_model.py
+HERE_TOOLKIT = os.path.dirname(os.path.abspath(__file__))
+SCHEMA_VERSION = 31        # keep in step with refresh_model.py
 LEG_BUDGET = 40
 LABEL_INK_GAP = 8
 LABEL_PORT = 14            # port label offset from the port CENTRE.  The
@@ -266,6 +267,24 @@ def dy_below(ink_half, gap=VERT_GAP, size=LABEL_SIZE):
     return round(ink_half + gap + cap_height(size))
 
 
+def _crosses(box, seg):
+    """True when an axis-aligned wire enters one side of an ink box and leaves
+    by the other -- i.e. it is drawn straight through the component body.
+
+    Ending ON a component (a pin lead) is not crossing: the segment then stops
+    inside or at the edge, so it fails the "extends beyond on BOTH sides" test.
+    """
+    bx0, by0, bx1, by1 = box
+    x0, y0, x1, y1 = seg
+    if y0 == y1:                                     # horizontal
+        return (by0 < y0 < by1
+                and min(x0, x1) < bx0 and max(x0, x1) > bx1)
+    if x0 == x1:                                     # vertical
+        return (bx0 < x0 < bx1
+                and min(y0, y1) < by0 and max(y0, y1) > by1)
+    return False
+
+
 def _box_gap(b, seg):
     """Distance from box b to an axis-aligned segment seg=(x0,y0,x1,y1)."""
     sx0, sx1 = sorted((seg[0], seg[2]))
@@ -296,10 +315,24 @@ class Schematic(object):
         self._text_owner = {}          # value labels declare their component
 
     # ---------------------------------------------------------- placement
+    # Symbols whose geometry exists somewhere in the deployment but which the
+    # site's symbol CATALOG does not register.  A project that uses one parses
+    # against the schema, validates, and then silently fails to import.
+    # 2026-08-30: `vdd` cost a whole round trip.  Checked with
+    #   grep -c 'symbolId:`vdd`,' <bundle chunk>   ->  0
+    UNPLACEABLE = {"vdd": "use `vdd-port` (same pin at (0,+20))",
+                   "ndmos": "no geometry anywhere; needs a PDK",
+                   "pdmos": "no geometry anywhere; needs a PDK"}
+
     def place(self, iid, symbol_id, x, y, mirror="none", extra=None,
               rotation=0):
         assert x % 10 == 0 and y % 10 == 0, (iid, x, y)
         assert rotation in (0, 90, 180, 270), rotation
+        if symbol_id in self.UNPLACEABLE:
+            raise ValueError(
+                "symbol %r is not placeable -- the site's catalog has no entry "
+                "for it, so the project imports as a blank canvas: %s"
+                % (symbol_id, self.UNPLACEABLE[symbol_id]))
         inst = {"id": iid, "symbolId": symbol_id,
                 "placement": {"mirror": mirror, "position": {"x": x, "y": y},
                               "rotation": rotation}}
@@ -441,11 +474,25 @@ class Schematic(object):
             "binding": {"kind": "instance-schematic-name", "instanceId": iid}})
 
     def port_label(self, iid, tid, dx, dy, alignment):
+        """A port label bound to a cell terminal ALWAYS needs a formatOverride.
+
+        Left to itself the editor runs the terminal name through its own
+        builder, which subscripts a trailing capital run: `IN` renders as
+        I with a subscript N, `CK` as C_K, `Out` as O_ut (user, 2026-08-30).
+        Our `name()` only subscripts after an underscore, which is what the
+        textbook does -- so hand the editor the finished RichText.
+        (Fig 9.83's hand-written generator always did this; the shared engine
+        lost it, and five labels across four figures were rendering wrong.)
+        """
+        term = next((t for t in self.terminals if t["id"] == tid), None)
+        if term is None:
+            raise KeyError("declare f.terminal(%r, ...) before its label" % tid)
         self.annotations.append({
             "id": "instance-label-" + iid, "kind": "instance-label",
             "alignment": alignment, "locked": False, "rotation": 0,
             "sizeScale": LABEL_SIZE, "anchor": self._anchor(iid, dx, dy),
-            "binding": {"kind": "cell-terminal-name", "terminalId": tid}})
+            "binding": {"kind": "cell-terminal-name", "terminalId": tid},
+            "formatOverride": name(term["name"])})
 
     def power_label(self, lid, net_id, obj_id, dx, dy, label,
                     alignment="start"):
@@ -457,7 +504,9 @@ class Schematic(object):
                 "kind": "object", "objectId": obj_id,
                 "localOffset": {"x": dx, "y": dy},
                 "fallbackPosition": self._jxy(obj_id, dx, dy)},
-            "content": name(label)})
+            # a rail label is often "name + value" (V_CC = 2.5 V), so accept a
+            # ready-made RichText the way text() does
+            "content": label if isinstance(label, dict) else name(label)})
 
     def _jxy(self, jid, dx, dy):
         for j in self.junctions:
@@ -477,6 +526,15 @@ class Schematic(object):
             "content": label if isinstance(label, dict) else name(label)})
         if owner:
             self._text_owner[tid] = owner
+
+    def rect(self, rid, cx, cy, w, h, style="solid"):
+        """A drafting rectangle -- block-diagram boxes (FF, VCO, Latch) and
+        the layer stacks that ESD papers draw next to the schematic."""
+        self.drafting.append({
+            "id": rid, "kind": "rectangle", "locked": False, "zIndex": 0,
+            "center": {"x": cx, "y": cy}, "width": int(w), "height": int(h),
+            "rotation": 0, "lineStyle": style,
+            "anchor": {"kind": "free", "position": {"x": cx, "y": cy}}})
 
     def construction(self, cid, x0, y0, x1, y1):
         """A drafting line, for the one thing routes cannot draw: a DIAGONAL.
@@ -550,7 +608,8 @@ class Schematic(object):
 
     # ---------------------------------------------------------- build
     def build(self, long_haul=(), rail_ends=(), viewbox=(100, 75, 400, 310),
-              extra_evidence=None, verbose=True, density_ref=None):
+              extra_evidence=None, verbose=True, density_ref=None,
+              expect_differ=()):
         long_haul, rail_ends = set(long_haul), set(rail_ends)
         self._long_haul = long_haul
         doc = {
@@ -615,13 +674,19 @@ class Schematic(object):
               os.path.basename(self.out_proj))
 
         if verbose:
-            self._leg_audit(long_haul)
-            self._label_audit()
-            n = self._wire_clearance()
-            print("components sitting on another net's wire: %d" % n)
+            # One summary line when everything is clean; each audit still
+            # prints its own detail lines above whenever it finds something.
+            legs = self._leg_audit(long_haul)
+            labels = self._label_audit()
+            onwire = self._wire_clearance()
+            tees = self._tee_audit()
+            print("audits: legs %d | labels %d | on-wire %d | tees %d"
+                  "   (all must be 0)" % (legs, labels, onwire, tees))
             self._crowding()
             self._density(density_ref)
         self._preview(viewbox)
+        if verbose:
+            self._verify(expect_differ)
         return project
 
     # ---------------------------------------------------------- checks
@@ -697,8 +762,13 @@ class Schematic(object):
         return errs
 
     def _leg_audit(self, long_haul):
-        print()
-        print("%-14s %5s %5s  %s" % ("route", "dy", "dx", "legs"))
+        """Print only the offenders.  The full table is 25+ lines of noise on
+        a clean figure and I re-run generators a dozen times per drawing;
+        `AC_VERBOSE=1` brings it back when a layout needs studying."""
+        loud = os.environ.get("AC_VERBOSE")
+        if loud:
+            print()
+            print("%-14s %5s %5s  %s" % ("route", "dy", "dx", "legs"))
         over = 0
         for r in self.routes:
             pt = self._axy(r["start"])
@@ -714,10 +784,10 @@ class Schematic(object):
                 pt = nxt
             bad = max(legs) > LEG_BUDGET and r["id"] not in long_haul
             over += bad
-            print("%-14s %5d %5d  %s%s" % (r["id"], dy, dx, legs,
-                                           "  <-- LONG" if bad else ""))
-        print("legs over the %d-unit budget (excluding declared long hauls): %d"
-              % (LEG_BUDGET, over))
+            if loud or bad:
+                print("%-14s %5d %5d  %s%s" % (r["id"], dy, dx, legs,
+                                               "  <-- LONG" if bad else ""))
+        return over
 
     def _label_audit(self):
         """SOP §4: text must never sit on a wire, and a label must be closer
@@ -768,7 +838,7 @@ class Schematic(object):
                           % (lid, owner, own, near[0], near[1],
                              NEIGHBOUR_GAP))
                     bad += 1
-        print("label problems: %d" % bad)
+        return bad
 
     def _crowding(self):
         """Rank the tightest clearances so "crowded" names a place, not a mood.
@@ -823,6 +893,130 @@ class Schematic(object):
             print("  ! %d pair(s) closer than %d units"
                   % (len(tight), CROWD_MIN))
 
+    def _tee_audit(self):
+        """三叉必有圓點（使用者 2026-08-30 裁示）。
+
+        圓點是 junction 物件畫出來的。三條線在同一點相會、卻只是「一條 route
+        的轉角 ＋ 另一條 route 從旁邊經過」時，編輯器看到的是兩個獨立幾何，
+        不畫點——圖上就少一個節點。CDR 那張的 C_2 上緣就是這樣漏掉的。
+
+        落在元件腳位上的三叉不算：junction 不可以壓在 terminal 上（SOP 6），
+        那種點本來就由腳位自己收尾。
+
+        **電源軌也不算**（使用者 2026-08-30 裁示）：軌上每一個分支點都是三叉，
+        但課本與網站的正式渲染都不在軌上畫點（SOP 8 第 8 條）。
+        """
+        rail = {r["id"] for r in self.routes
+                if r.get("presentation") == "power-rail"}
+        net_of = {r["id"]: r["netId"] for r in self.routes}
+        jpos = {(j["position"]["x"], j["position"]["y"])
+                for j in self.junctions}
+        pins = set()
+        for n in self.nets:
+            for t in n["terminals"]:
+                pins.add(self.pin(t["instanceId"], t["pinName"]))
+        segs, on_rail = {}, set()
+        for rid, x0, y0, x1, y1 in self.segments():
+            segs.setdefault(net_of.get(rid), []).append((x0, y0, x1, y1))
+            if rid in rail:
+                on_rail.add((x0, y0))
+                on_rail.add((x1, y1))
+
+        def unit(a, b):
+            return (0 if a == b else (1 if b > a else -1))
+
+        bad = 0
+        for net in sorted(segs, key=str):
+            ss = segs[net]
+            pts = set()
+            for x0, y0, x1, y1 in ss:
+                pts.add((x0, y0))
+                pts.add((x1, y1))
+            for px, py in sorted(pts):
+                if (px, py) in jpos or (px, py) in pins or (px, py) in on_rail:
+                    continue
+                dirs = set()
+                for x0, y0, x1, y1 in ss:
+                    if (x0, y0) == (x1, y1):
+                        continue
+                    d = (unit(x0, x1), unit(y0, y1))
+                    if (x0, y0) == (px, py):
+                        dirs.add(d)
+                    elif (x1, y1) == (px, py):
+                        dirs.add((-d[0], -d[1]))
+                    elif (min(x0, x1) <= px <= max(x0, x1)
+                          and min(y0, y1) <= py <= max(y0, y1)
+                          and (x0 == x1 == px or y0 == y1 == py)):
+                        dirs.add(d)
+                        dirs.add((-d[0], -d[1]))
+                if len(dirs) >= 3:
+                    print("  ! three-way node at (%g,%g) on %s has no junction"
+                          " -- the editor draws no dot there" % (px, py, net))
+                    bad += 1
+        return bad
+
+    def _verify(self, expect_differ):
+        """Steps 4 and 5 of the SOP, run from inside step 3.
+
+        Every tool call re-sends the whole conversation, so four round trips
+        per figure (generate / validate / check_labels / render) cost far more
+        than the bytes they print.  This collapses them into one.
+        `AC_FAST=1` skips it -- regress.py sets that, since it runs 23 figures.
+        """
+        if os.environ.get("AC_FAST"):
+            return
+        import subprocess
+        here, proj = HERE_TOOLKIT, self.out_proj
+
+        def node(script, *args):
+            try:
+                r = subprocess.run(["node", os.path.join(here, script), proj]
+                                   + list(args), capture_output=True,
+                                   text=True, encoding="utf-8",
+                                   errors="replace", timeout=120)
+                return r.stdout + r.stderr
+            except Exception as e:                       # noqa: BLE001
+                return "COULD NOT RUN %s: %s" % (script, e)
+
+        out = node("validate.mjs")
+        line = [l for l in out.splitlines() if "PROJECT" in l]
+        if line and "VALID" in line[0]:
+            print("  schema: VALID (v%d)" % SCHEMA_VERSION)
+        else:
+            print("  schema: FAILED")
+            print(out.strip()[-1200:])
+
+        out = node("check_labels.mjs")
+        differ = [l.split()[2] for l in out.splitlines()
+                  if l.startswith("DIFFER ") and len(l.split()) > 2]
+        expect = set(expect_differ)
+        unexpected = [d for d in differ if d not in expect]
+        missing = [d for d in expect if d not in differ]
+        if not unexpected and not missing:
+            print("  labels: OK (%d declared plain)" % len(expect))
+        else:
+            for d in unexpected:
+                print("  ! label %s differs from the editor's generator and is"
+                      " not declared in expect_differ" % d)
+            for d in missing:
+                print("  ! %s is declared in expect_differ but now MATCHES --"
+                      " drop it from the list" % d)
+
+        chrome = (r"C:\Program Files\Google\Chrome\Application\chrome.exe")
+        png = os.path.splitext(self.out_svg)[0] + ".png"
+        if os.path.isfile(chrome):
+            w, h = self.preview_px[0] + 20, self.preview_px[1] + 20
+            try:
+                subprocess.run([chrome, "--headless=new",
+                                "--screenshot=" + png,
+                                "--window-size=%d,%d" % (w, h),
+                                "--default-background-color=FFFFFFFF",
+                                "file:///" + self.out_svg.replace("\\", "/")],
+                               capture_output=True, timeout=120)
+                print("  png: %s (%dx%d)" % (os.path.basename(png), w, h))
+            except Exception as e:                       # noqa: BLE001
+                print("  png: FAILED %s" % e)
+
     def _wire_clearance(self):
         """A component must not sit on a wire belonging to a DIFFERENT net.
 
@@ -839,6 +1033,16 @@ class Schematic(object):
             on = {n["id"] for n in self.nets
                   for t in n["terminals"] if t["instanceId"] == iid}
             for rid, x0, y0, x1, y1 in self.segments():
+                if _crosses(box, (x0, y0, x1, y1)):
+                    # A wire that goes IN one side and OUT the other is drawn
+                    # straight through the component body.  The same-net
+                    # exemption below must not cover this: 2026-08-30 the
+                    # cascode gate wire ran through a CDM diode and all four
+                    # audits let it pass because both were on net-vdd.
+                    print("  ! wire %s (%s) runs THROUGH %s -- reroute it"
+                          % (rid, net_of.get(rid), iid))
+                    bad += 1
+                    continue
                 if net_of.get(rid) in on:
                     continue          # its own wiring: touching is the point
                 g = _box_gap(box, (x0, y0, x1, y1))
@@ -928,6 +1132,20 @@ class Schematic(object):
             P.append('<line x1="%g" y1="%g" x2="%g" y2="%g" stroke-width="%g"/>'
                      % (x0, y0, x1, y1, lw))
         for o in self.drafting:
+            if o["kind"] == "rectangle":
+                # A dashed box (the block-diagram "this part is one macro"
+                # boundary) has to look dashed here too, or the eyeball check
+                # is looking at a different picture than the editor will.
+                dash = {"dashed": ' stroke-dasharray="%g %g"' % (6 * S, 4 * S),
+                        "dotted": ' stroke-dasharray="%g %g"' % (1.6 * S,
+                                                                 3 * S)
+                        }.get(o.get("lineStyle", "solid"), "")
+                P.append('<rect x="%g" y="%g" width="%g" height="%g" '
+                         'stroke-width="%g"%s fill="none"/>'
+                         % (o["center"]["x"] - o["width"] / 2.0,
+                            o["center"]["y"] - o["height"] / 2.0,
+                            o["width"], o["height"], 1.6 * S, dash))
+                continue
             if o["kind"] == "construction-line":
                 # Draw these at wire weight: they stand in for wire the router
                 # cannot make (a diagonal), so the preview has to show them or
@@ -992,6 +1210,7 @@ class Schematic(object):
             f.write("".join(P))
         import xml.etree.ElementTree as ET
         ET.parse(self.out_svg)
-        print("preview written+parsed -> %s   render with --window-size=%d,%d"
-              % (os.path.basename(self.out_svg), self.preview_px[0] + 20,
-                 self.preview_px[1] + 20))
+        if os.environ.get("AC_FAST"):        # _verify prints the render line
+            print("preview -> %s   --window-size=%d,%d"
+                  % (os.path.basename(self.out_svg), self.preview_px[0] + 20,
+                     self.preview_px[1] + 20))

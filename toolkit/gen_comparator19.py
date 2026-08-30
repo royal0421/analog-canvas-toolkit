@@ -84,7 +84,9 @@ for jid, net, x, y in J + [
         ("JB1C", "net-b1", 150, 320),    # M2 gate / M4 gate
         ("JB2A", "net-b2", 200, 170),    # M3 drain / its own gate tie
         ("JB2B", "net-b2", 240, 140),    # the M3 - M_B mirror line
-        ("JTAIL", "net-tail", 480, 210),  # M_B drain feeds the tail
+        ("JTAIL", "net-tail", 490, 210),  # M_B drain tees into the tail
+        ("JLG", "net-left", 410, 320),    # the fan-out to M8/M9 gates
+        ("JRG", "net-right", 580, 320),   # the fan-out to M10/M12
         ("JB3", "net-b3", 260, 230),     # M5 drain / M6 drain
         ("JB3G", "net-b3", 300, 190),    # M5 gate; the bias line to M13
         ("JL1", "net-left", 370, 270),   # left bus: M7/M8 drains
@@ -164,8 +166,7 @@ f.route("r-b2-c", "net-b2", Jn("JB2A"), [("bend", 240, 170),
 f.route("r-b2-g3", "net-b2", Jn("JB2B"), [("to", T("M3", "G"))])
 f.route("r-b2-gb", "net-b2", Jn("JB2B"), [("to", T("MB", "G"))])
 
-f.route("r-tail-b", "net-tail", T("MB", "D"), [("bend", 490, 210),
-                                               ("to", Jn("JTAIL"))])
+f.route("r-tail-b", "net-tail", T("MB", "D"), [("to", Jn("JTAIL"))])
 f.route("r-tail-7", "net-tail", Jn("JTAIL"), [("to", T("M7", "S"))])
 f.route("r-tail-11", "net-tail", Jn("JTAIL"), [("to", T("M11", "S"))])
 
@@ -184,10 +185,9 @@ f.route("r-l-7", "net-left", T("M7", "D"), [("to", Jn("JL1"))])
 f.route("r-l-8", "net-left", Jn("JL1"), [("to", T("M8", "D"))])
 f.route("r-l-6", "net-left", Jn("JL1"), [("to", T("M6", "G"))])
 f.route("r-l-bus", "net-left", Jn("JL1"), [("to", Jn("JL2"))])
-f.route("r-l-g8", "net-left", Jn("JL2"), [("bend", 410, 320),
-                                          ("to", T("M8", "G"))])
-f.route("r-l-g9", "net-left", Jn("JL2"), [("bend", 410, 320),
-                                          ("to", T("M9", "G"))])
+f.route("r-l-gr", "net-left", Jn("JL2"), [("to", Jn("JLG"))])
+f.route("r-l-g8", "net-left", Jn("JLG"), [("to", T("M8", "G"))])
+f.route("r-l-g9", "net-left", Jn("JLG"), [("to", T("M9", "G"))])
 f.route("r-l-x", "net-left", Jn("JL2"), [("to", Jn("JX1"))])
 
 # right bus
@@ -195,10 +195,9 @@ f.route("r-r-11", "net-right", T("M11", "D"), [("to", Jn("JR2"))])
 f.route("r-r-12", "net-right", Jn("JR2"), [("to", T("M12", "D"))])
 f.route("r-r-14", "net-right", Jn("JR2"), [("to", T("M14", "G"))])
 f.route("r-r-bus", "net-right", Jn("JR2"), [("to", Jn("JR1"))])
-f.route("r-r-g10", "net-right", Jn("JR1"), [("bend", 580, 320),
-                                            ("to", T("M10", "G"))])
-f.route("r-r-g12", "net-right", Jn("JR1"), [("bend", 580, 320),
-                                            ("to", T("M12", "G"))])
+f.route("r-r-gr", "net-right", Jn("JR1"), [("to", Jn("JRG"))])
+f.route("r-r-g10", "net-right", Jn("JRG"), [("to", T("M10", "G"))])
+f.route("r-r-g12", "net-right", Jn("JRG"), [("to", T("M12", "G"))])
 f.route("r-r-x", "net-right", Jn("JR1"), [("to", Jn("JX2"))])
 
 # the two drain stubs, and the X itself
@@ -258,7 +257,7 @@ f.build(long_haul={
             "r-tail-7", "r-tail-11", "r-tail-b",     # the tail bus
             "r-b3-13",                               # second stage to M13
             "r-l-bus", "r-r-bus", "r-l-x", "r-r-x",  # the comparator buses
-            "r-r-g10", "r-r-g12", "r-l-g8", "r-l-g9",  # and their gate risers
+            "r-r-gr", "r-l-gr",                      # and their gate risers
             "r-r-14",
             "r-gnd-M6", "r-gnd-M14", "r-gnd-M16", "r-gnd-M18",
             "r-JO1-t", "r-JO2-t",
@@ -267,4 +266,8 @@ f.build(long_haul={
         # JX1..JX4 are the ends the construction lines pick up: one route each,
         # the same exemption the rail end caps get.
         rail_ends={"jvdd-start", "jvdd-end", "JX1", "JX2", "JX3", "JX4"},
-        viewbox=(60, 85, 970, 300))
+        viewbox=(60, 85, 970, 300),
+        # plain text on purpose (values / block titles): the
+        # editor's generator italicises everything, we follow the
+        # textbook page instead -- SOP 4
+        expect_differ={"v-cl"})

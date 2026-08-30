@@ -144,6 +144,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "terminal-vin"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "in"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -168,6 +204,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "terminal-vout"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "out"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -1247,7 +1319,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-7-94",
   "name": "Razavi Fig. 7.94 — source follower with AC-coupled 50 ohm load",
-  "schemaVersion": 30,
+  "schemaVersion": 31,
   "source": {
     "dialect": "none",
     "entry": null,

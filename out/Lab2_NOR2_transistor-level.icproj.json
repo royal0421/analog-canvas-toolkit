@@ -120,6 +120,26 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "t-a1"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "A"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -144,6 +164,26 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "t-a2"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "A"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -168,6 +208,26 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "t-b1"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "B"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -192,6 +252,26 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "t-b2"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "B"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -216,6 +296,26 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "t-out"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Out"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -639,6 +739,15 @@
             "y": 250
           },
           "role": "branch"
+        },
+        {
+          "id": "JMN2",
+          "netId": "net-out",
+          "position": {
+            "x": 310,
+            "y": 250
+          },
+          "role": "branch"
         }
       ],
       "layoutGroups": [],
@@ -989,16 +1098,25 @@
               "id": "route-leg-0e8cdec6c88e492f",
               "mode": "manual",
               "to": {
-                "kind": "bend",
-                "bendId": "route-bend-0e8cdec6c88e492f",
-                "position": {
-                  "x": 310,
-                  "y": 250
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JMN2"
                 }
               }
-            },
+            }
+          ]
+        },
+        {
+          "id": "r-o4",
+          "netId": "net-out",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JMN2"
+          },
+          "legs": [
             {
-              "id": "route-leg-af23a455ac162a24",
+              "id": "route-leg-15a104b8932ba947",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
@@ -1012,15 +1130,15 @@
           ]
         },
         {
-          "id": "r-o4",
+          "id": "r-o5",
           "netId": "net-out",
           "start": {
             "kind": "junction",
-            "junctionId": "JO"
+            "junctionId": "JMN2"
           },
           "legs": [
             {
-              "id": "route-leg-15a104b8932ba947",
+              "id": "route-leg-aaecfe6149a9ef7e",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
@@ -1110,7 +1228,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-lab2-nor2",
   "name": "Lab 2 NOR2 (transistor level)",
-  "schemaVersion": 30,
+  "schemaVersion": 31,
   "source": {
     "dialect": "none",
     "entry": null,

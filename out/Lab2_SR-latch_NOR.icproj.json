@@ -24,6 +24,26 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "t-r"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "R"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -48,6 +68,26 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "t-s"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "S"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -72,6 +112,26 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "t-q"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Q"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -96,6 +156,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "t-qb"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Q"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "bar"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         }
       ],
@@ -746,7 +842,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-lab2-srlatch",
   "name": "Lab 2 SR latch (cross-coupled NOR)",
-  "schemaVersion": 30,
+  "schemaVersion": 31,
   "source": {
     "dialect": "none",
     "entry": null,

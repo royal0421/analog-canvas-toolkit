@@ -25,7 +25,10 @@ RAIL = [190, 250, 310]
 J = [("jvdd-%d" % i, "net-power-vdd", x, 120) for i, x in enumerate(RAIL)]
 J[0] = ("jvdd-start", "net-power-vdd", RAIL[0], 120)
 J[-1] = ("jvdd-end", "net-power-vdd", RAIL[-1], 120)
-for jid, net, x, y in J + [("JO", "net-out", 250, 250)]:
+# same as NAND2: M_N2 tees into the output run, so it needs its own
+# junction or the dot is missing (SOP 3H).
+for jid, net, x, y in J + [("JO", "net-out", 250, 250),
+                           ("JMN2", "net-out", 310, 250)]:
     f.junction(jid, net, x, y)
 
 f.net("net-power-vdd", [("MP1", "S"), ("MP1", "B"), ("MP2", "B")])
@@ -42,8 +45,9 @@ f.route("r-v1", "net-power-vdd", Jn(f._jat(250, 120)), [("to", T("MP1", "S"))])
 f.route("r-mid", "net-mid", T("MP1", "D"), [("to", T("MP2", "S"))])
 f.route("r-o1", "net-out", T("MP2", "D"), [("to", Jn("JO"))])
 f.route("r-o2", "net-out", Jn("JO"), [("bend", 190, 250), ("to", T("MN1", "D"))])
-f.route("r-o3", "net-out", Jn("JO"), [("bend", 310, 250), ("to", T("MN2", "D"))])
-f.route("r-o4", "net-out", Jn("JO"), [("to", T("OUT", "P"))])
+f.route("r-o3", "net-out", Jn("JO"), [("to", Jn("JMN2"))])
+f.route("r-o4", "net-out", Jn("JMN2"), [("to", T("MN2", "D"))])
+f.route("r-o5", "net-out", Jn("JMN2"), [("to", T("OUT", "P"))])
 f.route("r-g1", "net-gnd-1", T("MN1", "S"), [("bend", 190, 340),
                                              ("to", T("GND", "0"))])
 f.route("r-g2", "net-gnd-1", T("MN2", "S"), [("bend", 310, 340),
@@ -66,4 +70,8 @@ f.power_label("label-vdd", "net-power-vdd", "jvdd-end", 12, 6, "V_DD")
 
 f.build(long_haul={"r-vdd-rail-0", "r-vdd-rail-1", "r-o2", "r-o3", "r-o4",
                    "r-g1", "r-g2"},
-        rail_ends={"jvdd-start", "jvdd-end"}, viewbox=(110, 105, 290, 275))
+        rail_ends={"jvdd-start", "jvdd-end"}, viewbox=(110, 105, 290, 275),
+        # the editor's builder subscripts a trailing capital run
+        # (IN -> I_N, CK -> C_K, Out -> O_ut); our formatOverride
+        # keeps them plain, so they DIFFER on purpose -- SOP 4
+        expect_differ={"instance-label-OUT"})

@@ -114,4 +114,8 @@ f.build(long_haul={
                               # the rail height, so the drain riser follows
         },
         rail_ends={"jvdd-start", "jvdd-end"},
-        viewbox=(165, 80, 365, 250))
+        viewbox=(165, 80, 365, 250),
+        # plain text on purpose (values / block titles): the
+        # editor's generator italicises everything, we follow the
+        # textbook page instead -- SOP 4
+        expect_differ={"label-vdd", "note-rl-value"})

@@ -98,4 +98,8 @@ f.build(long_haul={
         },
         extra_evidence=[],
         density_ref=("Q1", 35.6),
-        viewbox=(180, 90, 400, 250))
+        viewbox=(180, 90, 400, 250),
+        # plain text on purpose (values / block titles): the
+        # editor's generator italicises everything, we follow the
+        # textbook page instead -- SOP 4
+        expect_differ={"note-vcc", "note-rc", "note-re"})

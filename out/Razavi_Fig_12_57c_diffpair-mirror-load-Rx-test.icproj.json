@@ -264,6 +264,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "terminal-vin"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "in"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -2062,7 +2098,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-12-57c",
   "name": "Razavi Fig. 12.57(c) — differential pair with PMOS mirror load and V_X test",
-  "schemaVersion": 30,
+  "schemaVersion": 31,
   "source": {
     "dialect": "none",
     "entry": null,

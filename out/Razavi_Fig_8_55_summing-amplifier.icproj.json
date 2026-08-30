@@ -144,6 +144,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "terminal-v1"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -168,6 +204,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "terminal-v2"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "2"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -192,6 +264,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "terminal-vout"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "out"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         }
       ],
@@ -1108,7 +1216,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-8-55",
   "name": "Razavi Fig. 8.55 — summing amplifier",
-  "schemaVersion": 30,
+  "schemaVersion": 31,
   "source": {
     "dialect": "none",
     "entry": null,

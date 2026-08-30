@@ -29,6 +29,8 @@ gate bar 19.2 tall x 2.9 wide, gate bar centre -10.35, channel bar centre
 -5.12, D/S column +10, gate pin -20 (all for an unmirrored device; mirror "x"
 negates x).
 """
+FULL = False       # set from argv in __main__; see the note there
+
 import sys, os
 import numpy as np
 from PIL import Image
@@ -379,18 +381,25 @@ def main(path, ref=None):
                             for o in lines)]
         print("\n%s wires (>=%d px).  Two records on the same coordinate = a "
               "GAP = not connected." % (label, minlen))
-        prev = None
+        prev, hidden = None, 0
         for r in sorted(lines, key=lambda r: (round(r["mid"]), r["a0"])):
             tag = ""
             if (prev is not None and abs(prev["mid"] - r["mid"]) < 3
                     and r["a0"] > prev["a1"]):
                 tag = "   <-- GAP %d px after the previous run" % (
                     r["a0"] - prev["a1"])
+            prev = r
+            if not (FULL or tag):
+                hidden += 1
+                continue
             print("  %s=%-6.1f  %s %d..%d  len=%-5d thick=%d%s"
                   % ("y" if axis == 0 else "x", r["mid"],
                      "x" if axis == 0 else "y", r["a0"], r["a1"],
                      r["a1"] - r["a0"] + 1, r["thick"], tag))
-            prev = r
+        if hidden:
+            print("  (%d more runs, none with a GAP -- `--full` lists them;"
+                  " you need that to check a wire one by one, SOP 3E)"
+                  % hidden)
 
     # ---- solid blobs --------------------------------------------------------
     # The detector kernel has to track the figure's resolution, or a
@@ -404,10 +413,17 @@ def main(path, ref=None):
     lo, hi = 0.55 * k * k, 1.15 * k * k
     print("\nSolid blobs, %dx%d kernel (median wire %d px).  junction dot ~ "
           "%d-%d px:" % (k, k, wire, round(lo), round(hi)))
+    other = 0
     for cx, cy, n in solid_blobs(b, k):
         kind = ("junction dot" if lo <= n <= hi else
                 "arrow head / glyph" if n > hi else "small mark")
+        if not (FULL or kind == "junction dot"):
+            other += 1
+            continue
         print("  (%4.0f, %4.0f)  n=%-3d  %s" % (cx, cy, n, kind))
+    if other:
+        print("  (%d arrow heads / small marks hidden -- `--full` lists them)"
+              % other)
     density_report(b, scale)
 
     print("\nReminder: a wire crossing with NO dot is a crossing, not a node.")
@@ -417,6 +433,11 @@ def main(path, ref=None):
 
 
 if __name__ == "__main__":
+    # Brief by default.  The wire table used to run to hundreds of lines and
+    # the SOP's answer was "do not read it" -- better to not print it.  The
+    # GAP records and the junction dots ARE the answer; everything else is
+    # one `--full` away (needed when checking a wire one by one, SOP 3E).
+    globals()["FULL"] = "--full" in sys.argv
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     ref = next((a.split("=", 1)[1] for a in sys.argv[1:]
                 if a.startswith("--ref=")), None)

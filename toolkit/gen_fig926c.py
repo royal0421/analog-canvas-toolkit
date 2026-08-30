@@ -97,4 +97,8 @@ f.build(long_haul={"r-tie",                    # 60: collector node to the bus
                    "r-b-q2", "r-b-q3",         # 100: the mirror base bus
                    "r-c-b1", "r-c-b2"},        # 100: the shared collector bus
         density_ref=("Q1", 40.2),
-        viewbox=(110, 85, 425, 190))
+        viewbox=(110, 85, 425, 190),
+        # plain text on purpose (values / block titles): the
+        # editor's generator italicises everything, we follow the
+        # textbook page instead -- SOP 4
+        expect_differ={"note-icopy"})

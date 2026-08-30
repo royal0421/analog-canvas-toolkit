@@ -480,6 +480,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "terminal-inn"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "IN-"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -504,6 +540,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "terminal-inp"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "IN+"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -528,6 +600,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "terminal-vout"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "OUT"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -2107,8 +2215,26 @@
           "id": "JTAIL",
           "netId": "net-tail",
           "position": {
-            "x": 480,
+            "x": 490,
             "y": 210
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JLG",
+          "netId": "net-left",
+          "position": {
+            "x": 410,
+            "y": 320
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JRG",
+          "netId": "net-right",
+          "position": {
+            "x": 580,
+            "y": 320
           },
           "role": "branch"
         },
@@ -3407,18 +3533,6 @@
               "id": "route-leg-59344117ddbec7b8",
               "mode": "manual",
               "to": {
-                "kind": "bend",
-                "bendId": "route-bend-59344117ddbec7b8",
-                "position": {
-                  "x": 490,
-                  "y": 210
-                }
-              }
-            },
-            {
-              "id": "route-leg-442efcc2e9b56458",
-              "mode": "manual",
-              "to": {
                 "kind": "endpoint",
                 "endpoint": {
                   "kind": "junction",
@@ -3682,7 +3796,7 @@
           ]
         },
         {
-          "id": "r-l-g8",
+          "id": "r-l-gr",
           "netId": "net-left",
           "start": {
             "kind": "junction",
@@ -3690,19 +3804,28 @@
           },
           "legs": [
             {
-              "id": "route-leg-4f160383c90642f2",
+              "id": "route-leg-3c3f45629058bf24",
               "mode": "manual",
               "to": {
-                "kind": "bend",
-                "bendId": "route-bend-4f160383c90642f2",
-                "position": {
-                  "x": 410,
-                  "y": 320
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JLG"
                 }
               }
-            },
+            }
+          ]
+        },
+        {
+          "id": "r-l-g8",
+          "netId": "net-left",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JLG"
+          },
+          "legs": [
             {
-              "id": "route-leg-e5d963ef8852a1bb",
+              "id": "route-leg-4f160383c90642f2",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
@@ -3720,23 +3843,11 @@
           "netId": "net-left",
           "start": {
             "kind": "junction",
-            "junctionId": "JL2"
+            "junctionId": "JLG"
           },
           "legs": [
             {
               "id": "route-leg-a897b4d9d2acd696",
-              "mode": "manual",
-              "to": {
-                "kind": "bend",
-                "bendId": "route-bend-a897b4d9d2acd696",
-                "position": {
-                  "x": 410,
-                  "y": 320
-                }
-              }
-            },
-            {
-              "id": "route-leg-74df55fc0d1c410b",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
@@ -3858,7 +3969,7 @@
           ]
         },
         {
-          "id": "r-r-g10",
+          "id": "r-r-gr",
           "netId": "net-right",
           "start": {
             "kind": "junction",
@@ -3866,19 +3977,28 @@
           },
           "legs": [
             {
-              "id": "route-leg-6196a0eaa2226970",
+              "id": "route-leg-12b37b2c494be7ce",
               "mode": "manual",
               "to": {
-                "kind": "bend",
-                "bendId": "route-bend-6196a0eaa2226970",
-                "position": {
-                  "x": 580,
-                  "y": 320
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JRG"
                 }
               }
-            },
+            }
+          ]
+        },
+        {
+          "id": "r-r-g10",
+          "netId": "net-right",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JRG"
+          },
+          "legs": [
             {
-              "id": "route-leg-0a50460fcd3dc316",
+              "id": "route-leg-6196a0eaa2226970",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
@@ -3896,23 +4016,11 @@
           "netId": "net-right",
           "start": {
             "kind": "junction",
-            "junctionId": "JR1"
+            "junctionId": "JRG"
           },
           "legs": [
             {
               "id": "route-leg-426ff5a9abe6991b",
-              "mode": "manual",
-              "to": {
-                "kind": "bend",
-                "bendId": "route-bend-426ff5a9abe6991b",
-                "position": {
-                  "x": 580,
-                  "y": 320
-                }
-              }
-            },
-            {
-              "id": "route-leg-5be0868fee2e6991",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
@@ -4485,7 +4593,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-comparator-19",
   "name": "Latched comparator with cross-coupled load and inverter output",
-  "schemaVersion": 30,
+  "schemaVersion": 31,
   "source": {
     "dialect": "none",
     "entry": null,

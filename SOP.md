@@ -8,22 +8,28 @@
 
 ## 0. 一句話流程
 
-1. `python scan_figure.py <截圖> [--ref=<px>:<單位>]`
-   → 拓樸、鏡射、GAP、**以及密度基準**（§3C）。
-   **先看它印的 `aspect` 與百分比再排版**，不要排完才回頭壓。
-2. 抄 `gen_fig1035.py`，只改 placement / junctions / nets / routes / annotations **五段**
-   （其餘全部 `from icproj import Schematic`，不要再複製骨架）
-3. `python gen_xxx.py` → 一次跑完自檢＋走線 audit＋**標籤 audit**＋密度
-4. `node validate.mjs` → `node check_labels.mjs`
-5. 渲染 PNG 看**一次**（不是每輪）→ 交付
+1. `python scan_figure.py <截圖>` — 有原圖才跑。拓樸、鏡射、GAP、密度基準（§3C）。
+2. 抄 `gen_fig848.py`，只改 placement / junctions / nets / routes / annotations **五段**（約 140 行）。
+3. `python gen_xxx.py` — **這一步就是全部**：六道稽核＋schema 驗證＋標籤比對＋渲染 PNG。
+   全部 0 就去看那張 PNG，對了就交付。
+
+```
+audits: legs 0 | labels 0 | on-wire 0 | tees 0   (all must be 0)
+  schema: VALID (v31)
+  labels: OK (3 declared plain)
+  png: preview_xxx.png (1770x895)
+```
 
 **目標：一張圖 5~10 分鐘。** 省時間與省 token 的四條硬規則：
-- **不要把 `scan_figure.py` 的完整輸出讀進對話**：只看 MOS 表與帶 `GAP` 的那幾行。
-- **不要每改一次就渲染 PNG**：壓線與標籤歧義由第 3 步的標籤 audit 自動抓，PNG 只是最後確認。
+- **不要分開跑 `validate.mjs` / `check_labels.mjs` / Chrome**：`build()` 已經全包了。
+  每一次工具呼叫都要重送整段對話，四次變一次是這裡最大的省法。
+  （只想快速跑產物：`AC_FAST=1`；想看完整走線表：`AC_VERBOSE=1`。）
+- **`scan_figure.py` 預設已經是精簡輸出**（只印 MOS 表、帶 `GAP` 的走線、junction 圓點、
+  密度）。要逐條核對走線時才加 `--full`——那是上百行，別隨手加。
 - **不要重讀本檔全文**：照本節走，需要哪節再翻哪節。
-- **不要複製產生器骨架**：新圖只寫五段資料，約 140 行。
+- **不要複製產生器骨架**：`from icproj import Schematic`，新圖只寫五段資料。
 
-**絕不跳過第 5 節的驗證。** 每一道都抓到過我自己看不出來的錯。
+**絕不跳過稽核。** 每一道都抓到過我自己看不出來的錯。
 **也不要用眼睛判讀原圖的鏡射與連接**——那是 §3C 那支腳本的工作。
 
 ---
@@ -37,7 +43,7 @@ Analog Canvas 是活的專案、上游會持續新增符號，所以把 `sym/` �
 **要用的符號不在裡面 → 跑 `python fetch_symbols.py`（約 4 秒），不要一個一個手動找** |
 | 渲染／腳位變換的實作 | 同 repo 的 `apps/editor/src/canvas/canvas-geometry.ts`、`packages/derived/src/*.ts`；
 幾何 ground truth 在 `fixtures/visual-reference/razavi-reference-v1/*.json`（**先查 fixture，不要逐檔翻原始碼**） |
-| 專案檔 schema（v29） | `toolkit/model.mjs`（＝網站 bundle 的 `dist-BxeW5Key.js`，含 zod schema） |
+| 專案檔 schema（**v31**，2026-08-30 實測） | `toolkit/model.mjs`。**網站會改版，chunk 檔名每次都不一樣**：不要手動找，跑 `python refresh_model.py`（它會走完 bundle、用「執行看看」挑出 model chunk，並告訴你新的 schemaVersion）。版本一落後，匯入就可能整張進不去。 |
 | 標籤 RichText 產生器 | 同上，匯出名 `Ws`（`m.f`） |
 | 樣式設定檔 | bundle `dist-DMiczVQI.js` 內 `razavi-textbook-v1` 的 typography |
 | 別人怎麼畫的 | `GET /api/gallery` 列表 →`GET /api/gallery/{id}` 回傳完整 `projectText` |
@@ -118,11 +124,31 @@ python toolkit/fetch_symbols.py --force   # 上游改過符號時整批重抓
 
 換算：**48 資產 − 1（隱藏的 pulse-voltage-source）− 4（`*-inputs-swapped` 不進調色盤）
 ＋ 3（`vdd`／`ndmos`／`pdmos` 寫在程式碼裡）＋ 7（標註工具）= 53**。
+⚠️ 這三個「寫在程式碼裡」的**都不能放進專案檔**，見下一小節。
 
 本地 `sym/` 現有 **49** 個檔＝48 個資產 ＋ 從 bundle 抽出的 `vdd`。
 **`ndmos`／`pdmos` 抽不出來**：整包部署程式與 repo 原始碼裡都只有字串引用
 （預設變體表、排序表），沒有任何幾何定義——它們要靠 PDK 提供。真的需要時
 再回頭查，不要以為是漏抓。
+
+### 🚫 `vdd` 不可以用——**用 `vdd-port`**（2026-08-30 事故）
+
+`sym/vdd.json` 存在**不代表可以放**。網站的符號 **catalog**（帶 `assetPath` 的那份清單）
+裡沒有 `vdd` 這一筆，只有 `vdd-port`；`vdd` 的幾何躺在一個延後載入的 chunk
+（`component-parameters-*.js`）裡，是遺留物。
+
+後果：用了 `vdd` 的專案**通得過 zod schema、`validate.mjs` 全綠，但匯入網站就是進不去**
+（畫布空白，沒有錯誤訊息）。`Diff-amp_shunt-peak_RC-degen` 為此卡了兩輪。
+兩者的 `P` 腳都在 (0,+20)，直接替換即可。
+
+`icproj.Schematic.UNPLACEABLE` 已把 `vdd`／`ndmos`／`pdmos` 列黑名單，
+`f.place()` 用到就直接丟例外。
+
+**通則：懷疑某個 symbolId 能不能用，去查 catalog，不是查 `sym/` 有沒有檔案。**
+
+```bash
+grep -c 'symbolId:`<要查的 id>`,' <bundle chunk>    # 0 = 不能用
+```
 
 `drafting.objects` 的合法 `kind` 是 **`arrow` / `text` / `rectangle` / `circle`**
 （model.mjs 的 zod enum）；`icproj.py` 目前包了前兩種。
@@ -189,6 +215,16 @@ Fig 9.34 實例：v_in 可見 47.7、v_out 可見 44.6。
 實測邊緣間距：Fig 9.34（BJT）50、70；Fig 10.35（MOS）39、20。
 夾一個 bus junction 時，junction 距離兩側器件邊緣各 ≥ 20。
 
+**⚠️ 對稱架構：中線上的東西一定要在正中央（使用者 2026-08-30 提醒）**
+
+差動對、對稱負載、兩側鏡射的任何結構——**跨在中間的元件（退化網路、尾電流、
+中央的 V_DD 埠、`V_out` 標籤）必須落在兩側欄的正中點**。
+**若網格讓中點落不到 10 的倍數上，去調整兩端的欄位，不要把中間的東西挪開。**
+例：左欄 320、右欄 460 → 中點 390 ✓。若左欄 320、右欄 450 → 中點 385 不在格線，
+就把右欄改成 460，而不是把中間元件放 380 或 390。
+
+同一張圖裡**所有**在中線上的物件共用同一個中心 x，包括 drafting text。
+
 **⚠️ 匯流排列不可以跟腳位同一列。** junction 與 terminal 若落在同一座標，
 就只能寫出零長度 route，第 5 節的自檢會直接擋下。正解：**匯流排列放在腳位列
 上方（或下方）10 單位**，每個器件用一條 10 單位的 riser 接上去。原圖本來就是
@@ -240,7 +276,7 @@ Fig 9.34 實例：v_in 可見 47.7、v_out 可見 44.6。
 規則：
 - **埠引線 `STUB_PORT_COMFORT = 20`**。10 是格線下限，會讓「標籤＋圈圈」整團貼著電路
   ——Fig 8.57 的「擠」就是這個，使用者自己把埠往左移 10 修好的。
-- **任兩個不相干墨跡的淨空 `CROWD_MIN = 8`**。低於就會被列出來。
+- **任兩個不相干墨跡的淨空 `CROWD_MIN = 6`**（程式裡的實值）。低於就會被列出來。
 - 稽核會自動排除兩種**不算擠**的情況：①**同一個 net 的元件**（它們本來就該靠在一起，
   甚至腳位重合）②**標籤與它自己的元件**（那個間隙由 `LABEL_INK_GAP` 決定）。
   值標籤（`500 Ω` 這種 drafting text）要用 `f.text(..., owner="R500")` 宣告歸屬，
@@ -263,10 +299,9 @@ Fig 9.34 實例：v_in 可見 47.7、v_out 可見 44.6。
    我誤判成旁邊的射極節點）。判對之後，標籤擺在該節點附近的斜上方。
    **稽核只檢查「不重疊」，判斷指哪個節點要自己想。**
 
-0b. **有標名字的節點就要有黑圓點。** 圓點來自 junction，而 junction 要有
-   **三個不同方向**的線才會被畫成節點。若兩條線走同一欄（例如電容下引線與
-   回授匯流排上引線都在 x=740），編輯器只看到一個轉角、不畫點——
-   把其中一條移到節點的另一側（Fig 14.36(b) 的 R_3 改走 x=690 才讓 Y 有點）。
+0b. **有標名字的節點就要有黑圓點**，圓點來自三個方向都碰得到的 junction。
+   稽核 `tees` 會抓（§3H 規則 4）；它報 0 但畫面仍缺點，就是兩條線走同一欄
+   （Fig 14.36(b) 的 R_3 改走 x=690 才讓 Y 有點）。
 
 
 1. **文字絕不壓線。** 節點名（`P`、`Q` 這種）夾在兩條橫線之間時，
@@ -284,7 +319,7 @@ Fig 9.34 實例：v_in 可見 47.7、v_out 可見 44.6。
 | 指標 | 目標 |
 |---|---|
 | 任何一段直線走線 | **≤ 40 單位**，除非是宣告的長程（電源軌、全域回授匯流排、參考電流下拉、鏡射匯流排） |
-| **器件本體 ÷ 圖高** | **量原圖，照抄它的比例**（見下） |
+| **器件本體 ÷ 圖高** | MOS 圖 10% 上下；原圖更鬆就無視原圖，列數多（6~9 列）就達不到，別硬追（§3G） |
 | 整圖長寬比 | 跟著拓樸走，不強求 |
 
 **⚠️ 密度＝跟原圖比，不是套一個固定百分比（2026-08-29 使用者裁示）**
@@ -343,35 +378,10 @@ f.build(..., density_ref=("OA1", 34.5))   # 34.5% 是從課本頁面量到的
 
 ## 3B. 有原圖時的比例尺換算（輔助手段）
 
-畫布符號的引線比課本長、本體比課本小，**單一比例尺無法同時對上兩軸**，要分軸：
-
-```
-K_V = 圖高(單位) / 書上圖高(px)      Fig.9.83：250 / 582 = 0.430
-K_H = 圖寬(單位) / 書上圖寬(px)      Fig.9.83：320 / 598 = 0.535
-```
-
-實務作法：
-1. 用 PIL 掃描原圖，抓**最長連續黑像素**的行／列 → 得到所有導線座標；再用 9×9 全黑區塊偵測 → 得到所有 junction 圓點。
-2. 節點座標乘 K，四捨五入到 10。
-3. **MOS 佔比自檢**：`通道 bar 25 單位 ÷ 圖高` 應該 ≈ 課本的 `bar px ÷ 圖高 px`（Razavi ≈ 11%）。低於 9% 就是太鬆，壓縮列距。
-
-**已校準的最小間距（Fig.9.83 實測可用）**
-
-| 情境 | 單位 |
-|---|---|
-| 源極 → 接地符號 | **10**（接地符號自帶 10 的引線，視覺共 20） |
-| 電源軌 → 元件引線 | 20 |
-| 節點 → 埠（Vin／Vout／Vb） | **20**（埠符號自己還會畫約 15 的引線） |
-| 節點間有一個 junction | 20 + 20 |
-| 節點間無 junction | 20~30 |
-| 電源軌兩端外伸 | 20（一格，最小值） |
-| MOS／I_REF 標籤離元件中心 | **±18** |
-| 埠標籤離圈圈 | 15~16（圈圈邊緣在中心 ∓9.5） |
-
-> **標籤為什麼是 ±18 而不是 ±26**：viewBox 是 48×48，但 `textbook-3terminal`
-> 隱藏了 bulk lead，**實際畫出來的 MOS 只佔 x = −20 ~ +10.6**。
-> 用 viewBox 半寬 24 去推會多留 8 單位空隙，看起來標籤離元件太遠。
-> 一律用「實際 primitive 的極值」算間距，不要用 viewBox。
+`scan_figure.py` 已經直接給你 `scale` px/unit（§3C），**不需要自己算比例尺**。
+留這一節只為記住一件事：畫布符號的引線比課本長、本體比課本小，
+**單一比例尺無法同時對上兩軸**（Fig 9.83：K_V = 0.430、K_H = 0.535）。
+所以**截圖只決定拓樸與器件左右擺法，間距一律照 §3A 的絕對值**，不要照原圖比例縮放。
 
 ## 3C. 從截圖抽拓樸：**一個指令，不要用眼睛判讀**
 
@@ -381,6 +391,10 @@ python toolkit/scan_figure.py "path/to/screenshot.png"
 
 這支取代舊 §8-2 的「放大 5–6 倍逐顆看」。它印的每一項都是量出來的，
 不會像目視那樣看錯。**畫圖前先跑它，再開始排座標。**
+
+**預設精簡**：走線表只印帶 `GAP` 的那幾筆、圓點只印判定為 junction 的，
+其餘各印一行計數。`--full` 印全部——**只有在「目視判讀的每一條線都要能在線段表裡
+找到對應」（§3E）時才需要**。
 
 | 它印什麼 | 怎麼用 |
 |---|---|
@@ -486,6 +500,82 @@ scale: 2.680 px/unit  (body 67 px = channel bar 25 units)
   每個埠各需要一個 cell terminal，名字可以同名。
 - 串接的兩顆（NAND 的 M_N1/M_N2、NOR 的 M_P1/M_P2）**腳位間距 10~20 就夠**。
 - 輸出埠貼著輸出節點放（離節點 100 以內），不要拉到圖的最右邊。
+
+## 3G. 電感／可變元件／方塊圖／剖面圖（2026-08-30，四張論文圖定案）
+
+**新增的繪圖能力**
+
+- `f.rect(id, cx, cy, w, h, style="solid"|"dashed")` — drafting 矩形。
+  用途：方塊圖的 FF／Latch／VCO 這種**沒有符號的功能方塊**，以及 ESD 論文
+  常畫在電路旁邊的 P+/N-WELL/P-WELL/N+ 剖面圖。預覽器會照 wire 粗細畫出來。
+- **方塊沒有腳位**，所以每一條接到方塊的線都要**在方塊邊緣放一個 junction 收尾**，
+  那些 junction 只被一條 route 碰到 → 一律列進 `rail_ends` 豁免。
+- 三角形要**兩個輸入**（V/I 轉換器那種）用 `comparator-unmarked`：
+  `voltage-amplifier` 只有一支 IN。
+
+### ⚠️ 四個會讓圖畫錯又不報錯的坑
+
+1. **旋轉 90 度的被動元件：腳位 `1` 在右、`2` 在左**（§2 早就寫了，我還是接反）。
+   **症狀很好認**：走線從左邊的節點直接畫到右邊那支腳，**整條線穿過線圈或極板**。
+   自檢抓不到（電氣上是對的）。左邊的節點接 `2`、右邊接 `1`。
+2. **symbolId 不等於 deviceClass**。`variable-resistor`／`variable-capacitor` 是
+   符號名，網表的 `deviceClass` 只吃 `resistor`／`capacitor`——用 `f.passive()`
+   會把符號名塞進 deviceClass，被 schema 擋下。這兩個要用 `f.place()` 自己寫 binding。
+3. **橫放的接地符號**：`rotation=90` → 腳位在右、本體朝左；`rotation=270` → 腳位在左、
+   本體朝右。**本體一律朝離開電路的方向**，接錯會讓接地符號壓在元件上。
+4. **沒有電源網的圖要傳 `extra_evidence=[]`**（純邏輯圖、閘級圖）。
+   預設的 connectivityEvidence 會引用 `net-power-vdd`，那個 net 不存在時 schema 直接退件。
+
+### ⚠️ 密度不是尺度無關的指標
+
+`MOS bar 25 ÷ 圖高` 隨電路的**列數**變化：列數越多、圖越高、百分比越低。
+本輪四張在**間距已經壓到最小**的情況下仍只有 9.0%／8.4%／8.4%／6.1%——
+因為它們有 6~9 層堆疊（軌→電感→電阻→汲極→MOS→源極→退化網路→電流源→地）。
+
+**所以 10% 那條門檻只適用於 3~5 列的圖。**真正尺度無關的規則是 §3A 的間距常數：
+端點→節點 10~20、串接兩顆 10~20、器件列間距 60~80、軌距 20、接地列 +10~20。
+**先照常數排，再看密度；密度偏低但常數都到位 = 這張圖本來就高，不要再壓。**
+
+## 3H. 方塊圖（block diagram）的七條規則
+
+> 2026-08-30 定案。來源：使用者親手改過 `CDR_architecture` 之後的匯出檔
+> （他的版本＝規格，我照抄座標再把編輯時斷掉的 net 補回）。
+> 方塊圖跟電晶體級圖用的是**同一套**排版常數與稽核，分岔只在下面這幾條。
+
+1. **方塊一律 100×50**，`f.rect(id, cx, cy, 100, 50)`；標題 `f.text(id, cx, cy + 5,
+   "middle", ...)`。上下兩排的中心距 **80**（邊緣間距 30）。
+2. **每一條碰到方塊的線都要終止在「方塊邊緣上的 junction」**。方塊沒有腳位，
+   邊緣座標要自己算：`cx ± 50`。FF1 在 cx=170 ⇒ 入口 120、出口 220。
+   這些 junction 只被一條 route 碰到 → 全部列進 `rail_ends`。
+3. **兩個方塊之間要分支時，分支點放在空隙的正中央。**
+   FF1 出口 220、FF2 入口 280 ⇒ 往 XOR 的抽頭放 **250**（使用者原話：
+   「有的分支我希望在中間」）。
+4. **三叉一定要有圓點**（使用者 2026-08-30 裁示，**電源軌除外**）。圓點由 junction 物件產生，
+   「一條 route 的轉角 ＋ 另一條 route 從旁邊經過」在編輯器眼裡是兩個獨立幾何，
+   **不會畫點**。→ `icproj` 已加自動稽核 `three-way nodes missing a junction`，
+   **必須是 0**。**推論：同一條 net 的兩段線不可以重疊共線**——重疊本身就會製造
+   一個沒有圓點的三叉（本輪在 NAND2／NOR2／19T 比較器／Fig 14.36(b) 各抓到一處）。
+   **電源軌上的分支點不算**（軌上每個抽頭都是三叉，但課本與網站的正式渲染都不畫點，
+   見 §8 第 8 條）——稽核已自動排除 `presentation:"power-rail"` 的線。
+5. **一條 net 佔一個 x 欄；別條 net 要平行走就往外讓 20。**
+   CDR 的 net-d 佔了 x=420，net-b 就繞到 x=440，而不是硬擠同一欄。
+6. **回授線進入虛線方塊時，用 `f.arrow()` 疊在線上標方向**（箭頭長 35~45，
+   壓在最後那一段上）。讀者才知道訊號往哪走。
+7. **虛線子系統框**（`style="dashed"`）要**整個包住**屬於它的方塊與閘；
+   標題文字放框內左上角：左緣 +30、上緣 +30。
+   ⚠️ 預覽器 2026-08-30 才學會畫虛線，之前一律畫成實線。
+
+**不適用的東西**：方塊圖沒有 MOS，`MOS bar 25 / height` 那個密度指標無意義
+（CDR 是 7.6%），不要為了它去壓版面。
+
+## 3I. 電源符號（VDD marker）不要硬連（2026-08-30 使用者裁示）
+
+一張圖上出現**多個 VDD／接地符號**時：**它們同屬一個 net，但畫面上各自獨立，
+不要為了「看起來有連上」去補一條線**。符號本身就是連接的宣告。
+（ESD／LNA 那張有四個 VDD marker、四個接地，全部不互連。）
+
+**另一句同時定案的**：**有整齊的參考圖時，形狀照它排就好**——不必為了湊長寬比
+或密度去改變它的骨架。判斷順序是：拓樸與形狀跟原圖，間距跟 §3A。
 
 ## 4. 樣式與文字
 
@@ -599,36 +689,33 @@ dy_below(ink_half, gap=1.5)   # 盒頂離墨跡 gap；盒頂 = baseline − 12.3
 
 `alignment` 的合法值是 **`start` / `middle` / `end`**（schema enum，`middle` 可用）。
 
-## 5. 三道驗證（每次交付前全跑）
+## 5. 驗證：一個指令（2026-08-30 起）
 
 ```bash
 python scan_figure.py <截圖.png>   # ⓪ 有原圖才跑：抽拓樸與鏡射，見 §3C
-python gen_xxx.py            # ① 自檢＋走線 audit＋標籤 audit＋密度，全在 icproj.py 裡
-node validate.mjs <proj>     # ② 用網站自己的 zod schema 驗（不是我自寫的）
-node check_labels.mjs <proj> # ③ 標籤與編輯器產生器逐位元比對
+python gen_xxx.py                  # ① 以下全部一次做完
 ```
 
-第 ① 步（`icproj.Schematic.build`）現在會自動報這五類問題，**全部要是 0 才往下走**：
+`gen_xxx.py` 呼叫的 `f.build()` 依序做六道稽核 → 寫檔 → 用**網站自己的 zod schema**
+驗證 → 用**編輯器自己的產生器**逐位元比對標籤 → 渲染 PNG。**六個計數全部要 0：**
 
 | 訊息 | 意思 |
 |---|---|
-| `self-check errors` | 非正交、零長度、腳位不存在、terminal 沒接線、junction 只被碰 1 次、**junction 壓在 terminal 上** |
-| `<-- LONG` | 該段超過 40 單位且不在 `long_haul` 白名單 |
-| `! LABEL OVERLAPS WIRE` | 文字框壓到走線（§3A 規則 1） |
-| `! LABEL AMBIGUOUS` | 標籤離鄰居太近，讀者分不出屬於誰（§3A 規則 2） |
-| `components sitting on another net's wire` | 元件坐在別條 net 的走線上＝畫出一個不存在的連接。**必須是 0**（2026-08-29 新增，見 §3E） |
-| `MOS bar 25 / height` | 低於 9% ＝ 排太鬆，壓列距 |
+| `self-check errors` | 非正交、零長度、腳位不存在、terminal 沒接線、junction 只被碰 1 次、junction 壓在 terminal 上 |
+| `legs` | 有一段超過 40 單位且不在 `long_haul` 白名單（明細會印在上面） |
+| `labels` | 文字壓到走線，或標籤離鄰居太近讀者分不出屬於誰（§3A 規則 1、2） |
+| `on-wire` | 兩件事：①元件坐在**別條 net** 的走線上＝畫出一個不存在的連接；②任何一條線**穿過元件本體**（進一邊、出另一邊）——**同一條 net 也算**。②是 2026-08-30 補的：串疊閘極回授線從一顆 CDM 二極體正中間穿過去，四道稽核全放行，因為兩者同屬 `net-vdd` 被當成「自己的接線」豁免了 |
+| `tees` | 三條線在同一點相會卻沒有 junction ⇒ 不畫圓點（§3H 規則 4，電源軌除外） |
+| `schema: VALID` | 對不上就是網站改版了 → 跑 `refresh_model.py`（§1） |
 
-再加第四道：**自畫 SVG → headless Chrome 轉 PNG → 親眼看**，並與原圖並排比對。
+**標籤比對**：故意不照編輯器格式的（數值、方塊標題這類正體字）寫進
+`f.build(expect_differ={"v-c1", ...})`，稽核就會變成
+`labels: OK (N declared plain)`；**沒宣告的差異才會報**。
+不要再人工判讀 `DIFFER` 清單。
 
-```powershell
-Start-Process -FilePath 'C:\Program Files\Google\Chrome\Application\chrome.exe' `
-  -ArgumentList '--headless=new',"--screenshot=<絕對路徑>.png",'--window-size=W,H',
-  '--default-background-color=FFFFFFFF',"file:///<絕對路徑>.svg" -Wait -NoNewWindow
-```
+最後**親眼看那張 PNG**（`preview_xxx.png`，就在 toolkit 夾），有原圖就並排比對。
 
-> ⚠️ `--screenshot` 一定要給**絕對路徑**，相對路徑會 `存取被拒`。
-> ⚠️ 跑 generator 時**不要 `| grep` 濾掉 stderr** —— 曾因此讓預覽腳本的例外被吞掉，比對了兩輪舊圖。
+> ⚠️ 跑 generator **不要 `| grep` 濾輸出**——例外會被吞掉，然後你會拿舊的 PNG 一直比對。
 
 ## 6. schema 會擋你的地方（都實際被擋過）
 
@@ -698,25 +785,32 @@ route-marker 留給「真的需要跟著走線自動重排」的情況；靜態�
    有軌就只要「軌本身 ＋ 端點 junction 上的 power-label」，多放一個埠會在軌上
    翹出一截多餘的短線（2026-08-29 Fig 5.170 實犯）。
 7. **兩端都要外伸**（超出最外側的分支點，各 20 單位）——這是課本的視覺特徵。
+8. **⚠️ 接地軌（V_SS）要畫成跟 V_DD 一樣粗，`powerDomain` 必須寫 `"vdd"`，不能寫 `"ground"`。**
+   網站渲染器的判斷式是（bundle `dist-CE3Pi34B.js`）：
+
+   ```js
+   presentation === "power-rail" && byBaseNetId.get(netId)?.powerDomain === "vdd"
+   ```
+
+   `ground` 不在條件內 ⇒ 畫成一般細線。`name` 照樣寫 `"VSS"`，所以標籤與網表不受影響。
+   （2026-08-30：先寫 `"ground"`，使用者回報「VSS 沒有變粗」，才去 bundle 查到這條。
+   **這就是「不要憑語意猜，去讀渲染器」的實例。**）
 
 > 端點 junction 只會被一條 route 碰到，自檢要放行。
 
-## 8. 常見錯誤清單
+## 8. 常見錯誤清單（只留別處沒寫的）
 
-1. **書的版本不一樣** → 圖號會撞。畫之前要使用者給截圖，或用 PyMuPDF 在 PDF 裡搜 `Figure N.NN` 定位後裁圖親眼看。
-2. **鏡射判讀** → **跑 §3C 的 `scan_figure.py` 讀 mirror 欄**，不要用眼睛看。（規則本身：閘極板在左＝`mirror:"none"`，在右＝`"x"`。）
-3. **走線畫太長** → 用第 3 節的 audit 表逐條比，任何一條 > 1.25 倍就縮。
-4. **自寫檢查器全綠不代表對** → 一定要跑第 5 節的 ② ③。
-5. **預覽渲染器要跟著真實樣式走**（字型、字重、下標正斜、power-rail 粗細），否則比對是自欺。
-6. **間距一律用實際 primitive 的極值算，不要用 viewBox**（見第 3 節的 ±18 說明）。
-7. **元件與走線的線寬要一致** → 三個 strokeScale 設同值（見第 4 節）。
-8. **本機預覽會把每個 junction 都畫成圓點，但正式渲染不會在電源軌端點畫點**——
-   看到這個差異不要去追，那是預覽的近似，不是產物的問題。
-9. **改 `icproj.py`／產生器的 patch 腳本一律先 Write 成 `.py` 再跑**，
-   不要塞進 Bash heredoc——含反斜線或引號時 shell 會直接 parse error
-   （environment.md 已有這條通則，這裡再犯過一次）。
-10. **跑 generator 不要用 `| grep` 濾輸出**：預覽段的例外會被吞掉，然後你會拿舊的
-   PNG 一直比對。這個坑在本次已經連踩三次。
+1. **書的版本不一樣** → 圖號會撞。畫之前要使用者給截圖，或用 PyMuPDF 在 PDF 裡搜
+   `Figure N.NN` 定位後裁圖親眼看。
+2. **本機預覽會把每個 junction 都畫成圓點，正式渲染不會在電源軌端點畫點**——
+   那是預覽的近似，不是產物的問題，不要去追。
+3. **預覽渲染器要跟著真實樣式走**（字型、字重、下標正斜、power-rail 粗細、虛線框），
+   否則比對是自欺。改了樣式就要同步改預覽。
+4. **改 `icproj.py`／產生器的 patch 腳本一律先 Write 成 `.py` 再跑**，
+   不要塞進 Bash heredoc——含反斜線或引號時 shell 會直接 parse error。
+5. **不要用 node import 網站的 bundle chunk**：相依鏈會把 React 整包拉進來，
+   在 node 裡執行到 `document is not defined` 就炸，整份 React 原始碼噴進對話。
+   只有 `model.mjs`（＋`model-dep-0.mjs`）驗證過可以跑；其餘一律只用 `grep` 讀。
 
 ## 9. 產物位置與命名（使用者裁示，不要放別的地方）
 
@@ -730,38 +824,29 @@ route-marker 留給「真的需要跟著走線自動重排」的情況；靜態�
 
 ## 10. 檔案位置
 
-```
-analog-canvas-toolkit/
-├─ SOP.md                       ← 本檔
-├─ examples/*.png               ← 已完成的圖，交付前拿來對比密度
-├─ out/*.icproj.json            ← 成品專案檔，匯入網站用
-└─ toolkit/
-   ├─ fetch_symbols.py          ← 同步符號庫（缺符號時先跑這支）
-   ├─ refresh_model.py          ← 重抓網站 schema（首次 clone 必跑）
-   ├─ scan_figure.py            ← ⓪ 截圖 → 拓樸／鏡射／scale（見 §3C）
-   ├─ icproj.py                 ← **共用引擎**：schema 組裝、四道自動稽核、SVG 預覽
-   ├─ gen_fig848.py             ← 最乾淨的範本（opamp＋電阻，141 行）
-   ├─ gen_fig1035.py            ← 範本：差動＋雙尾電流＋差動輸出埠
-   ├─ gen_fig794.py             ← 範本：被動元件（R／C）＋旋轉 90＋數值標籤
-   ├─ gen_fig5170.py            ← 範本：BJT＋電源軌
-   ├─ gen_fig934.py             ← BJT 版參考（舊式獨立骨架，不要複製）
-   ├─ gen_fig983_cg.py          ← MOS 版參考（舊式獨立骨架，不要複製）
-   ├─ validate.mjs              ← 用網站 schema 驗證
-   ├─ check_labels.mjs          ← 標籤逐位元比對
-   ├─ model.mjs                 ← 網站的 model/schema（**不進版控**，refresh_model.py 產生）
-   └─ sym/*.json                ← 符號腳位與外觀（**不進版控**，fetch_symbols.py 產生）
-```
+成品 `.icproj.json` 在 repo 的 `out/`；工具全在 `toolkit/`；`examples/` 是從網站匯出的 PNG。
 
-**畫新圖的最短路徑（目標 5~10 分鐘）**
+> 首次 clone 先跑 `python toolkit/refresh_model.py` 與 `python toolkit/fetch_symbols.py`：`model.mjs` 與 `sym/*.json` 是產物，**不進版控**。
 
-1. `python scan_figure.py <截圖>` → 拿到 mirror、GAP、圓點清單（§3C）
-2. 複製最接近的範本（兩支都用 `icproj.py`）：
-   **有電阻／電容／旋轉／數值標籤 → `gen_fig794.py`**；
-   **差動對／多尾電流 → `gen_fig1035.py`**。
-   `gen_fig983_cg.py`／`gen_fig934.py` 是舊式獨立骨架，只拿來查 BJT／單端的
-   座標寫法，**不要複製**。
-   動手前先 `ls sym/`：**缺的符號跑 `python fetch_symbols.py`**，不要自己畫、
-   也不要一個一個手動找（2026-08-29 手找 `resistor` 花掉好幾分鐘）。
-3. 只改 placement / junctions / nets / routes / annotations 五段；列座標直接抄 §3A 的標準列堆疊
-4. `python gen_xxx.py` → 五類問題全部 0（見 §5 的表）
-5. `node validate.mjs` → `node check_labels.mjs` → 渲染 PNG 看一次
+| 檔 | 用途 |
+|---|---|
+| `icproj.py` | **共用引擎**：schema 組裝、六道稽核、SVG 預覽、schema／標籤驗證、PNG 渲染 |
+| `scan_figure.py` | ⓪ 截圖 → 拓樸／鏡射／scale／密度基準（§3C） |
+| `fetch_symbols.py` | 同步符號庫（缺符號時先跑這支） |
+| `refresh_model.py` | 網站改版時重抓 schema（會告訴你新的 schemaVersion） |
+| `regress.py` | 改共用程式後必跑：23 張逐位元比對（`--accept` 換基準） |
+| `publish_to_repo.py` | 發佈到私有 repo（`--dry-run` 只檢查） |
+| `validate.mjs` / `check_labels.mjs` / `model.mjs` | 網站自己的 schema 與標籤產生器，`build()` 會自動呼叫 |
+| `sym\*.json` | 符號腳位與外觀（**有檔案 ≠ 可以放，見 §2**） |
+
+產生器 23 支，`ls gen_*.py`。挑範本：
+
+| 要畫的東西 | 抄哪支 |
+|---|---|
+| 最乾淨的骨架（opamp＋電阻） | `gen_fig848.py`（141 行） |
+| 被動元件／旋轉 90／數值標籤 | `gen_fig794.py` |
+| 差動對／多尾電流／差動輸出埠 | `gen_fig1035.py` |
+| BJT ＋ 電源軌 | `gen_fig5170.py` |
+| 方塊圖 | `gen_cdr_blocks.py` |
+
+`gen_fig934.py`／`gen_fig983_cg.py` 是舊式獨立骨架，**不要複製**，只拿來查座標寫法。

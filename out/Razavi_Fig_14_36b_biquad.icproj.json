@@ -216,6 +216,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "terminal-vin"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "in"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -240,6 +276,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "terminal-vout"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "out"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         }
       ],
@@ -892,6 +964,15 @@
           "role": "branch"
         },
         {
+          "id": "JB2",
+          "netId": "net-b",
+          "position": {
+            "x": 190,
+            "y": 140
+          },
+          "role": "branch"
+        },
+        {
           "id": "JOUT",
           "netId": "net-out",
           "position": {
@@ -1344,16 +1425,25 @@
               "id": "route-leg-ecb8248bf847d41a",
               "mode": "manual",
               "to": {
-                "kind": "bend",
-                "bendId": "route-bend-ecb8248bf847d41a",
-                "position": {
-                  "x": 190,
-                  "y": 140
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JB2"
                 }
               }
-            },
+            }
+          ]
+        },
+        {
+          "id": "r-b-riser",
+          "netId": "net-b",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JB2"
+          },
+          "legs": [
             {
-              "id": "route-leg-5b9bf249242099a0",
+              "id": "route-leg-5cb0ccf5d6814dbf",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
@@ -1751,7 +1841,7 @@
                 "kind": "endpoint",
                 "endpoint": {
                   "kind": "junction",
-                  "junctionId": "JB"
+                  "junctionId": "JB2"
                 }
               }
             }
@@ -1902,7 +1992,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-14-36b",
   "name": "Razavi Fig. 14.36(b) — biquad from a difference amp and two integrators",
-  "schemaVersion": 30,
+  "schemaVersion": 31,
   "source": {
     "dialect": "none",
     "entry": null,

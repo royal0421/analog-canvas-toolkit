@@ -145,4 +145,8 @@ f.build(long_haul={"r-vdd-rail-1",   # the V_CC rail itself
                    "r-x-c3"},        # 60: node X out to the coupling cap
         rail_ends={"jvcc-start", "jvcc-end"},
         density_ref=("Q1", 35.9),
-        viewbox=(50, 78, 640, 258))
+        viewbox=(50, 78, 640, 258),
+        # plain text on purpose (values / block titles): the
+        # editor's generator italicises everything, we follow the
+        # textbook page instead -- SOP 4
+        expect_differ={"v-rin", "v-rfb", "v-rc", "v-r200", "v-r50", "v-vcc"})

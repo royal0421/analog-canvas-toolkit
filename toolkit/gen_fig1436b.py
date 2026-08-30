@@ -61,6 +61,7 @@ f.port("VOUT", 320, 140, mirror="x")    # circle right of its pin
 for jid, net, x, y in (
         ("JA", "net-a", 190, 200),     # OA1 IN+  : R_4, R_5
         ("JB", "net-b", 190, 180),     # OA1 IN-  : R_6, R_3
+        ("JB2", "net-b", 190, 140),    # R_6 tees into the R_3 riser
         ("JOUT", "net-out", 300, 190),
         ("JVO", "net-out", 300, 140),  # V_out tap / R_6 return
         ("JC", "net-c", 360, 190),     # OA2 IN-  : R_1, C_1
@@ -94,7 +95,8 @@ f.route("r-out-oa1", "net-out", T("OA1", "OUT"), [("to", J("JOUT"))])
 f.route("r-out-tap", "net-out", J("JOUT"), [("to", J("JVO"))])
 f.route("r-out-vout", "net-out", J("JVO"), [("to", T("VOUT", "P"))])
 f.route("r-out-r6", "net-out", J("JVO"), [("to", T("R6", "1"))])
-f.route("r-b-r6", "net-b", T("R6", "2"), [("bend", 190, 140), ("to", J("JB"))])
+f.route("r-b-r6", "net-b", T("R6", "2"), [("to", J("JB2"))])
+f.route("r-b-riser", "net-b", J("JB2"), [("to", J("JB"))])
 
 f.route("r-out-r1", "net-out", J("JOUT"), [("to", T("R1", "2"))])
 f.route("r-c-r1", "net-c", T("R1", "1"), [("to", J("JC"))])
@@ -113,7 +115,7 @@ f.route("r-y-oa3", "net-y", T("OA3", "OUT"), [("to", J("JY"))])
 # global feedback: R_3 from Y over the top, R_5 from X under the bottom
 f.route("r-y-r3", "net-y", J("JY"), [("bend", 690, 210), ("bend", 690, 100),
                                      ("to", T("R3", "1"))])
-f.route("r-b-r3", "net-b", T("R3", "2"), [("bend", 190, 100), ("to", J("JB"))])
+f.route("r-b-r3", "net-b", T("R3", "2"), [("bend", 190, 100), ("to", J("JB2"))])
 f.route("r-x-r5", "net-x", J("JX"), [("bend", 470, 260), ("to", T("R5", "1"))])
 f.route("r-a-r5", "net-a", T("R5", "2"), [("bend", 190, 260), ("to", J("JA"))])
 

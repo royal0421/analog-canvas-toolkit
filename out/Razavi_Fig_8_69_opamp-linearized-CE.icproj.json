@@ -48,6 +48,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "terminal-vout"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "out"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         }
       ],
@@ -916,7 +952,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-8-69",
   "name": "Razavi Fig. 8.69 — op amp linearising a common-emitter stage",
-  "schemaVersion": 30,
+  "schemaVersion": 31,
   "source": {
     "dialect": "none",
     "entry": null,

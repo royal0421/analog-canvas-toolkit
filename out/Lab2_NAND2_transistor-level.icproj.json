@@ -120,6 +120,26 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "t-a1"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "A"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -144,6 +164,26 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "t-a2"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "A"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -168,6 +208,26 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "t-b1"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "B"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -192,6 +252,26 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "t-b2"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "B"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -216,6 +296,26 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "t-out"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Out"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -641,10 +741,19 @@
           "role": "branch"
         },
         {
-          "id": "JO",
+          "id": "JMN",
           "netId": "net-out",
           "position": {
-            "x": 220,
+            "x": 240,
+            "y": 170
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JMP2",
+          "netId": "net-out",
+          "position": {
+            "x": 300,
             "y": 170
           },
           "role": "branch"
@@ -979,7 +1088,7 @@
                 "kind": "endpoint",
                 "endpoint": {
                   "kind": "junction",
-                  "junctionId": "JO"
+                  "junctionId": "JMN"
                 }
               }
             }
@@ -989,58 +1098,12 @@
           "id": "r-o2",
           "netId": "net-out",
           "start": {
-            "kind": "terminal",
-            "instanceId": "MP2",
-            "pinName": "D"
+            "kind": "junction",
+            "junctionId": "JMN"
           },
           "legs": [
             {
               "id": "route-leg-75b2352e11a35db5",
-              "mode": "manual",
-              "to": {
-                "kind": "bend",
-                "bendId": "route-bend-75b2352e11a35db5",
-                "position": {
-                  "x": 300,
-                  "y": 170
-                }
-              }
-            },
-            {
-              "id": "route-leg-ee1344d1b7d8f123",
-              "mode": "manual",
-              "to": {
-                "kind": "endpoint",
-                "endpoint": {
-                  "kind": "junction",
-                  "junctionId": "JO"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "id": "r-o3",
-          "netId": "net-out",
-          "start": {
-            "kind": "junction",
-            "junctionId": "JO"
-          },
-          "legs": [
-            {
-              "id": "route-leg-0e8cdec6c88e492f",
-              "mode": "manual",
-              "to": {
-                "kind": "bend",
-                "bendId": "route-bend-0e8cdec6c88e492f",
-                "position": {
-                  "x": 240,
-                  "y": 170
-                }
-              }
-            },
-            {
-              "id": "route-leg-af23a455ac162a24",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
@@ -1054,15 +1117,58 @@
           ]
         },
         {
+          "id": "r-o3",
+          "netId": "net-out",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JMN"
+          },
+          "legs": [
+            {
+              "id": "route-leg-0e8cdec6c88e492f",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JMP2"
+                }
+              }
+            }
+          ]
+        },
+        {
           "id": "r-o4",
           "netId": "net-out",
           "start": {
             "kind": "junction",
-            "junctionId": "JO"
+            "junctionId": "JMP2"
           },
           "legs": [
             {
               "id": "route-leg-15a104b8932ba947",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "MP2",
+                  "pinName": "D"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-o5",
+          "netId": "net-out",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JMP2"
+          },
+          "legs": [
+            {
+              "id": "route-leg-aaecfe6149a9ef7e",
               "mode": "manual",
               "to": {
                 "kind": "endpoint",
@@ -1128,7 +1234,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-lab2-nand2",
   "name": "Lab 2 NAND2 (transistor level)",
-  "schemaVersion": 30,
+  "schemaVersion": 31,
   "source": {
     "dialect": "none",
     "entry": null,

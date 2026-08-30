@@ -354,7 +354,7 @@ project = {
     "externalSubcircuitDefinitions": [],
     "id": "project-razavi-fig-9-83-cg",
     "name": "Razavi Fig. 9.83 — common-gate stage",
-    "schemaVersion": 30,
+    "schemaVersion": 31,
     "source": {"dialect": "none", "entry": None, "files": [],
                "sourcePolicy": "copy"},
     "structureRevision": 0,

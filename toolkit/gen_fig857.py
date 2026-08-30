@@ -65,5 +65,7 @@ f.port_label("VOUT", "terminal-vout", -LABEL_PORT, 5, "end")
 f.text("note-x", 240, 170, "end", "X")
 f.text("note-y", 360, 155, "start", "Y")
 
-f.build(extra_evidence=[], density_ref=("OA", 40.9),
+# r-y is the feedback wrap from the op amp output back down to the
+# diode: both ends are pinned by the topology, so it is a long haul.
+f.build(long_haul={"r-y"}, extra_evidence=[], density_ref=("OA", 40.9),
         viewbox=(170, 118, 215, 165))

@@ -30,7 +30,10 @@ RAIL = [160, 180, 300, 320]
 J = [("jvdd-%d" % i, "net-power-vdd", x, 100) for i, x in enumerate(RAIL)]
 J[0] = ("jvdd-start", "net-power-vdd", RAIL[0], 100)
 J[-1] = ("jvdd-end", "net-power-vdd", RAIL[-1], 100)
-for jid, net, x, y in J + [("JO", "net-out", 220, 170)]:
+# the output run is one straight line at y=170; the two devices that
+# tee into it each get a junction, or no dot is drawn (SOP 3H).
+for jid, net, x, y in J + [("JMN", "net-out", 240, 170),
+                           ("JMP2", "net-out", 300, 170)]:
     f.junction(jid, net, x, y)
 
 f.net("net-power-vdd", [("MP1", "S"), ("MP2", "S"), ("MP1", "B"), ("MP2", "B")])
@@ -44,10 +47,12 @@ T, Jn = f.term, f.jn
 f.rail("net-power-vdd", 100, RAIL)
 f.route("r-v1", "net-power-vdd", Jn(f._jat(180, 100)), [("to", T("MP1", "S"))])
 f.route("r-v2", "net-power-vdd", Jn(f._jat(300, 100)), [("to", T("MP2", "S"))])
-f.route("r-o1", "net-out", T("MP1", "D"), [("bend", 180, 170), ("to", Jn("JO"))])
-f.route("r-o2", "net-out", T("MP2", "D"), [("bend", 300, 170), ("to", Jn("JO"))])
-f.route("r-o3", "net-out", Jn("JO"), [("bend", 240, 170), ("to", T("MN1", "D"))])
-f.route("r-o4", "net-out", Jn("JO"), [("to", T("OUT", "P"))])
+f.route("r-o1", "net-out", T("MP1", "D"), [("bend", 180, 170),
+                                           ("to", Jn("JMN"))])
+f.route("r-o2", "net-out", Jn("JMN"), [("to", T("MN1", "D"))])
+f.route("r-o3", "net-out", Jn("JMN"), [("to", Jn("JMP2"))])
+f.route("r-o4", "net-out", Jn("JMP2"), [("to", T("MP2", "D"))])
+f.route("r-o5", "net-out", Jn("JMP2"), [("to", T("OUT", "P"))])
 f.route("r-mid", "net-mid", T("MN1", "S"), [("to", T("MN2", "D"))])
 f.route("r-g", "net-gnd-1", T("MN2", "S"), [("to", T("GND", "0"))])
 # A1/A2 and B1/B2 sit pin-on-pin on their gates: no routes needed.
@@ -67,5 +72,9 @@ for iid, tid in (("A1", "t-a1"), ("A2", "t-a2"),
 f.port_label("OUT", "t-out", LABEL_PORT, 5, "start")
 f.power_label("label-vdd", "net-power-vdd", "jvdd-end", 12, 6, "V_DD")
 
-f.build(long_haul={"r-vdd-rail-1", "r-o2", "r-o4"},
-        rail_ends={"jvdd-start", "jvdd-end"}, viewbox=(105, 85, 300, 265))
+f.build(long_haul={"r-vdd-rail-1", "r-o1", "r-o3"},
+        rail_ends={"jvdd-start", "jvdd-end"}, viewbox=(105, 85, 300, 265),
+        # the editor's builder subscripts a trailing capital run
+        # (IN -> I_N, CK -> C_K, Out -> O_ut); our formatOverride
+        # keeps them plain, so they DIFFER on purpose -- SOP 4
+        expect_differ={"instance-label-OUT"})

@@ -6,6 +6,9 @@ toolkit/model-dep-*.mjs
 
 # Generated output (the finished .icproj.json in out/ ARE tracked)
 toolkit/preview_*.svg
+# build() renders a PNG next to each preview since 2026-08-30; it is a
+# working artefact, the shareable renders live in examples/
+toolkit/preview_*.png
 
 # Python
 __pycache__/
