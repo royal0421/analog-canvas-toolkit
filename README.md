@@ -73,12 +73,27 @@ audits: legs 0 | labels 0 | on-wire 0 | tees 0   (all must be 0)
 
 ## 範例
 
-`examples/` 有 26 張，全部通過上面六道稽核。
+`examples/` 有 30 張，全部通過上面六道稽核。
 
 | | |
 |---|---|
 | ![](examples/Razavi_Fig_9_26c_BJT-mirror-combined-outputs.png) | ![](examples/Razavi_Fig_8_48_noninverting-T-feedback.png) |
 | ![](examples/Razavi_Fig_12_57c_diffpair-mirror-load-Rx-test.png) | ![](examples/CDR_architecture.png) |
+
+## 手繪圖 → 產出
+
+直接拍一張手繪圖丟進來，就能產出同一張電路的課本級畫法。
+拓樸照頁面畫（頁面上的錯也照畫，不自作主張修正），
+間距一律照 [`SOP.md`](SOP.md) §3A 的絕對常數。
+
+| 手繪 | 產出 |
+|---|---|
+| ![](examples/handdrawn/two-stage-BJT_small-signal.jpg) | ![](examples/Handdrawn_two-stage-BJT_small-signal.png) |
+| ![](examples/handdrawn/LC-tank_small-signal.jpg) | ![](examples/Handdrawn_LC-tank_small-signal.png) |
+| ![](examples/handdrawn/cascode-node_Cgs3-probe.jpg) | ![](examples/Handdrawn_cascode-node_Cgs3-probe.png) |
+
+手繪這條線的規則（掃描器不能用、欄距 50~70、
+電壓標註要跟探針同一欄…）在 [`SOP.md`](SOP.md) §3I-b。
 
 ## 檔案位置
 

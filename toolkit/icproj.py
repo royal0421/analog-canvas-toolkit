@@ -342,12 +342,18 @@ class Schematic(object):
         self.placed[iid] = (symbol_id, x, y, mirror, rotation)
         return iid
 
-    def passive(self, iid, kind, x, y, label, rotation=0):
-        """kind: 'resistor' | 'capacitor' | 'inductor'."""
-        return self.place(iid, kind, x, y, rotation=rotation, extra={
+    def passive(self, iid, kind, x, y, label, rotation=0, extra_style=None):
+        """kind: 'resistor' | 'capacitor' | 'inductor'.
+
+        `extra_style` is the instance styleOverride, e.g.
+        {"foreground": "#E03127"} to draw the part in the red the page uses
+        for something added by the analysis.
+        """
+        st = {"styleOverride": extra_style} if extra_style else {}
+        return self.place(iid, kind, x, y, rotation=rotation, extra=dict(st, **{
             "schematicReference": iid, "schematicName": name(label),
             "netlist": {"binding": {"kind": "primitive", "deviceClass": kind},
-                        "parameters": {}, "reference": iid}})
+                        "parameters": {}, "reference": iid}}))
 
     def mos(self, iid, kind, x, y, mirror, label):
         binding = ({"netId": self.nmos_bulk_net, "origin": "cell-default"}
@@ -362,12 +368,16 @@ class Schematic(object):
         return self.place(iid, kind, x, y, mirror, extra={
             "schematicReference": iid, "schematicName": name(label)})
 
-    def isrc(self, iid, x, y, label, mirror="none"):
-        return self.place(iid, "current-source", x, y, mirror, extra={
-            "schematicReference": iid, "schematicName": name(label),
-            "netlist": {"binding": {"kind": "primitive",
-                                    "deviceClass": "current-source"},
-                        "parameters": {}, "reference": iid}})
+    def isrc(self, iid, x, y, label, mirror="none", rotation=0):
+        """rotation=180 turns the arrow UP (and swaps which pin is on top),
+        which is how a source that pushes INTO a node from ground is drawn."""
+        return self.place(iid, "current-source", x, y, mirror, rotation=rotation,
+                          extra={
+                              "schematicReference": iid,
+                              "schematicName": name(label),
+                              "netlist": {"binding": {"kind": "primitive",
+                                          "deviceClass": "current-source"},
+                              "parameters": {}, "reference": iid}})
 
     def gnd(self, iid, x, y):
         return self.place(iid, "ground", x, y,
@@ -466,12 +476,19 @@ class Schematic(object):
                 "localOffset": {"x": dx, "y": dy},
                 "fallbackPosition": {"x": ix + dx, "y": iy + dy}}
 
-    def inst_label(self, iid, dx, dy, alignment):
+    def inst_label(self, iid, dx, dy, alignment, color=None):
         self.annotations.append({
             "id": "instance-label-" + iid, "kind": "instance-label",
             "alignment": alignment, "locked": False, "rotation": 0,
             "sizeScale": LABEL_SIZE, "anchor": self._anchor(iid, dx, dy),
             "binding": {"kind": "instance-schematic-name", "instanceId": iid}})
+        if color:
+            raise ValueError(
+                "an instance-label cannot carry a colour: the schema has no "
+                "styleOverride on annotations (it rejects the whole project "
+                "with `annotations.N | unrecognized_keys`).  Drop the "
+                "inst_label and write the name as drafting text instead: "
+                "f.text(tid, x, y, align, name(...), owner=iid, color=...)")
 
     def port_label(self, iid, tid, dx, dy, alignment):
         """A port label bound to a cell terminal ALWAYS needs a formatOverride.
@@ -515,7 +532,7 @@ class Schematic(object):
                         "y": j["position"]["y"] + dy}
         raise KeyError(jid)
 
-    def text(self, tid, x, y, alignment, label, owner=None):
+    def text(self, tid, x, y, alignment, label, owner=None, color=None):
         """`label` is a name string, or a RichText dict from
         name_suffix()/plain() for composite or value text."""
         self.drafting.append({
@@ -524,6 +541,16 @@ class Schematic(object):
             "styleOverride": {"sizeScale": LABEL_SIZE},
             "anchor": {"kind": "free", "position": {"x": x, "y": y}},
             "content": label if isinstance(label, dict) else name(label)})
+        if color:
+            raise ValueError(
+                "drafting text ignores styleOverride.color on the site.  Its "
+                "renderer only passes the colour through the formula path and "
+                "the polarity path; ordinary runs go through `re()` and are "
+                "emitted as <text> with NO fill, so they come out black "
+                "(bundle dist-CE3Pi34B.js, function De).  Arrows and component "
+                "instances DO take a colour -- text does not, so do not mix "
+                "the two or the picture reads as half-finished.")
+        return tid
         if owner:
             self._text_owner[tid] = owner
 
@@ -551,7 +578,7 @@ class Schematic(object):
             "anchor": {"kind": "free", "position": {"x": x0, "y": y0}},
             "points": [{"x": x0, "y": y0}, {"x": x1, "y": y1}]})
 
-    def arrow(self, aid, x0, y0, x1, y1, head_scale=1.0):
+    def arrow(self, aid, x0, y0, x1, y1, head_scale=1.0, color=None):
         """Current arrow.  NEVER add strokeScale here: annotationStrokeScale
         already puts the shaft at the wire weight (SOP §6B)."""
         self.drafting.append({
@@ -561,6 +588,9 @@ class Schematic(object):
             "to": {"kind": "free", "position": {"x": x1, "y": y1}},
             "styleOverride": {"arrowHead": "filled",
                               "arrowHeadScale": head_scale}})
+        if color:
+            self.drafting[-1].setdefault("styleOverride", {})["color"] = color
+        return aid
 
     # ---------------------------------------------------------- geometry
     def _axy(self, a):
@@ -586,11 +616,14 @@ class Schematic(object):
     def label_records(self):
         """[(id, richtext, x, y, alignment, owner_instance_or_None)]"""
         recs = []
+        self._text_colour = {}
         for o in self.drafting:
             if o["kind"] == "text":
                 p = o["anchor"]["position"]
                 recs.append((o["id"], o["content"], p["x"], p["y"],
                              o["alignment"], self._text_owner.get(o["id"])))
+                self._text_colour[o["id"]] = (
+                    o.get("styleOverride") or {}).get("color")
         for a in self.annotations:
             fb = a["anchor"]["fallbackPosition"]
             if "content" in a:
@@ -683,6 +716,7 @@ class Schematic(object):
             print("audits: legs %d | labels %d | on-wire %d | tees %d"
                   "   (all must be 0)" % (legs, labels, onwire, tees))
             self._crowding()
+            self._pitch()
             self._density(density_ref)
         self._preview(viewbox)
         if verbose:
@@ -1053,6 +1087,26 @@ class Schematic(object):
                     bad += 1
         return bad
 
+    def _pitch(self):
+        """Column and row pitch -- the number that actually decides "too wide".
+
+        The old density metric (component height / figure height) is useless on
+        a figure with no MOS, and "too loose" was still the standing complaint.
+        Measured against the user's own correction of the hand-drawn figure
+        (2026-08-30): he pulled every column gap down to 60-80.  Mine had been
+        80-120.  So print the gaps and let the number do the arguing.
+        """
+        def gaps(vals):
+            v = sorted(set(vals))
+            return [b - a for a, b in zip(v, v[1:])] or [0]
+
+        cx = gaps(self.placed[i][1] for i in self.placed)
+        cy = gaps(self.placed[i][2] for i in self.placed)
+        big = [g for g in cx if g > 80]
+        print("  pitch: columns %s | rows %s%s"
+              % ("/".join(str(g) for g in cx), "/".join(str(g) for g in cy),
+                 "   <-- %d column gap(s) over 80" % len(big) if big else ""))
+
     def _density(self, ref=None):
         """ref = (instance_id, original_percent).  The density rule is a
         COMPARISON with the textbook page (user, 2026-08-29): measure the
@@ -1096,9 +1150,14 @@ class Schematic(object):
              'stroke-width="1.6">'
              % (tuple(vb) + self.preview_px + tuple(vb))]
         variant = {i["id"]: i.get("symbolVariantId") for i in self.instances}
+        fg = {i["id"]: (i.get("styleOverride") or {}).get("foreground")
+              for i in self.instances}
         for iid, (sid, x, y, mirror, rot) in self.placed.items():
-            P.append('<g transform="translate(%g,%g) rotate(%g) scale(%g,1)">'
-                     % (x, y, rot, -1 if mirror == "x" else 1))
+            # honour the instance colour, or the preview lies about what the
+            # site will draw (SOP 8 rule 3)
+            P.append('<g transform="translate(%g,%g) rotate(%g) scale(%g,1)"%s>'
+                     % (x, y, rot, -1 if mirror == "x" else 1,
+                        ' stroke="%s"' % fg[iid] if fg.get(iid) else ""))
             for pr in prims(sid, variant.get(iid)):
                 w = (2.4 if pr.get("style", {}).get("strokeRole") == "emphasis"
                      else 1.6) * S
@@ -1161,17 +1220,24 @@ class Schematic(object):
                 continue
             fx, fy = o["from"]["position"]["x"], o["from"]["position"]["y"]
             tx, ty = o["to"]["position"]["x"], o["to"]["position"]["y"]
-            P.append('<line x1="%g" y1="%g" x2="%g" y2="%g" stroke-width="%g"/>'
-                     % (fx, fy, tx, ty, 1.6 * S))
+            ac = (o.get("styleOverride") or {}).get("color")
+            colour = (' stroke="%s"' % ac) if ac else ""
+            P.append('<line x1="%g" y1="%g" x2="%g" y2="%g" stroke-width="%g"%s/>'
+                     % (fx, fy, tx, ty, 1.6 * S, colour))
             ang = math.atan2(ty - fy, tx - fx)
-            h, hw = 14, 6
+            # the site's own numbers (bundle dist-BrjFK9L9.js:
+            # arrowHeadLength 16.569767, arrowHeadWidth 7.906977).  The preview
+            # used to draw 14 x 12 -- almost equilateral, so the head came out
+            # blunt and the user could see it was not the real shape.
+            hs = (o.get("styleOverride") or {}).get("arrowHeadScale", 1.0)
+            h, hw = 16.569767 * hs, 7.906977 * hs / 2.0
             tri = [(tx, ty),
                    (tx - h * math.cos(ang) + hw * math.sin(ang),
                     ty - h * math.sin(ang) - hw * math.cos(ang)),
                    (tx - h * math.cos(ang) - hw * math.sin(ang),
                     ty - h * math.sin(ang) + hw * math.cos(ang))]
-            P.append('<polygon points="%s" fill="#111" stroke="none"/>'
-                     % " ".join("%.2f,%.2f" % q for q in tri))
+            P.append('<polygon points="%s" fill="%s" stroke="none"/>'
+                     % (" ".join("%.2f,%.2f" % q for q in tri), ac or "#111"))
         # A junction is only PAINTED when three different directions meet at
         # it -- that is the editor's rule (SOP 3A rule 0b).  The preview used
         # to dot every junction, which put a round blob on each end of the
