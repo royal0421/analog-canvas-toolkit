@@ -1222,8 +1222,6 @@ class Schematic(object):
             tx, ty = o["to"]["position"]["x"], o["to"]["position"]["y"]
             ac = (o.get("styleOverride") or {}).get("color")
             colour = (' stroke="%s"' % ac) if ac else ""
-            P.append('<line x1="%g" y1="%g" x2="%g" y2="%g" stroke-width="%g"%s/>'
-                     % (fx, fy, tx, ty, 1.6 * S, colour))
             ang = math.atan2(ty - fy, tx - fx)
             # the site's own numbers (bundle dist-BrjFK9L9.js:
             # arrowHeadLength 16.569767, arrowHeadWidth 7.906977).  The preview
@@ -1231,6 +1229,12 @@ class Schematic(object):
             # blunt and the user could see it was not the real shape.
             hs = (o.get("styleOverride") or {}).get("arrowHeadScale", 1.0)
             h, hw = 16.569767 * hs, 7.906977 * hs / 2.0
+            # the shaft STOPS at the head's base, exactly as the site does
+            # (`b = o - l/d*g` in its renderer).  Drawing it all the way to the
+            # tip put a blunt stroke end on top of the point (user, 2026-08-30).
+            P.append('<line x1="%g" y1="%g" x2="%g" y2="%g" stroke-width="%g"%s/>'
+                     % (fx, fy, tx - h * math.cos(ang), ty - h * math.sin(ang),
+                        1.6 * S, colour))
             tri = [(tx, ty),
                    (tx - h * math.cos(ang) + hw * math.sin(ang),
                     ty - h * math.sin(ang) - hw * math.cos(ang)),
@@ -1242,6 +1246,13 @@ class Schematic(object):
         # it -- that is the editor's rule (SOP 3A rule 0b).  The preview used
         # to dot every junction, which put a round blob on each end of the
         # power rail where the real export has a square end (user, 2026-08-30).
+        rail_routes = {r["id"] for r in self.routes
+                       if r.get("presentation") == "power-rail"}
+        on_rail = set()
+        for rid, x0, y0, x1, y1 in self.segments():
+            if rid in rail_routes:
+                on_rail.add((x0, y0))
+                on_rail.add((x1, y1))
         dirs = {}
         for _rid, x0, y0, x1, y1 in self.segments():
             for (px, py), (qx, qy) in (((x0, y0), (x1, y1)),
@@ -1251,7 +1262,11 @@ class Schematic(object):
                 dirs.setdefault((px, py), set()).add(d)
         for j in self.junctions:
             p = (j["position"]["x"], j["position"]["y"])
-            if len(dirs.get(p, ())) < 3:
+            if len(dirs.get(p, ())) < 3 or p in on_rail:
+                # no dot anywhere a POWER RAIL touches: the site's own filter
+                # drops any contact whose incidents include a power-rail route
+                # (bundle dist-CE3Pi34B.js), and the textbook draws the rail as
+                # a plain thick bar with branches meeting it (user, 2026-08-30).
                 continue
             P.append('<circle cx="%g" cy="%g" r="%g" fill="#111" '
                      'stroke="none"/>' % (p[0], p[1], 2.8 * J))
