@@ -1390,7 +1390,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-handdrawn-2stage-ss",
   "name": "Two-stage BJT amplifier -- small-signal model",
-  "schemaVersion": 31,
+  "schemaVersion": 32,
   "source": {
     "dialect": "none",
     "entry": null,

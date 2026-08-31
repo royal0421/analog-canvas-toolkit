@@ -2127,7 +2127,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-diff-deg-amp",
   "name": "Differential pair with shunt peaking and RC degeneration",
-  "schemaVersion": 31,
+  "schemaVersion": 32,
   "source": {
     "dialect": "none",
     "entry": null,

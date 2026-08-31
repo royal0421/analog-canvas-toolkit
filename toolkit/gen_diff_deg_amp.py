@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Differential pair with L_3/R_2 shunt-peaked loads, C_L at each output and a
+r"""Differential pair with L_3/R_2 shunt-peaked loads, C_L at each output and a
 2R_1 || C_1/2 degeneration network between the two sources, each source sunk by
 its own I_0.
 

@@ -1234,7 +1234,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-lab2-nand2",
   "name": "Lab 2 NAND2 (transistor level)",
-  "schemaVersion": 31,
+  "schemaVersion": 32,
   "source": {
     "dialect": "none",
     "entry": null,

@@ -1956,7 +1956,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-9-83-cg",
   "name": "Razavi Fig. 9.83 — common-gate stage",
-  "schemaVersion": 31,
+  "schemaVersion": 32,
   "source": {
     "dialect": "none",
     "entry": null,

@@ -1,19 +1,17 @@
 import { readFileSync } from "node:fs";
-import * as m from "./model.mjs";
+import { createProject, projectSchema, schemaVersion } from "./model-adapter.mjs";
 
 const projPath = process.argv[2];
 const proj = JSON.parse(readFileSync(projPath, "utf8"));
 
-// `a` is the exported project schema (rc); `n` is the new-project factory (sc)
-// which itself calls rc.parse(...) — used here to confirm we picked the right one.
-const schema = m.a;
-const probe = m.n("probe-id", "Probe");
-const SV = probe.schemaVersion;   // whatever the live model builds
+const schema = projectSchema;
+const probe = createProject("probe-id", "Probe");
+const SV = schemaVersion;
 try {
   schema.parse(probe);
-  console.log("sanity: factory output validates against m.a  -> correct schema");
+  console.log("sanity: factory output validates against the discovered schema");
 } catch (e) {
-  console.log("sanity FAILED, m.a is not the project schema:", e.message);
+  console.log("sanity FAILED, discovered model adapter is invalid:", e.message);
   process.exit(2);
 }
 

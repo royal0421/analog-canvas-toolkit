@@ -2110,7 +2110,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-esd-rc-clamp",
   "name": "ESD power clamp with SCR trigger",
-  "schemaVersion": 31,
+  "schemaVersion": 32,
   "source": {
     "dialect": "none",
     "entry": null,

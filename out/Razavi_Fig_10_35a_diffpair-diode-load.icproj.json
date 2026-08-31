@@ -2034,7 +2034,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-10-35a",
   "name": "Razavi Fig. 10.35(a) — differential pair with diode-connected load",
-  "schemaVersion": 31,
+  "schemaVersion": 32,
   "source": {
     "dialect": "none",
     "entry": null,

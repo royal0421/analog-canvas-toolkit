@@ -1,0 +1,47 @@
+name: Bug report
+description: 回報 generator、驗證、預覽或匯入問題
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        請先執行 `python -m toolkit doctor`，並確認已用最新版 schema 重現。
+  - type: input
+    id: generator
+    attributes:
+      label: Generator／輸出檔
+      placeholder: gen_fig848 / Razavi_Fig_8_48_....icproj.json
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 重現步驟
+      placeholder: 請貼出最短可重現指令與操作步驟
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 預期與實際結果
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Doctor 與錯誤輸出
+      description: 請移除 token、帳號或其他敏感資訊
+      render: shell
+    validations:
+      required: true
+  - type: dropdown
+    id: import
+    attributes:
+      label: Analog Canvas 是否能匯入？
+      options:
+        - 可以，但圖或 net 不正確
+        - 無法匯入
+        - 尚未測試
+    validations:
+      required: true

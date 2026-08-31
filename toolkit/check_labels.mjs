@@ -2,9 +2,9 @@
 // the editor's own builder Ws() would produce for the same name string.
 // Usage: node check_labels.mjs <project.icproj.json>
 import { readFileSync } from "node:fs";
-import * as m from "./model.mjs";
+import { buildName } from "./model-adapter.mjs";
 
-const Ws = m.f;                       // the editor's "name -> RichText" builder
+const Ws = buildName;                 // discovered "name -> RichText" builder
 const proj = JSON.parse(readFileSync(process.argv[2], "utf8"));
 
 // flatten RichText back into the "base_sub" string that produced it

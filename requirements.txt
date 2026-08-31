@@ -1,0 +1,3 @@
+# Only scan_figure.py needs third-party Python packages.
+numpy>=1.24
+Pillow>=10.0

@@ -1426,7 +1426,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-constgm-resistorless",
   "name": "Constant-gm bias without a resistor",
-  "schemaVersion": 31,
+  "schemaVersion": 32,
   "source": {
     "dialect": "none",
     "entry": null,

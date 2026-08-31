@@ -1,36 +1,36 @@
 # SOP — 用 Analog Canvas 畫課本級電路圖
 
 > 建立 2026-08-28。基準成品：`Razavi_Fig_9_83_CG.icproj.json`（Razavi 習題 68 Fig. 9.83 共閘級）。
-> 做法＝**離線產生 `.icproj.json` → 使用者在網站 File / Import Project File 匯入**。
-> 網站正式站的 Agent／MCP 介面是關閉的（bundle 內 `jp({production:!0,configured:void 0})` → false），所以不要嘗試連線。
+> 做法＝**本機產生 `.icproj.json` → 使用者在網站 File / Import Project File 匯入**。
+> 首次設定仍需連網同步符號與正式站 schema；同步後的日常生成在本機完成。
 
 ---
 
 ## 0. 一句話流程
 
-1. `python scan_figure.py <截圖>` — 有原圖才跑。拓樸、鏡射、GAP、密度基準（§3C）。
-2. 抄 `gen_fig848.py`，只改 placement / junctions / nets / routes / annotations **五段**（約 140 行）。
-3. `python gen_xxx.py` — **這一步就是全部**：六道稽核＋schema 驗證＋標籤比對＋渲染 PNG。
-   全部 0 就去看那張 PNG，對了就交付。
+1. `python toolkit/scan_figure.py <截圖>` — 有原圖才跑。量測走線、鏡射、GAP、密度基準（§3C），拓樸仍要人工確認。
+2. 抄 `toolkit/gen_fig848.py`，只改 placement / junctions / nets / routes / annotations **五段**。
+3. `python -m toolkit generate gen_xxx` — 內部稽核＋schema 驗證＋標籤比對＋渲染 PNG。
+   硬性檢查全部通過後才會原子更新 `out/` 成品，再親眼檢查 PNG。
 
 ```
+self-check errors: 0
 audits: legs 0 | labels 0 | on-wire 0 | tees 0   (all must be 0)
-  schema: VALID (v31)
+  schema: VALID (v32)
   labels: OK (3 declared plain)
   png: preview_xxx.png (1770x895)
 ```
 
-**目標：一張圖 5~10 分鐘。** 省時間與省 token 的四條硬規則：
+**目標：一張圖 5~10 分鐘。** 保持流程短而可重現的四條規則：
 - **不要分開跑 `validate.mjs` / `check_labels.mjs` / Chrome**：`build()` 已經全包了。
-  每一次工具呼叫都要重送整段對話，四次變一次是這裡最大的省法。
-  （只想快速跑產物：`AC_FAST=1`；想看完整走線表：`AC_VERBOSE=1`。）
+  （只略過 PNG：`AC_NO_RENDER=1`；`AC_FAST=1` 連外部驗證也會略過，只能除錯；完整走線表：`AC_VERBOSE=1`。）
 - **`scan_figure.py` 預設已經是精簡輸出**（只印 MOS 表、帶 `GAP` 的走線、junction 圓點、
   密度）。要逐條核對走線時才加 `--full`——那是上百行，別隨手加。
-- **不要重讀本檔全文**：照本節走，需要哪節再翻哪節。
+- **按需查閱**：先照本節走，需要排版或特殊符號規則時再翻對應章節。
 - **不要複製產生器骨架**：`from icproj import Schematic`，新圖只寫五段資料。
 
 **絕不跳過稽核。** 每一道都抓到過我自己看不出來的錯。
-**也不要用眼睛判讀原圖的鏡射與連接**——那是 §3C 那支腳本的工作。
+§3C 的掃描器能降低鏡射與連接判讀錯誤，但不能取代人工拓樸確認。
 
 ---
 
@@ -43,7 +43,7 @@ Analog Canvas 是活的專案、上游會持續新增符號，所以把 `sym/` �
 **要用的符號不在裡面 → 跑 `python fetch_symbols.py`（約 4 秒），不要一個一個手動找** |
 | 渲染／腳位變換的實作 | 同 repo 的 `apps/editor/src/canvas/canvas-geometry.ts`、`packages/derived/src/*.ts`；
 幾何 ground truth 在 `fixtures/visual-reference/razavi-reference-v1/*.json`（**先查 fixture，不要逐檔翻原始碼**） |
-| 專案檔 schema（**v31**，2026-08-30 實測） | `toolkit/model.mjs`。**網站會改版，chunk 檔名每次都不一樣**：不要手動找，跑 `python refresh_model.py`（它會走完 bundle、用「執行看看」挑出 model chunk，並告訴你新的 schemaVersion）。版本一落後，匯入就可能整張進不去。 |
+| 專案檔 schema（目前 **v32**） | `toolkit/model.mjs` 與 `model-adapter.mjs`。**網站會改版，chunk 檔名與 export 名每次都可能不同**：不要手動找，跑 `python -m toolkit setup`；它會探測 model、更新 `schema_version.py` 並建立穩定 adapter。版本一落後，匯入就可能整張進不去。 |
 | 標籤 RichText 產生器 | 同上，匯出名 `Ws`（`m.f`） |
 | 樣式設定檔 | bundle `dist-DMiczVQI.js` 內 `razavi-textbook-v1` 的 typography |
 | 別人怎麼畫的 | `GET /api/gallery` 列表 →`GET /api/gallery/{id}` 回傳完整 `projectText` |
@@ -183,7 +183,7 @@ LABEL_PORT     = 14   埠標籤離埠中心（圈圈外緣 9.57 → 淨空 4.4�
 | MOS `textbook-3terminal` | 10.6（source-arrow 尖端） | **±18** |
 | BJT `npn` / `pnp` | **0**（C/E 引線就在中心線上） | **±8** |
 | `current-source` | 10.76（圓半徑） | ±18 |
-| `port` / `port-filled` | 9.5（圈圈外緣） | ±11 |
+| `port` / `port-filled` | 9.5（圈圈外緣） | **±14**（用 `LABEL_PORT`） |
 
 > **±14 為什麼不照課本**：課本的圈圈直徑 9.6 單位、我們只有 5，所以課本那個
 > 1.1 單位的淨空搬過來會顯得擠（使用者 2026-08-29 反映並確認 ±14 合適）。
@@ -556,8 +556,8 @@ scale: 2.680 px/unit  (body 67 px = channel bar 25 units)
   照頁面走。
 
 **這條路線要不要跟前面分家？不用**（2026-08-30 討論）。
-會互相污染的只有共用引擎 `icproj.py`，而 `regress.py` 就是為此存在：
-26 張逐位元比對，改壞哪一張當場現形。**規則本來就是分節管轄的**——
+會互相污染的只有共用引擎 `icproj.py`，而 `python -m toolkit regress` 就是為此存在：
+29 份專案在暫存目錄重建並逐位元比對，改壞哪一張當場現形。**規則本來就是分節管轄的**——
 §3A 共用、§3E 管 3a、§3I-b 管 3b；衝突的條目（接地要不要對齊、要不要照原圖形狀）
 各自寫在自己那節。**分開程式只會讓共用的修正要改兩份。**
 
@@ -664,8 +664,8 @@ scale: 2.680 px/unit  (body 67 px = channel bar 25 units)
   "compactness": "compact",          // loose | normal | compact
   "styleOverrides": {                // 每項 0.5 ~ 2.0
     "symbolStrokeScale": 1.5,
-    "wireStrokeScale": 1.3,
-    "annotationStrokeScale": 1.3,
+    "wireStrokeScale": 1.5,
+    "annotationStrokeScale": 1.5,
     "junctionRadiusScale": 1.3,
     "fontScale": 2.0
   }
@@ -789,12 +789,13 @@ dy_below(ink_half, gap=1.5)   # 盒頂離墨跡 gap；盒頂 = baseline − 12.3
 ## 5. 驗證：一個指令（2026-08-30 起）
 
 ```bash
-python scan_figure.py <截圖.png>   # ⓪ 有原圖才跑：抽拓樸與鏡射，見 §3C
-python gen_xxx.py                  # ① 以下全部一次做完
+python toolkit/scan_figure.py <截圖.png>   # ⓪ 有原圖才跑：量測輔助，見 §3C
+python -m toolkit generate gen_xxx         # ① 以下全部一次做完
 ```
 
-`gen_xxx.py` 呼叫的 `f.build()` 依序做六道稽核 → 寫檔 → 用**網站自己的 zod schema**
-驗證 → 用**編輯器自己的產生器**逐位元比對標籤 → 渲染 PNG。**六個計數全部要 0：**
+`gen_xxx.py` 呼叫的 `f.build()` 會先做 self-check 與四個 hard audits，再把暫存專案交給
+**網站自己的 zod schema**驗證、用**編輯器自己的產生器**逐位元比對標籤，最後渲染 PNG。
+全部通過後才原子替換正式成品；任何硬性失敗都以非零狀態結束並保留舊成品。
 
 | 訊息 | 意思 |
 |---|---|
@@ -803,7 +804,7 @@ python gen_xxx.py                  # ① 以下全部一次做完
 | `labels` | 文字壓到走線，或標籤離鄰居太近讀者分不出屬於誰（§3A 規則 1、2） |
 | `on-wire` | 兩件事：①元件坐在**別條 net** 的走線上＝畫出一個不存在的連接；②任何一條線**穿過元件本體**（進一邊、出另一邊）——**同一條 net 也算**。②是 2026-08-30 補的：串疊閘極回授線從一顆 CDM 二極體正中間穿過去，四道稽核全放行，因為兩者同屬 `net-vdd` 被當成「自己的接線」豁免了 |
 | `tees` | 三條線在同一點相會卻沒有 junction ⇒ 不畫圓點（§3H 規則 4，電源軌除外） |
-| `schema: VALID` | 對不上就是網站改版了 → 跑 `refresh_model.py`（§1） |
+| `schema: VALID` | 對不上通常是網站改版了 → 跑 `python -m toolkit setup`（§1） |
 
 **標籤比對**：故意不照編輯器格式的（數值、方塊標題這類正體字）寫進
 `f.build(expect_differ={"v-c1", ...})`，稽核就會變成
@@ -920,15 +921,12 @@ route-marker 留給「真的需要跟著走線自動重排」的情況；靜態�
 
 1. **書的版本不一樣** → 圖號會撞。畫之前要使用者給截圖，或用 PyMuPDF 在 PDF 裡搜
    `Figure N.NN` 定位後裁圖親眼看。
-2. **本機預覽會把每個 junction 都畫成圓點，正式渲染不會在電源軌端點畫點**——
-   那是預覽的近似，不是產物的問題，不要去追。
+2. **預覽與正式渲染都不在電源軌端點畫圓點**；若兩者不同，視為預覽器 regression。
 3. **預覽渲染器要跟著真實樣式走**（字型、字重、下標正斜、power-rail 粗細、虛線框），
    否則比對是自欺。改了樣式就要同步改預覽。
-4. **改 `icproj.py`／產生器的 patch 腳本一律先 Write 成 `.py` 再跑**，
-   不要塞進 Bash heredoc——含反斜線或引號時 shell 會直接 parse error。
-5. **不要用 node import 網站的 bundle chunk**：相依鏈會把 React 整包拉進來，
-   在 node 裡執行到 `document is not defined` 就炸，整份 React 原始碼噴進對話。
-   只有 `model.mjs`（＋`model-dep-0.mjs`）驗證過可以跑；其餘一律只用 `grep` 讀。
+4. 修改共用引擎後必跑單元測試與 `python -m toolkit regress`，不要只驗證手邊那一張。
+5. `refresh_model.py` 只把探針確認可在 Node 執行的 model chunk 寫成 `model.mjs`，
+   再生成穩定 adapter；其他 UI chunks 不應直接 import。同步動作仍有執行上游程式碼的供應鏈風險。
 
 ## 9. 產物位置與命名（使用者裁示，不要放別的地方）
 
@@ -942,26 +940,25 @@ route-marker 留給「真的需要跟著走線自動重排」的情況；靜態�
 
 ## 10. 檔案位置
 
-成品 `.icproj.json` 在 repo 的 `out/`；工具全在 `toolkit/`；`examples/` 是從網站匯出的 PNG。
+成品 `.icproj.json` 在 repo 的 `out/` 且會進版控；工具全在 `toolkit/`；`examples/` 是 gallery PNG。
 
-> 首次 clone 先跑 `python toolkit/refresh_model.py` 與 `python toolkit/fetch_symbols.py`：`model.mjs` 與 `sym/*.json` 是產物，**不進版控**。
+> 首次 clone 先跑 `python -m toolkit setup`：`model*.mjs` 與 `sym/*.json` 是可重建 cache，**不進版控**。
 
 | 檔 | 用途 |
 |---|---|
-| `icproj.py` | **共用引擎**：schema 組裝、六道稽核、SVG 預覽、schema／標籤驗證、PNG 渲染 |
+| `icproj.py` | **共用引擎**：schema 組裝、self-check＋四個 hard audits、原子輸出、SVG 預覽、schema／標籤驗證、PNG 渲染 |
 | `scan_figure.py` | ⓪ 截圖 → 拓樸／鏡射／scale／密度基準（§3C） |
 | `fetch_symbols.py` | 同步符號庫（缺符號時先跑這支） |
-| `refresh_model.py` | 網站改版時重抓 schema（會告訴你新的 schemaVersion） |
-| `regress.py` | 改共用程式後必跑：23 張逐位元比對（`--accept` 換基準） |
-| `publish_to_repo.py` | 發佈到私有 repo（`--dry-run` 只檢查） |
-| `validate.mjs` / `check_labels.mjs` / `model.mjs` | 網站自己的 schema 與標籤產生器，`build()` 會自動呼叫 |
+| `refresh_model.py` | 網站改版時重抓 schema、自動更新版本並建立穩定 model adapter |
+| `cli.py` / `python -m toolkit` | doctor、setup、generate、validate、29 份輸出的隔離回歸 |
+| `validate.mjs` / `check_labels.mjs` / `model*.mjs` | 網站自己的 schema 與標籤產生器，`build()` 會自動呼叫 |
 | `sym\*.json` | 符號腳位與外觀（**有檔案 ≠ 可以放，見 §2**） |
 
-產生器 23 支，`ls gen_*.py`。挑範本：
+產生器 29 支，`python -m toolkit list` 可列出。挑範本：
 
 | 要畫的東西 | 抄哪支 |
 |---|---|
-| 最乾淨的骨架（opamp＋電阻） | `gen_fig848.py`（141 行） |
+| 最乾淨的骨架（opamp＋電阻） | `gen_fig848.py` |
 | 被動元件／旋轉 90／數值標籤 | `gen_fig794.py` |
 | 差動對／多尾電流／差動輸出埠 | `gen_fig1035.py` |
 | BJT ＋ 電源軌 | `gen_fig5170.py` |

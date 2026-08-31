@@ -1216,7 +1216,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-8-55",
   "name": "Razavi Fig. 8.55 — summing amplifier",
-  "schemaVersion": 31,
+  "schemaVersion": 32,
   "source": {
     "dialect": "none",
     "entry": null,

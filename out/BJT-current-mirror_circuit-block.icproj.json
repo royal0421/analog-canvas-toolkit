@@ -924,7 +924,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-bjt-mirror-block",
   "name": "BJT current mirror driving a circuit block",
-  "schemaVersion": 31,
+  "schemaVersion": 32,
   "source": {
     "dialect": "none",
     "entry": null,

@@ -1319,7 +1319,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-7-94",
   "name": "Razavi Fig. 7.94 — source follower with AC-coupled 50 ohm load",
-  "schemaVersion": 31,
+  "schemaVersion": 32,
   "source": {
     "dialect": "none",
     "entry": null,

@@ -1,6 +1,7 @@
 # Upstream assets -- fetched, never redistributed (see README "來源")
 toolkit/sym/
 toolkit/model.mjs
+toolkit/model-adapter.mjs
 toolkit/model.mjs.*.bak
 toolkit/model-dep-*.mjs
 

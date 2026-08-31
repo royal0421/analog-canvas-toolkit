@@ -1367,7 +1367,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-handdrawn-lc-tank-ss",
   "name": "LC tank small-signal model with g_m1 V_1 output stage",
-  "schemaVersion": 31,
+  "schemaVersion": 32,
   "source": {
     "dialect": "none",
     "entry": null,

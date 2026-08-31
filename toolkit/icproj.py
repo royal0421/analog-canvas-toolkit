@@ -24,7 +24,9 @@ enforces automatically are:
   §3E  a component may not sit on a wire belonging to another net
   §6   junctions may not share a coordinate with a terminal (zero-length route)
 """
-import json, os, hashlib, re, math
+import json, os, hashlib, re, math, tempfile
+
+from schema_version import SCHEMA_VERSION
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SYMDIR = os.path.join(HERE, "sym")
@@ -40,7 +42,6 @@ LABEL_SIZE = 0.58          # BASE = 17.53 units = Razavi's own label
                            # no more 1.2x correction factor.
 FONT_SCALE = 2.0
 HERE_TOOLKIT = os.path.dirname(os.path.abspath(__file__))
-SCHEMA_VERSION = 31        # keep in step with refresh_model.py
 LEG_BUDGET = 40
 LABEL_INK_GAP = 8
 LABEL_PORT = 14            # port label offset from the port CENTRE.  The
@@ -300,6 +301,18 @@ def _box_gap_box(a, b):
     return math.hypot(dx, dy)
 
 
+class BuildValidationError(RuntimeError):
+    """Raised when a project fails a hard validation gate.
+
+    ``build()`` writes and validates a temporary project first, so the existing
+    known-good output is left untouched when this exception is raised.
+    """
+
+    def __init__(self, failures):
+        self.failures = tuple(failures)
+        super().__init__("project validation failed: " + "; ".join(failures))
+
+
 class Schematic(object):
     def __init__(self, project_id, project_name, netlist_name,
                  out_proj, out_svg, nmos_bulk_net="net-gnd-1",
@@ -415,6 +428,17 @@ class Schematic(object):
         variant = next((i.get("symbolVariantId") for i in self.instances
                         if i["id"] == iid), None)
         return ink_box(sym_id, variant, x, y, mirror, rot)
+
+    def _is_hidden_terminal(self, iid, pinname):
+        """True only for the implicit bulk pin of a three-terminal MOS.
+
+        B is also the base of a BJT and the second input of logic gates; those
+        are ordinary visible terminals and must be routed.
+        """
+        if pinname != "B":
+            return False
+        inst = next((i for i in self.instances if i["id"] == iid), None)
+        return bool(inst and inst.get("mosBulkBinding"))
 
     # ---------------------------------------------------------- topology
     def junction(self, jid, net_id, x, y, role="branch"):
@@ -550,9 +574,9 @@ class Schematic(object):
                 "(bundle dist-CE3Pi34B.js, function De).  Arrows and component "
                 "instances DO take a colour -- text does not, so do not mix "
                 "the two or the picture reads as half-finished.")
-        return tid
         if owner:
             self._text_owner[tid] = owner
+        return tid
 
     def rect(self, rid, cx, cy, w, h, style="solid"):
         """A drafting rectangle -- block-diagram boxes (FF, VCO, Latch) and
@@ -653,7 +677,7 @@ class Schematic(object):
     # ---------------------------------------------------------- build
     def build(self, long_haul=(), rail_ends=(), viewbox=(100, 75, 400, 310),
               extra_evidence=None, verbose=True, density_ref=None,
-              expect_differ=()):
+              expect_differ=(), strict=True):
         long_haul, rail_ends = set(long_haul), set(rail_ends)
         self._long_haul = long_haul
         doc = {
@@ -711,39 +735,117 @@ class Schematic(object):
         print("self-check errors:", len(errs))
         for e in errs:
             print("  !", e)
+        if strict and errs:
+            raise BuildValidationError(["self-check=%d" % len(errs)])
 
-        with open(self.out_proj, "w", encoding="utf-8") as f:
-            json.dump(project, f, ensure_ascii=False, indent=2)
-        print("wrote", os.path.getsize(self.out_proj), "bytes ->",
-              os.path.basename(self.out_proj))
-
+        # Hard audits always run.  ``verbose`` controls supplementary layout
+        # diagnostics only; it must never turn validation off.
+        legs = self._leg_audit(long_haul)
+        labels = self._label_audit()
+        onwire = self._wire_clearance()
+        tees = self._tee_audit()
+        print("audits: legs %d | labels %d | on-wire %d | tees %d"
+              "   (all must be 0)" % (legs, labels, onwire, tees))
         if verbose:
-            # One summary line when everything is clean; each audit still
-            # prints its own detail lines above whenever it finds something.
-            legs = self._leg_audit(long_haul)
-            labels = self._label_audit()
-            onwire = self._wire_clearance()
-            tees = self._tee_audit()
-            print("audits: legs %d | labels %d | on-wire %d | tees %d"
-                  "   (all must be 0)" % (legs, labels, onwire, tees))
             self._crowding()
             self._pitch()
             self._density(density_ref)
         self._preview(viewbox)
-        if verbose:
-            self._verify(expect_differ)
+
+        out_dir = os.path.dirname(os.path.abspath(self.out_proj))
+        os.makedirs(out_dir, exist_ok=True)
+        fd, staged = tempfile.mkstemp(
+            prefix=".%s." % os.path.basename(self.out_proj),
+            suffix=".tmp", dir=out_dir)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+                json.dump(project, f, ensure_ascii=False, indent=2)
+                f.write("\n")
+            external = self._verify(expect_differ, staged)
+            failures = []
+            if errs:
+                failures.append("self-check=%d" % len(errs))
+            for key, count in (("legs", legs), ("labels", labels),
+                               ("on-wire", onwire), ("tees", tees)):
+                if count:
+                    failures.append("%s=%d" % (key, count))
+            failures.extend(external)
+            if strict and failures:
+                raise BuildValidationError(failures)
+            os.replace(staged, self.out_proj)
+        finally:
+            if os.path.exists(staged):
+                os.remove(staged)
+        print("wrote", os.path.getsize(self.out_proj), "bytes ->",
+              os.path.basename(self.out_proj))
         return project
 
     # ---------------------------------------------------------- checks
     def _selfcheck(self, rail_ends):
         errs = []
         self.warnings = []
+
+        # IDs are document-wide references in the Analog Canvas schema.  A
+        # duplicate can silently redirect an anchor or endpoint to the wrong
+        # object, so catch it before doing any geometry work.
+        seen_ids = {}
+        collections = (
+            ("instance", self.instances), ("junction", self.junctions),
+            ("net", self.nets), ("route", self.routes),
+            ("terminal", self.terminals), ("annotation", self.annotations),
+            ("drafting", self.drafting),
+        )
+        for kind, objects in collections:
+            for obj in objects:
+                oid = obj.get("id")
+                if not oid:
+                    errs.append("%s has no id" % kind)
+                elif oid in seen_ids:
+                    errs.append("duplicate id %s (%s and %s)"
+                                % (oid, seen_ids[oid], kind))
+                else:
+                    seen_ids[oid] = kind
+        for route in self.routes:
+            for leg in route["legs"]:
+                lid = leg.get("id")
+                if lid in seen_ids:
+                    errs.append("duplicate id %s (%s and route-leg)"
+                                % (lid, seen_ids[lid]))
+                else:
+                    seen_ids[lid] = "route-leg"
+
         net_ids = {n["id"] for n in self.nets}
+        instance_ids = set(self.placed)
         jpos = {j["id"]: (j["position"]["x"], j["position"]["y"])
                 for j in self.junctions}
+        junction_net = {j["id"]: j["netId"] for j in self.junctions}
+        for j in self.junctions:
+            if j["netId"] not in net_ids:
+                errs.append("junction %s unknown net %s"
+                            % (j["id"], j["netId"]))
+
+        terminal_nets = {}
         for n in self.nets:
             for t in n["terminals"]:
+                key = (t["instanceId"], t["pinName"])
+                terminal_nets.setdefault(key, set()).add(n["id"])
+                if t["instanceId"] not in instance_ids:
+                    errs.append("net %s references unknown instance %s"
+                                % (n["id"], t["instanceId"]))
+                    continue
                 self.pin(t["instanceId"], t["pinName"])
+        for (iid, pinname), owners in sorted(terminal_nets.items()):
+            if len(owners) > 1:
+                errs.append("terminal %s.%s appears in multiple nets: %s"
+                            % (iid, pinname, ", ".join(sorted(owners))))
+        for terminal in self.terminals:
+            if terminal["netId"] not in net_ids:
+                errs.append("cell terminal %s unknown net %s"
+                            % (terminal["id"], terminal["netId"]))
+            for iid in terminal["interfaceInstanceIds"]:
+                if iid not in instance_ids:
+                    errs.append("cell terminal %s references unknown instance %s"
+                                % (terminal["id"], iid))
         # §6: a junction may not sit on a terminal
         pinpos = {}
         for n in self.nets:
@@ -758,6 +860,27 @@ class Schematic(object):
         for r in self.routes:
             if r["netId"] not in net_ids:
                 errs.append("route %s unknown net" % r["id"])
+
+            anchors = [r["start"]]
+            anchors.extend(lg["to"].get("endpoint") for lg in r["legs"]
+                           if lg["to"]["kind"] == "endpoint")
+            for anchor in anchors:
+                if anchor["kind"] == "terminal":
+                    key = (anchor["instanceId"], anchor["pinName"])
+                    if r["netId"] not in terminal_nets.get(key, set()):
+                        errs.append("route %s on %s touches terminal %s.%s on %s"
+                                    % (r["id"], r["netId"], key[0], key[1],
+                                       ",".join(sorted(terminal_nets.get(
+                                           key, {"no net"})))))
+                elif anchor["kind"] == "junction":
+                    owner = junction_net.get(anchor["junctionId"])
+                    if owner != r["netId"]:
+                        errs.append("route %s on %s touches junction %s on %s"
+                                    % (r["id"], r["netId"],
+                                       anchor["junctionId"], owner or "no net"))
+                else:
+                    errs.append("route %s has unsupported endpoint kind %s"
+                                % (r["id"], anchor.get("kind")))
         for rid, x0, y0, x1, y1 in self.segments():
             if x0 != x1 and y0 != y1:
                 errs.append("route %s not orthogonal (%s,%s)->(%s,%s)"
@@ -780,12 +903,12 @@ class Schematic(object):
             # (user's own edit to Fig 8.69, 2026-08-29).
             pos = {}
             for t in n["terminals"]:
-                if t["pinName"] != "B":
+                if not self._is_hidden_terminal(t["instanceId"], t["pinName"]):
                     pos.setdefault(self.pin(t["instanceId"], t["pinName"]),
                                    []).append((t["instanceId"], t["pinName"]))
             coincident = {k for v in pos.values() if len(v) > 1 for k in v}
             for t in n["terminals"]:
-                if t["pinName"] == "B":
+                if self._is_hidden_terminal(t["instanceId"], t["pinName"]):
                     continue                 # hidden bulk: bound, not routed
                 key = (t["instanceId"], t["pinName"])
                 if key not in routed and key not in coincident:
@@ -827,7 +950,8 @@ class Schematic(object):
                 dx += abs(nxt[0] - pt[0])
                 dy += abs(nxt[1] - pt[1])
                 pt = nxt
-            bad = max(legs) > LEG_BUDGET and r["id"] not in long_haul
+            bad = (max(legs, default=0) > LEG_BUDGET
+                   and r["id"] not in long_haul)
             over += bad
             if loud or bad:
                 print("%-14s %5d %5d  %s%s" % (r["id"], dy, dx, legs,
@@ -912,7 +1036,7 @@ class Schematic(object):
         pinpos = {}
         for n in self.nets:
             for t in n["terminals"]:
-                if t["pinName"] != "B":
+                if not self._is_hidden_terminal(t["instanceId"], t["pinName"]):
                     pinpos.setdefault(self.pin(t["instanceId"], t["pinName"]),
                                       []).append(t["instanceId"])
         for ids in pinpos.values():
@@ -954,7 +1078,7 @@ class Schematic(object):
         rail = {r["id"] for r in self.routes
                 if r.get("presentation") == "power-rail"}
         net_of = {r["id"]: r["netId"] for r in self.routes}
-        jpos = {(j["position"]["x"], j["position"]["y"])
+        jpos = {(j["netId"], j["position"]["x"], j["position"]["y"])
                 for j in self.junctions}
         pins = set()
         for n in self.nets:
@@ -964,8 +1088,8 @@ class Schematic(object):
         for rid, x0, y0, x1, y1 in self.segments():
             segs.setdefault(net_of.get(rid), []).append((x0, y0, x1, y1))
             if rid in rail:
-                on_rail.add((x0, y0))
-                on_rail.add((x1, y1))
+                on_rail.add((net_of.get(rid), x0, y0))
+                on_rail.add((net_of.get(rid), x1, y1))
 
         def unit(a, b):
             return (0 if a == b else (1 if b > a else -1))
@@ -978,7 +1102,8 @@ class Schematic(object):
                 pts.add((x0, y0))
                 pts.add((x1, y1))
             for px, py in sorted(pts):
-                if (px, py) in jpos or (px, py) in pins or (px, py) in on_rail:
+                if ((net, px, py) in jpos or (px, py) in pins
+                        or (net, px, py) in on_rail):
                     continue
                 dirs = set()
                 for x0, y0, x1, y1 in ss:
@@ -1000,67 +1125,109 @@ class Schematic(object):
                     bad += 1
         return bad
 
-    def _verify(self, expect_differ):
-        """Steps 4 and 5 of the SOP, run from inside step 3.
-
-        Every tool call re-sends the whole conversation, so four round trips
-        per figure (generate / validate / check_labels / render) cost far more
-        than the bytes they print.  This collapses them into one.
-        `AC_FAST=1` skips it -- regress.py sets that, since it runs 23 figures.
-        """
+    def _verify(self, expect_differ, project_path):
+        """Validate external seams and return hard-failure descriptions."""
         if os.environ.get("AC_FAST"):
-            return
+            print("  external checks: SKIPPED (AC_FAST=1)")
+            return []
+
+        import pathlib
+        import shutil
         import subprocess
-        here, proj = HERE_TOOLKIT, self.out_proj
 
-        def node(script, *args):
+        failures = []
+        here = HERE_TOOLKIT
+
+        def run(args):
             try:
-                r = subprocess.run(["node", os.path.join(here, script), proj]
-                                   + list(args), capture_output=True,
-                                   text=True, encoding="utf-8",
-                                   errors="replace", timeout=120)
-                return r.stdout + r.stderr
-            except Exception as e:                       # noqa: BLE001
-                return "COULD NOT RUN %s: %s" % (script, e)
+                return subprocess.run(args, capture_output=True, text=True,
+                                      encoding="utf-8", errors="replace",
+                                      timeout=120)
+            except Exception as exc:                     # noqa: BLE001
+                return exc
 
-        out = node("validate.mjs")
-        line = [l for l in out.splitlines() if "PROJECT" in l]
-        if line and "VALID" in line[0]:
+        def output(result):
+            if isinstance(result, Exception):
+                return str(result)
+            return (result.stdout or "") + (result.stderr or "")
+
+        result = run(["node", os.path.join(here, "validate.mjs"),
+                      project_path])
+        out = output(result)
+        valid = (not isinstance(result, Exception) and result.returncode == 0
+                 and any("PROJECT VALID" in line for line in out.splitlines()))
+        if valid:
             print("  schema: VALID (v%d)" % SCHEMA_VERSION)
         else:
             print("  schema: FAILED")
             print(out.strip()[-1200:])
+            failures.append("schema")
 
-        out = node("check_labels.mjs")
-        differ = [l.split()[2] for l in out.splitlines()
-                  if l.startswith("DIFFER ") and len(l.split()) > 2]
-        expect = set(expect_differ)
-        unexpected = [d for d in differ if d not in expect]
-        missing = [d for d in expect if d not in differ]
-        if not unexpected and not missing:
-            print("  labels: OK (%d declared plain)" % len(expect))
+        result = run(["node", os.path.join(here, "check_labels.mjs"),
+                      project_path])
+        out = output(result)
+        completed = bool(re.search(
+            r"(?:All \d+ labels are byte-identical to the editor's own "
+            r"builder|\d+ of \d+ labels differ)\.",
+            out))
+        if isinstance(result, Exception) or result.returncode not in (0, 1) \
+                or not completed:
+            print("  labels: FAILED (checker did not complete)")
+            print(out.strip()[-1200:])
+            failures.append("label-checker")
         else:
-            for d in unexpected:
-                print("  ! label %s differs from the editor's generator and is"
-                      " not declared in expect_differ" % d)
-            for d in missing:
-                print("  ! %s is declared in expect_differ but now MATCHES --"
-                      " drop it from the list" % d)
+            differ = [line.split()[2] for line in out.splitlines()
+                      if line.startswith("DIFFER ") and len(line.split()) > 2]
+            expect = set(expect_differ)
+            unexpected = [item for item in differ if item not in expect]
+            missing = [item for item in expect if item not in differ]
+            if not unexpected and not missing:
+                print("  labels: OK (%d declared plain)" % len(expect))
+            else:
+                for item in unexpected:
+                    print("  ! label %s differs from the editor's generator and"
+                          " is not declared in expect_differ" % item)
+                for item in missing:
+                    print("  ! %s is declared in expect_differ but now MATCHES"
+                          " -- drop it from the list" % item)
+                failures.append("labels")
 
-        chrome = (r"C:\Program Files\Google\Chrome\Application\chrome.exe")
+        if os.environ.get("AC_NO_RENDER"):
+            print("  png: SKIPPED (AC_NO_RENDER=1)")
+            return failures
+
+        candidates = [os.environ.get("CHROME_PATH")]
+        candidates.extend(shutil.which(name) for name in (
+            "google-chrome", "google-chrome-stable", "chromium",
+            "chromium-browser", "chrome", "chrome.exe"))
+        candidates.extend((
+            r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+            r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        ))
+        chrome = next((path for path in candidates
+                       if path and os.path.isfile(path)), None)
+        if not chrome:
+            print("  png: FAILED (Chrome/Chromium not found; set CHROME_PATH or"
+                  " AC_NO_RENDER=1)")
+            failures.append("png-renderer")
+            return failures
+
         png = os.path.splitext(self.out_svg)[0] + ".png"
-        if os.path.isfile(chrome):
-            w, h = self.preview_px[0] + 20, self.preview_px[1] + 20
-            try:
-                subprocess.run([chrome, "--headless=new",
-                                "--screenshot=" + png,
-                                "--window-size=%d,%d" % (w, h),
-                                "--default-background-color=FFFFFFFF",
-                                "file:///" + self.out_svg.replace("\\", "/")],
-                               capture_output=True, timeout=120)
-                print("  png: %s (%dx%d)" % (os.path.basename(png), w, h))
-            except Exception as e:                       # noqa: BLE001
-                print("  png: FAILED %s" % e)
+        if os.path.exists(png):
+            os.remove(png)
+        w, h = self.preview_px[0] + 20, self.preview_px[1] + 20
+        result = run([chrome, "--headless=new", "--screenshot=" + png,
+                      "--window-size=%d,%d" % (w, h),
+                      "--default-background-color=FFFFFFFF",
+                      pathlib.Path(self.out_svg).resolve().as_uri()])
+        if (not isinstance(result, Exception) and result.returncode == 0
+                and os.path.isfile(png) and os.path.getsize(png) > 0):
+            print("  png: %s (%dx%d)" % (os.path.basename(png), w, h))
+        else:
+            print("  png: FAILED %s" % output(result).strip()[-800:])
+            failures.append("png-render")
+        return failures
 
     def _wire_clearance(self):
         """A component must not sit on a wire belonging to a DIFFERENT net.

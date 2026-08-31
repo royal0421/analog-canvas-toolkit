@@ -1992,7 +1992,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-14-36b",
   "name": "Razavi Fig. 14.36(b) — biquad from a difference amp and two integrators",
-  "schemaVersion": 31,
+  "schemaVersion": 32,
   "source": {
     "dialect": "none",
     "entry": null,

@@ -7,6 +7,8 @@ Built with the spacing rules in SOP.md.
 """
 import json, os, hashlib, re
 
+from schema_version import SCHEMA_VERSION
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, os.pardir, "out")   # .icproj.json lands here
 SYMDIR = os.path.join(HERE, "sym")
@@ -385,7 +387,7 @@ project = {
     "externalSubcircuitDefinitions": [],
     "id": "project-razavi-fig-9-34",
     "name": "Razavi Fig. 9.34 — current generation for pnp devices",
-    "schemaVersion": 31,
+    "schemaVersion": SCHEMA_VERSION,
     "source": {"dialect": "none", "entry": None, "files": [],
                "sourcePolicy": "copy"},
     "structureRevision": 0,
@@ -460,8 +462,9 @@ print("self-check errors:", len(errs))
 for e in errs:
     print("  !", e)
 
-with open(OUT_PROJ, "w", encoding="utf-8") as f:
+with open(OUT_PROJ, "w", encoding="utf-8", newline="\n") as f:
     json.dump(project, f, ensure_ascii=False, indent=2)
+    f.write("\n")
 print("wrote", os.path.getsize(OUT_PROJ), "bytes")
 
 
