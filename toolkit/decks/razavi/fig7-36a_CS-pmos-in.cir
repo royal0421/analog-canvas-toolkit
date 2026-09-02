@@ -1,0 +1,15 @@
+* hand-written from Razavi Fig. 7.36(a) -- topology only, no geometry
+.title Razavi Fig. 7.36(a) — CS stage with a degenerated current source
+.global VDD
+.subckt Fig7_36a vin vb vout
+.iodir vin=input vb=input vout=output
+.name vin V_in
+.name vb V_b
+.name vout V_out
+M2 vout vin VDD VDD pmos
+.name M2 M_2
+M1 vout vb s 0 nmos
+.name M1 M_1
+RS s 0
+.name RS R_S
+.ends

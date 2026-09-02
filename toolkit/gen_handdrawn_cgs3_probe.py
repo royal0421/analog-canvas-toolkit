@@ -117,4 +117,4 @@ f.build(long_haul={"r-vdd-rail-1",   # 50: rail on to the M_1 riser
         rail_ends={"jvdd-start", "jvdd-end"},
         viewbox=(60, 40, 320, 330),
         # plain on purpose: "1/" is arithmetic, not a device name
-        expect_differ={"n-gm"})
+        expect_differ=set())

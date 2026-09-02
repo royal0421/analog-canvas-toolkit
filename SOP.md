@@ -1,36 +1,36 @@
 # SOP — 用 Analog Canvas 畫課本級電路圖
 
 > 建立 2026-08-28。基準成品：`Razavi_Fig_9_83_CG.icproj.json`（Razavi 習題 68 Fig. 9.83 共閘級）。
-> 做法＝**本機產生 `.icproj.json` → 使用者在網站 File / Import Project File 匯入**。
-> 首次設定仍需連網同步符號與正式站 schema；同步後的日常生成在本機完成。
+> 做法＝**離線產生 `.icproj.json` → 使用者在網站 File / Import Project File 匯入**。
+> 網站正式站的 Agent／MCP 介面是關閉的（bundle 內 `jp({production:!0,configured:void 0})` → false），所以不要嘗試連線。
 
 ---
 
 ## 0. 一句話流程
 
-1. `python toolkit/scan_figure.py <截圖>` — 有原圖才跑。量測走線、鏡射、GAP、密度基準（§3C），拓樸仍要人工確認。
-2. 抄 `toolkit/gen_fig848.py`，只改 placement / junctions / nets / routes / annotations **五段**。
-3. `python -m toolkit generate gen_xxx` — 內部稽核＋schema 驗證＋標籤比對＋渲染 PNG。
-   硬性檢查全部通過後才會原子更新 `out/` 成品，再親眼檢查 PNG。
+1. `python scan_figure.py <截圖>` — 有原圖才跑。拓樸、鏡射、GAP、密度基準（§3C）。
+2. 抄 `gen_fig848.py`，只改 placement / junctions / nets / routes / annotations **五段**（約 140 行）。
+3. `python gen_xxx.py` — **這一步就是全部**：七道稽核＋schema 驗證＋標籤比對＋渲染 PNG。
+   全部 0 就去看那張 PNG，對了就交付。
 
 ```
-self-check errors: 0
-audits: legs 0 | labels 0 | on-wire 0 | tees 0   (all must be 0)
-  schema: VALID (v32)
+audits: legs 0 | labels 0 | on-wire 0 | tees 0 | shorts 0  (all 0)
+  schema: VALID (v36)
   labels: OK (3 declared plain)
   png: preview_xxx.png (1770x895)
 ```
 
-**目標：一張圖 5~10 分鐘。** 保持流程短而可重現的四條規則：
+**目標：一張圖 5~10 分鐘。** 省時間與省 token 的四條硬規則：
 - **不要分開跑 `validate.mjs` / `check_labels.mjs` / Chrome**：`build()` 已經全包了。
-  （只略過 PNG：`AC_NO_RENDER=1`；`AC_FAST=1` 連外部驗證也會略過，只能除錯；完整走線表：`AC_VERBOSE=1`。）
+  每一次工具呼叫都要重送整段對話，四次變一次是這裡最大的省法。
+  （只想快速跑產物：`AC_FAST=1`；想看完整走線表：`AC_VERBOSE=1`。）
 - **`scan_figure.py` 預設已經是精簡輸出**（只印 MOS 表、帶 `GAP` 的走線、junction 圓點、
   密度）。要逐條核對走線時才加 `--full`——那是上百行，別隨手加。
-- **按需查閱**：先照本節走，需要排版或特殊符號規則時再翻對應章節。
+- **不要重讀本檔全文**：照本節走，需要哪節再翻哪節。
 - **不要複製產生器骨架**：`from icproj import Schematic`，新圖只寫五段資料。
 
 **絕不跳過稽核。** 每一道都抓到過我自己看不出來的錯。
-§3C 的掃描器能降低鏡射與連接判讀錯誤，但不能取代人工拓樸確認。
+**也不要用眼睛判讀原圖的鏡射與連接**——那是 §3C 那支腳本的工作。
 
 ---
 
@@ -43,7 +43,7 @@ Analog Canvas 是活的專案、上游會持續新增符號，所以把 `sym/` �
 **要用的符號不在裡面 → 跑 `python fetch_symbols.py`（約 4 秒），不要一個一個手動找** |
 | 渲染／腳位變換的實作 | 同 repo 的 `apps/editor/src/canvas/canvas-geometry.ts`、`packages/derived/src/*.ts`；
 幾何 ground truth 在 `fixtures/visual-reference/razavi-reference-v1/*.json`（**先查 fixture，不要逐檔翻原始碼**） |
-| 專案檔 schema（目前 **v32**） | `toolkit/model.mjs` 與 `model-adapter.mjs`。**網站會改版，chunk 檔名與 export 名每次都可能不同**：不要手動找，跑 `python -m toolkit setup`；它會探測 model、更新 `schema_version.py` 並建立穩定 adapter。版本一落後，匯入就可能整張進不去。 |
+| 專案檔 schema（**v36**，2026-09-01 實測） | `toolkit/model.mjs`。**網站會改版，chunk 檔名每次都不一樣**：不要手動找，跑 `python refresh_model.py`（它會走完 bundle、用「執行看看」挑出 model chunk，並告訴你新的 schemaVersion）。版本一落後，匯入就可能整張進不去。 |
 | 標籤 RichText 產生器 | 同上，匯出名 `Ws`（`m.f`） |
 | 樣式設定檔 | bundle `dist-DMiczVQI.js` 內 `razavi-textbook-v1` 的 typography |
 | 別人怎麼畫的 | `GET /api/gallery` 列表 →`GET /api/gallery/{id}` 回傳完整 `projectText` |
@@ -153,6 +153,64 @@ grep -c 'symbolId:`<要查的 id>`,' <bundle chunk>    # 0 = 不能用
 `drafting.objects` 的合法 `kind` 是 **`arrow` / `text` / `rectangle` / `circle`**
 （model.mjs 的 zod enum）；`icproj.py` 目前包了前兩種。
 
+## 2A. schema v36 改了什麼（2026-09-01，網站又改版）
+
+> 症狀：舊 json **匯不進去、或匯進去格式跑掉**。原因是網站從 v31 跳到 **v36**，
+> 而且改的不只是版號。跑 `python refresh_model.py` 抓新 model 之後，
+> 用 `node _diag.mjs <檔>` 之類的方式讓 zod 自己說哪裡不合，不要猜。
+
+| v31 寫法 | v36 寫法 |
+|---|---|
+| `instance.schematicReference: "RG"` | **`instance.reference`**（頂層） |
+| `instance.schematicName: <RichText>` | **整個沒了**——印出來的字改放在標籤的 `formatOverride` |
+| `instance.netlist.reference` | **整個沒了** |
+| 標籤 `binding.kind: "instance-schematic-name"` | **`"instance-reference"`**（選項：instance-reference／instance-value／net-name／cell-terminal-name） |
+| evidence `owner.kind: "explicit-net-property"` | **整個沒了**（選項：net-label／power-marker／global-declaration） |
+| 每條電源網兩筆 evidence | **一筆就好**，`owner = {kind:"power-marker", objectId:<軌的端點 junction 或 vdd-port>}` |
+
+**四條會讓你卡住的隱形規則**
+
+1. **`reference` 必須等於標籤攤平後的字**。schema 的訊息是
+   `A bound RichText format override must preserve the semantic name text`。
+   我們的 `R_1` 底線只是「下標從這裡開始」的記號，**不可以進檔案**：
+   reference 寫 `R1`，`formatOverride` 才是 `R` + 下標 `1`。
+   `icproj.flat_text()` 就是做這件事，`place()` 會自動算。
+2. **電源符號不可以有 `reference`**（`ground`、`vdd-port`）：
+   `A power marker is identified by its visible Net name, not an Instance reference`。
+3. **`reference` 不可以重複**。對稱電路兩半印同一個名字（`R`、`L_2`、`C_1`）
+   在 v36 是違法的。做法：**第二顆給一個唯一但不顯示的 reference，
+   名字改用 drafting text 畫**（`icproj` 的 `unbound` 機制會自動處理，
+   `inst_label()` 碰到就自己改走 `f.text()`）。
+4. **`global-declaration` 不能拿來頂替 `explicit-net-property`**：
+   它會要求 `sourceNetId` 對應到一個真的 SPICE 來源檔
+   （`Global declaration has no matching SPICE source owner`），離線畫的圖沒有。
+
+### ⚠️ 編輯器的字型產生器也換了規則
+
+v36 的 `Ws()` **一律在第一個字元後面斷開，其餘原封不動當下標**：
+
+```
+"M1"   -> M + 下標 "1"        ✓ 我們要的
+"M_1"  -> M + 下標 "_1"       ✗ 底線會印出來
+"VDD"  -> V + 斜體下標 "DD"    ✓（dd/ss/cc/ee/bb 仍是斜體）
+"Vout" -> V + 下標 "out"      ✓
+"IN"   -> I + 下標 "N"        ✗ 所以埠標籤還是要 formatOverride
+```
+
+所以：**cell terminal 的 `name` 也要寫成沒有底線的形式**（`Vout` 而不是 `V_out`），
+`icproj.terminal()` 會自己攤平並把底線形留在 `self.term_names` 給 `formatOverride` 用。
+`check_labels.mjs` 的還原函式同步改成「直接攤平」——舊版會補回一個底線，
+那在 v36 等於去問產生器一個沒人寫過的名字，整批誤報 DIFFER。
+
+### ⚠️ bundle 的匯出名字每次改版都不一樣
+
+`validate.mjs` 舊版寫死 `m.a`（schema）與 `m.n`（factory），v36 變成 `s` 與 `i`，
+`check_labels.mjs` 寫死的 `m.f` 直接消失。**兩支都已改成「用跑的找」**：
+factory ＝ 呼叫後回得出 `{documents:[], schemaVersion:number}` 的那個；
+schema ＝ `safeParse(factory 輸出)` 會成功的那個；
+名字產生器 ＝ 把 `"M_1"` 變成「斜體 M ＋下標」的那個。
+**以後改版不要再去改字母，直接跑就好。**
+
 ## 3A. 絕對排版規則（**優先用這個，不需要原圖**）
 
 > 目標：沒有原圖也能直接畫出課本級的密度。以下常數是 Fig 9.83 / 9.34 多輪校正後的定案。
@@ -183,7 +241,7 @@ LABEL_PORT     = 14   埠標籤離埠中心（圈圈外緣 9.57 → 淨空 4.4�
 | MOS `textbook-3terminal` | 10.6（source-arrow 尖端） | **±18** |
 | BJT `npn` / `pnp` | **0**（C/E 引線就在中心線上） | **±8** |
 | `current-source` | 10.76（圓半徑） | ±18 |
-| `port` / `port-filled` | 9.5（圈圈外緣） | **±14**（用 `LABEL_PORT`） |
+| `port` / `port-filled` | 9.5（圈圈外緣） | ±11 |
 
 > **±14 為什麼不照課本**：課本的圈圈直徑 9.6 單位、我們只有 5，所以課本那個
 > 1.1 單位的淨空搬過來會顯得擠（使用者 2026-08-29 反映並確認 ±14 合適）。
@@ -556,8 +614,8 @@ scale: 2.680 px/unit  (body 67 px = channel bar 25 units)
   照頁面走。
 
 **這條路線要不要跟前面分家？不用**（2026-08-30 討論）。
-會互相污染的只有共用引擎 `icproj.py`，而 `python -m toolkit regress` 就是為此存在：
-29 份專案在暫存目錄重建並逐位元比對，改壞哪一張當場現形。**規則本來就是分節管轄的**——
+會互相污染的只有共用引擎 `icproj.py`，而 `regress.py` 就是為此存在：
+26 張逐位元比對，改壞哪一張當場現形。**規則本來就是分節管轄的**——
 §3A 共用、§3E 管 3a、§3I-b 管 3b；衝突的條目（接地要不要對齊、要不要照原圖形狀）
 各自寫在自己那節。**分開程式只會讓共用的修正要改兩份。**
 
@@ -655,6 +713,272 @@ scale: 2.680 px/unit  (body 67 px = channel bar 25 units)
 **另一句同時定案的**：**有整齊的參考圖時，形狀照它排就好**——不必為了湊長寬比
 或密度去改變它的骨架。判斷順序是：拓樸與形狀跟原圖，間距跟 §3A。
 
+## 3J. 路線二：netlist → 版面（2026-08-31 開張）
+
+> **沒有原圖。** 輸入是一份 SPICE 風格的 deck，只有拓樸，沒有任何座標。
+> 這條路線存在的理由：使用者 2026-08-29 裁示「要形成一套自己的絕對規則」——
+> 本節就是把 §3A 的規則寫成程式，能不能自動畫出來就是那套規則夠不夠完整的檢驗。
+
+三支程式（都在 `toolkit\`）：
+
+| 檔 | 用途 |
+|---|---|
+| `netlist_io.py` | `.icproj.json` ⇄ `.cir`。匯出全部專案到 `decks\`，並標出哪幾張 netlist 不乾淨 |
+| `autoplace.py` | deck → 版面。共用 `icproj.Schematic`，所以**六道稽核、schema、標籤比對、PNG 全部照跑** |
+| `netlist_bench.py` | 拿 23 張手排圖當標準答案打分（`--full` 加 schema／標籤／PNG） |
+
+```bash
+python toolkit/netlist_io.py                  # 專案 -> decks/*.cir
+python toolkit/autoplace.py decks/<X>.cir     # deck -> auto/<X>.icproj.json
+python toolkit/netlist_bench.py [--full]      # 23 張一起打分
+```
+
+### deck 只准放拓樸
+
+SPICE 語法（`M/Q/R/C/L/D/I/V/X` 開頭決定器件種類），外加四個仍屬 netlist 範疇的指令：
+
+| 指令 | 意思 |
+|---|---|
+| `.iodir <node>=input|output` | 埠的方向，`.subckt` 那行放不下 |
+| `.name <ref> <印出來的名字>` | 位號 → 圖上的字（`RG` → `R_G`） |
+| `.show <node> ...` | 哪些節點名要印在圖上 |
+| `.alias <spice名> <ref>` | 位號沒有型別字母時（`OA` → `XOA`） |
+
+**刻意不放進 deck**（放了就是作弊——真的從 LTspice 拿到的 netlist 不會有這些）：
+座標、mirror、欄序、電源要畫成軌還是畫成 marker、任何樣式。
+
+### 版面演算法（八步，每一步都是 §3A 的某一條）
+
+1. **rank（誰在上面）**：有電源軌 → `d_vdd / (d_vdd + d_gnd)`；
+   沒有軌（opamp 網路、小訊號模型）→ 只用「離地距離」倒過來數。
+2. **直立還是橫放**：**兩端「離地距離相同」的兩腳元件是橫放的**——耦合電容、回授電阻、
+   訊號路徑上的串聯元件，課本都是躺著畫。其餘直立。
+   MOS／BJT 的上下**由器件決定、不看 rank**：nmos D 在上、pmos S 在上、npn C 在上、pnp E 在上。
+   ⚠️ **一端接電源軌或地的元件永遠不算橫放**，否則它會被畫在軌上（實犯：Fig 5.170 的 R600）。
+3. **列**：對直立元件做最長路徑分層；橫放元件把它兩端的節點綁成同一列。
+   **電源軌自己占一列**，其他節點最低從第 1 層起（不然偏壓埠會被放在軌上）。
+   **地不是一層**（分支走到哪結束就到哪），接地符號最後才對齊，
+   且**只在多出來的引線不超過 60 時才對齊**（§3E 規則 4 的界線）。
+   **跨超過一層的元件貼著上面那個節點放**，不然身體會壓在中間那層的匯流排上。
+   **沒有電源軌的圖第一列從 200 起**，上面要留位置給回授元件。
+4. **欄＝串聯鏈**。一條鏈是一串上下接起來的直立元件。
+   ⚠️ **同一對節點之間的兩個元件是並聯支路，必須分到不同欄**——這就是欄不能拿「節點」
+   當 key 的原因（拿節點當 key 試過，13 個元件被擠成 2 欄）。
+   方塊（opamp、閘）自己占一欄，沒有被任何鏈擁有的節點也各自占一欄。
+   **左右順序的約束只有兩條**：被控元件在「驅動它閘極的那一欄」右邊、
+   方塊在它的輸入與輸出之間。
+   ⚠️ **這些約束一定會成環**（自偏壓 constant-gm 兩支互相驅動對方的閘極；
+   多級 opamp 濾波器的回授從後級接回前級）。**做法是對整張約束圖跑 SCC，
+   把每個環縮成一點，環內照 deck 的宣告順序排**——參考支路、第一級在 deck 裡本來就寫在前面。
+   > 這一招用兩次都是決定性的：constant-gm 沒做時整張左右顛倒（`place` 40% → 100%）；
+   > Fig 14.36(b) 沒做時 OA2 被排到最左邊、比 OA1 還前面（該張從 9 個稽核錯誤降到 0）。
+   > **不要只對「鏈」跑 SCC**，方塊與自由節點也要一起，否則沒有直立元件的圖完全沒有順序。
+   > 也**不要為了避免成環而把回授輸入的約束丟掉**——丟掉之後那顆 opamp 沒有任何約束、
+   > 會被排到最左邊（實犯：OA2 排在 OA1 前面）。**每個輸入都下約束，環交給 SCC 處理。**
+5. **欄距量的是邊緣、不是中心**：opamp 100 寬、一般支路 40 寬，所以
+   `欄距 = 左半寬 + 40 + 右半寬`。固定欄距會讓 opamp 鏈擠成一團（14.36(b) 曾寬 340、應為 520）。
+6. **回授元件走上方的軌道**（只適用沒有電源軌的圖）：BFS 沒走到的橫放元件是回授，
+   照跨距由長到短往上疊，一層 40。並且**每個橫放元件都要沿著軌道左右滑動**，
+   直到它兩支腳的垂直引線不會穿過下面的元件，也不會壓在已經放好的元件上。
+   ⚠️ **方塊要比橫放元件先放**，不然橫放元件看不到 opamp、會直接疊在三角形上。
+7. **一條 net 一條主幹，主幹可以是橫的也可以是直的**（§3H 規則 5 的一般化）。
+   **腳位垂直散得比水平散得開的 net（opamp 鏈的回授）要走直的主幹**，
+   走橫的會橫跨半張圖。主幹要同時閃開四件事，一次決定、後面不准再動：
+   ①**圓點會不會壓到腳位——任何腳位，不只自己這條 net 的**（schema 直接退件，最優先）
+   ②任何它會穿過、或靠得比 8 更近的元件本體
+   ③從主幹垂下來的引線會不會撞到別的元件本體
+   ④別條 net 的主幹（平行要讓 30）
+8. **排不下就放寬重排**：欄距 80→140、列距 60→80、埠引線 20→30，
+   共 15 組組合依序試，取稽核錯誤最少的那一版。「排不下」是真的答案，加寬是人手也會做的事。
+
+**mirror**：閘極朝「閘極網其他腳位的**重心**」，不是最近的那一顆。
+電流鏡對的閘極匯流排走在兩顆中間，兩顆都要朝它。（只看最近的 → mirror 命中率 84%；改重心 → 92%。）
+**閘極只被一個埠驅動時朝圖的外側**，埠才會落在圖外而不是插進圖中央。
+
+**標籤不再固定 ±18**：右／左／上／下各三種距離共 12 個位置都算一次分數
+（離走線多遠、離同型鄰居多遠、**離已經放好的其他標籤多遠**），挑最高的；
+**埠標籤先挑**（它的位置最受限），**方塊的標籤也走同一套搜尋**（先試三角形內部）。
+這是把 §3D 規則 2 從「人工調」變成搜尋——`labels` 錯誤從 105 降到 **0**。
+
+**其他五條實作面的硬事實**
+
+- **MOS 的 B 腳是綁的、不是接線的**。它要出現在 net 的 terminals 裡（schema 要 materialized），
+  但**不可以畫線到它**——畫了就會有一條線從汲極右側伸出去，標籤還會壓在上面。
+- **電源 marker 要在宣告 net 之前放好**，否則接到它的那條 route 不是自己 net 的成員，
+  schema 報 `Route terminal endpoint must be a member of the route net`。
+- **只有一支腳的節點要給它一個埠**：電路圖把開路端畫成埠，而 schema 也要求每個 terminal 都接線。
+- **viewBox 要含標籤**，只算元件墨跡會把最左邊那排標籤切掉。
+- **事後微調埠位置時，帶轉角的走線不能動**：轉角是絕對座標，元件一移就變成斜線
+  （self-check 報 `route not orthogonal`）。
+- **直主幹的 x 一定要落在自己那條 net 的腳位之間**。拿「節點的欄位編號」當主幹位置會出事：
+  一個自由節點的欄位是 0（x=120）而它的腳位全在 x=320，線就會往左跑 200 單位再回來
+  （2026-08-31 用沒看過的 5T OTA netlist 抓到的）。
+- **兩支腳同座標就不要畫線**：pin-on-pin 本來就是連上的（§3A），還畫一條就是零長度 route，
+  self-check 直接擋（cascode 電流鏡的 M3.S／M4.D）。
+
+### ⚠️ 品質靠一個可以量的目標，不是靠「看起來還好」（2026-09-02 定案）
+
+使用者看渲染圖退件時，我手上只有「六道稽核全 0」——**那組稽核全部是「不可以有」的清單，
+沒有一條在問「畫得好不好」**。所以圖可以同時「全綠」和「像義大利麵」。
+
+現在有兩個量：
+
+| 量 | 意思 | 現況 |
+|---|---|---|
+| `shorts`（第七道稽核） | 兩條不同的 net 共線重疊＝讀者看到短路 | 必須 0 |
+| **`wire`**（`netlist_bench` 的欄） | **總走線長度 ÷ 手排那張的總走線長度** | **1.25×**（1.40× 降下來的） |
+
+**`wire` 是這條產線唯一不靠品味的品質指標。** 手排圖＝1.0×；愈接近 1.0，
+圖就愈像人畫的。目前最差的是 opamp 那幾張（8.69 2.8×、5.170 2.7×、8.48 2.3×）——
+它們正是被退件時看起來最亂的。
+
+**成本函數的順序是量出來的，不要憑感覺改**（`AC_COST` 可以當場 A/B）：
+
+```
+hard > bodies > risers > wire > overlap      預設 hbrwo
+```
+
+| 順序 | 全 0 的圖 | wire | on-wire |
+|---|---|---|---|
+| **hbrwo（現行）** | **21/23** | **1.25×** | **2** |
+| hwbro（線長排在避讓前） | 12/23 | 1.18× | 28 |
+| hbwro | 12/23 | 1.22× | 18 |
+
+**線長排太前面會用「壓在元件上」換到短線**，反而更糟。它只能排在避讓之後。
+
+另外兩條同時定案的：
+
+- **「排不下就放寬」那個重排，取的是「稽核全過之中線最短」的那一版**，
+  不是第一個過的那一版。
+- **主幹位置要把自己這條 net 的線長算進去**：`(主幹長) + Σ|腳位到主幹的距離|`，
+  最小值就在腳位的中位數上。這一條同時擋掉「匯流排飄到離自己腳位很遠的地方，
+  把每支引線都拖長」。
+
+### 🚫 走線不可以進入任何元件的本體（2026-09-02，使用者三次退件才收斂）
+
+**一條規則，三個抱怨**：
+
+| 使用者說的 | 實際發生的事 |
+|---|---|
+| 「不要穿過 MOS 的閘極去接線，**禁止**」 | 疊接電流鏡的 `r-mid1-bus0` 從 x=170 拉到 x=130，壓過 M₁ 在 x=140~150 的閘極引線，去接下面的 D/S 腳位 |
+| 「**不能有 net 直接穿過 amp**」 | Sallen-Key 把 `IN−` 到 `OUT` 畫成一條直線橫越三角形 |
+| 「那個**電容**是怎麼回事，哪有人這樣接」 | 同一條 net 為了回到它想要的列，**從電容底下穿上來** |
+
+三件都是「線進了本體」。舊的兩道檢查都抓不到：
+
+- `_wire_clearance` 只認「**從一邊進、另一邊出**」——這些線**停在腳位上**，永遠沒有「出」。
+- 成本函數對「**自己這條 net 的元件**」整段跳過（`if iid in member: continue`），
+  而以上三件全部發生在自己的元件上。
+
+**現行規則**：`_body_audit`（路線二專用，併進 `shorts`）——
+**任何走線都不可以進入任何元件的墨跡框內部**。腳位本來就在框的邊界上，
+所以把框往內縮 1 單位，接腳位的那一小段合法、其餘一律違規。
+成本函數那邊也同步改成 `hard`（不可交換）。
+
+⚠️ 這條上線後訓練集從 19/23 掉到 12/23——**那不是退步，是那 15 處違規本來就在，只是沒人看見**。
+
+### ⚠️ 這一節的規則只屬於路線二，不准回頭套到路線一
+
+使用者 2026-09-02 裁示：**「不能混在一起」**——分產線就是為了這個。
+`shorts`、`crossings`、「標籤不可以互相重疊」、「標籤不可以壓在別的元件上」
+這四道是**路線二自己逼出來的**，共用引擎裡用 `Schematic.lane2_audits` 關著，
+只有 `autoplace.py` 會打開。手排的 29 張仍然只跑原本六道，
+輸出逐位元不變（`regress.py` 守著）。
+
+### 電晶體的標籤：一個位置，不准移（2026-09-02 使用者裁示）
+
+**電晶體的名字固定放在「開口處」——閘極的反側**（汲/源引線那一邊），
+距離就是 §3A 的 `±18`（BJT `±8`），`dy = +5`。**沒有備選位置。**
+
+- **放不進去就把電路拉開**，不是把標籤挪走。重排網格因此加寬到
+  欄距 200、列距 100（原本 140／80）。
+- 位置既然是固定的，就能**在畫線之前算出來**：`tracks()` 把每顆電晶體的
+  標籤框當成障礙物，匯流排要閃開它。不這樣做的話標籤會壓在匯流排上
+  （加了固定規則之後 `labels` 一度從 1 暴增到 16，就是這個原因）。
+
+### 交叉：合法，但要當成代價去壓（2026-09-02 使用者裁示）
+
+兩條沒接在一起的 net 交叉是**合法**的（§6：沒有圓點就是沒接），但它是「圖看不懂」
+的主因。所以再加一個量：**`crossings`** ——一條橫線與一條直線真的交叉的次數
+（端點相碰不算）。
+
+**手排圖的水準是每張 0~2**（Fig 10.35 是 1、19T 比較器是 2、其餘 0）。
+
+放進成本函數時，把它跟 `risers`（引線必須跨過某個元件本體）**併成同一項**：
+兩者都是「這條線得想辦法繞過某個東西」。權重是量出來的：
+
+| 成本順序 | 全 0 的圖 | crossings | on-wire |
+|---|---|---|---|
+| `hbrwo`（不管交叉） | 19 | 20 | 3 |
+| `hbrxwo`（交叉排在引線後） | 20 | 18 | 3 |
+| **`hbRwo`（交叉與引線併項，現行）** | **19** | **10** | **6** |
+| `hbxrwo`（交叉排在引線前） | 16 | 7 | 11 |
+
+交叉壓到剩一半要用一張全 0 去換；再往下壓就會開始拿「元件坐在別條 net 的線上」
+去換交叉，那是騙人的圖，不划算。
+
+### ⚠️ 掛在別條鏈上的支路，要放在它旁邊——不分左右
+
+`anchor` 規則原本只在「錨點已經在左邊」時才生效，錨點在右邊就整條不管。
+於是反相器鏈的負載電容 `C_L`（它的節點是最右邊那一欄）被丟到**最左邊**，
+一條線橫越整張圖（使用者原話：「明明右邊空曠可以直接拉出去」）。
+改成不分左右都插到錨點旁邊之後，那張圖的交叉從一堆變成 **0**。
+
+### 標籤：離走線遠不夠，還要離**任何**元件遠
+
+`_score_label` 原本只跟**同型**元件比距離（那是「這個名字屬於誰」的問題），
+結果標籤壓在別種元件上完全不扣分——Fig 12.57(c) 的 `V_in`／`M_3` 就整團疊在一起。
+現在多一個 `anyink` 項（離任何元件的墨跡），排序是
+
+```
+wire（不可壓線） > anyink（不可壓元件） > near（歸屬要清楚） > other（不可壓別的標籤）
+```
+
+⚠️ `anyink` 排在 `wire` 前面會把標籤推到走線上（`labels` 0 → 3），順序不能對調。
+
+### 現況（2026-08-31 實測，23 張 netlist 乾淨的圖）
+
+| 指標 | 值 |
+|---|---|
+| 網站 schema v36 | **23 / 23 通過** |
+| **六道稽核全 0 的圖** | **19 / 23** |
+| 全庫殘餘錯誤 | `on-wire` 6（散在 4 張），其餘 `labels`／`legs`／`tees`／`self` 全 0 |
+| 位置完全對上手排圖（`place`） | 35% |
+| 左右上下相對關係對上（`order`） | 74% |
+| mirror 對上 | 91% |
+
+### 泛化測試：六張沒看過的 netlist（2026-08-31）
+
+手寫六份 deck（**不是從任何既有圖匯出的**）餵進去：5T OTA、疊接電流鏡、
+串疊＋源極退化 CS、兩級 CMOS 反相器鏈、ESD RC 觸發 clamp（含兩級驅動）、Sallen-Key 低通。
+**六張全部一次通過七道稽核＋schema v36**，deck 在 `AI	oolkit\decks
+ew\`。
+
+這是路線二真正的用途——**手上只有 netlist、沒有原圖時能不能畫**。答案是可以。
+（前兩張跑出來時各有一個錯，就是上面那兩條「直主幹要在腳位之間」「pin-on-pin 不畫線」，
+修完六張全綠；訓練集的 19/23 沒有退步。）
+
+**訓練集裡還沒歸零的 4 張**：Diff-amp LC 負載、Fig 12.57(c)、Fig 9.83、手繪橋式整流（各 1~2 個）。
+症狀都是同一種：**一條引線從主幹拉到腳位時擦過別的元件本體**，而且沒有任何一列是乾淨的。
+真正的解是「引線遇到障礙要繞路」（目前引線一律是直線），下一輪再做。
+
+> **怎麼用**：netlist 出來的圖是**草稿**。六道稽核歸零的那 19 張可以直接匯入看；
+> 沒歸零的先當版面初稿，抄成一支 `gen_*.py` 手改。
+> **`place` 只有 35% 不代表畫錯**——那個指標要求行列序號完全相同，
+> 多一欄就整排錯開；`order`（左右上下關係）74% 才是實際的相似度。
+
+### ⚠️ netlist 一定會丟掉的東西（六張圖因此不走這條路線）
+
+`netlist_io.py` 會自己把它們標出來，不要硬跑：
+
+- **construction-line**（19T 比較器的交叉耦合、SR latch）——那條連接網表上根本不存在。
+- **drafting 矩形**（CDR 方塊圖、ESD RC-clamp 剖面圖、ESD-LNA 虛線框、BJT 電流鏡方塊）——
+  那是圖的主體，netlist 沒有欄位放它。
+
+**手繪小訊號模型也不該走這條路線**：原圖的形狀是使用者的手，netlist 推不出來
+（LC tank 那張 `order` 只有 17%）。它們留在路線 3b。
+
+
 ## 4. 樣式與文字
 
 ```jsonc
@@ -664,8 +988,8 @@ scale: 2.680 px/unit  (body 67 px = channel bar 25 units)
   "compactness": "compact",          // loose | normal | compact
   "styleOverrides": {                // 每項 0.5 ~ 2.0
     "symbolStrokeScale": 1.5,
-    "wireStrokeScale": 1.5,
-    "annotationStrokeScale": 1.5,
+    "wireStrokeScale": 1.3,
+    "annotationStrokeScale": 1.3,
     "junctionRadiusScale": 1.3,
     "fontScale": 2.0
   }
@@ -789,13 +1113,12 @@ dy_below(ink_half, gap=1.5)   # 盒頂離墨跡 gap；盒頂 = baseline − 12.3
 ## 5. 驗證：一個指令（2026-08-30 起）
 
 ```bash
-python toolkit/scan_figure.py <截圖.png>   # ⓪ 有原圖才跑：量測輔助，見 §3C
-python -m toolkit generate gen_xxx         # ① 以下全部一次做完
+python scan_figure.py <截圖.png>   # ⓪ 有原圖才跑：抽拓樸與鏡射，見 §3C
+python gen_xxx.py                  # ① 以下全部一次做完
 ```
 
-`gen_xxx.py` 呼叫的 `f.build()` 會先做 self-check 與四個 hard audits，再把暫存專案交給
-**網站自己的 zod schema**驗證、用**編輯器自己的產生器**逐位元比對標籤，最後渲染 PNG。
-全部通過後才原子替換正式成品；任何硬性失敗都以非零狀態結束並保留舊成品。
+`gen_xxx.py` 呼叫的 `f.build()` 依序做六道稽核 → 寫檔 → 用**網站自己的 zod schema**
+驗證 → 用**編輯器自己的產生器**逐位元比對標籤 → 渲染 PNG。**七個計數全部要 0：**
 
 | 訊息 | 意思 |
 |---|---|
@@ -804,7 +1127,9 @@ python -m toolkit generate gen_xxx         # ① 以下全部一次做完
 | `labels` | 文字壓到走線，或標籤離鄰居太近讀者分不出屬於誰（§3A 規則 1、2） |
 | `on-wire` | 兩件事：①元件坐在**別條 net** 的走線上＝畫出一個不存在的連接；②任何一條線**穿過元件本體**（進一邊、出另一邊）——**同一條 net 也算**。②是 2026-08-30 補的：串疊閘極回授線從一顆 CDM 二極體正中間穿過去，四道稽核全放行，因為兩者同屬 `net-vdd` 被當成「自己的接線」豁免了 |
 | `tees` | 三條線在同一點相會卻沒有 junction ⇒ 不畫圓點（§3H 規則 4，電源軌除外） |
-| `schema: VALID` | 對不上通常是網站改版了 → 跑 `python -m toolkit setup`（§1） |
+| `crossings` | 兩條沒接在一起的 net 真的交叉的次數。**合法，所以不是錯誤，是要壓低的數字**；手排圖是每張 0~2 |
+| `shorts` | **兩條不同的 net 共線重疊**＝讀者看到的是一條線、兩個節點短路。`on-wire` 比的是「線 vs 元件本體」、`tees` 數的是圓點，都不管這件事，所以它一路全綠地過了（2026-09-02 使用者看渲染圖才抓到，Fig 7.94 的 V_in／V_out 就是一條線）。電源軌本身豁免；相距 <20 的平行只警告 |
+| `schema: VALID` | 對不上就是網站改版了 → 跑 `refresh_model.py`（§1） |
 
 **標籤比對**：故意不照編輯器格式的（數值、方塊標題這類正體字）寫進
 `f.build(expect_differ={"v-c1", ...})`，稽核就會變成
@@ -921,12 +1246,15 @@ route-marker 留給「真的需要跟著走線自動重排」的情況；靜態�
 
 1. **書的版本不一樣** → 圖號會撞。畫之前要使用者給截圖，或用 PyMuPDF 在 PDF 裡搜
    `Figure N.NN` 定位後裁圖親眼看。
-2. **預覽與正式渲染都不在電源軌端點畫圓點**；若兩者不同，視為預覽器 regression。
+2. **本機預覽會把每個 junction 都畫成圓點，正式渲染不會在電源軌端點畫點**——
+   那是預覽的近似，不是產物的問題，不要去追。
 3. **預覽渲染器要跟著真實樣式走**（字型、字重、下標正斜、power-rail 粗細、虛線框），
    否則比對是自欺。改了樣式就要同步改預覽。
-4. 修改共用引擎後必跑單元測試與 `python -m toolkit regress`，不要只驗證手邊那一張。
-5. `refresh_model.py` 只把探針確認可在 Node 執行的 model chunk 寫成 `model.mjs`，
-   再生成穩定 adapter；其他 UI chunks 不應直接 import。同步動作仍有執行上游程式碼的供應鏈風險。
+4. **改 `icproj.py`／產生器的 patch 腳本一律先 Write 成 `.py` 再跑**，
+   不要塞進 Bash heredoc——含反斜線或引號時 shell 會直接 parse error。
+5. **不要用 node import 網站的 bundle chunk**：相依鏈會把 React 整包拉進來，
+   在 node 裡執行到 `document is not defined` 就炸，整份 React 原始碼噴進對話。
+   只有 `model.mjs`（＋`model-dep-0.mjs`）驗證過可以跑；其餘一律只用 `grep` 讀。
 
 ## 9. 產物位置與命名（使用者裁示，不要放別的地方）
 
@@ -940,28 +1268,34 @@ route-marker 留給「真的需要跟著走線自動重排」的情況；靜態�
 
 ## 10. 檔案位置
 
-成品 `.icproj.json` 在 repo 的 `out/` 且會進版控；工具全在 `toolkit/`；`examples/` 是 gallery PNG。
+成品 `.icproj.json` 在 repo 的 `out/`；工具全在 `toolkit/`；`examples/` 是從網站匯出的 PNG。
 
-> 首次 clone 先跑 `python -m toolkit setup`：`model*.mjs` 與 `sym/*.json` 是可重建 cache，**不進版控**。
+> 首次 clone 先跑 `python toolkit/refresh_model.py` 與 `python toolkit/fetch_symbols.py`：`model.mjs` 與 `sym/*.json` 是產物，**不進版控**。
 
 | 檔 | 用途 |
 |---|---|
-| `icproj.py` | **共用引擎**：schema 組裝、self-check＋四個 hard audits、原子輸出、SVG 預覽、schema／標籤驗證、PNG 渲染 |
+| `icproj.py` | **共用引擎**：schema 組裝、六道稽核、SVG 預覽、schema／標籤驗證、PNG 渲染 |
 | `scan_figure.py` | ⓪ 截圖 → 拓樸／鏡射／scale／密度基準（§3C） |
 | `fetch_symbols.py` | 同步符號庫（缺符號時先跑這支） |
-| `refresh_model.py` | 網站改版時重抓 schema、自動更新版本並建立穩定 model adapter |
-| `cli.py` / `python -m toolkit` | doctor、setup、generate、validate、29 份輸出的隔離回歸 |
-| `validate.mjs` / `check_labels.mjs` / `model*.mjs` | 網站自己的 schema 與標籤產生器，`build()` 會自動呼叫 |
+| `refresh_model.py` | 網站改版時重抓 schema（會告訴你新的 schemaVersion） |
+| `regress.py` | 改共用程式後必跑：23 張逐位元比對（`--accept` 換基準） |
+| `publish_to_repo.py` | 發佈到私有 repo（`--dry-run` 只檢查） |
+| `render_project.py` | 任何 `.icproj.json`（含網站匯出檔）→ SVG＋PNG，不跑稽核 |
+| `netlist_io.py` | 路線二：專案 ⇄ SPICE deck（§3J） |
+| `autoplace.py` | 路線二：deck → 版面（§3J） |
+| `netlist_bench.py` | 路線二：拿 23 張手排圖打分（§3J） |
+| `validate.mjs` / `check_labels.mjs` / `model.mjs` | 網站自己的 schema 與標籤產生器，`build()` 會自動呼叫 |
 | `sym\*.json` | 符號腳位與外觀（**有檔案 ≠ 可以放，見 §2**） |
 
-產生器 29 支，`python -m toolkit list` 可列出。挑範本：
+產生器 23 支，`ls gen_*.py`。挑範本：
 
 | 要畫的東西 | 抄哪支 |
 |---|---|
-| 最乾淨的骨架（opamp＋電阻） | `gen_fig848.py` |
+| 最乾淨的骨架（opamp＋電阻） | `gen_fig848.py`（141 行） |
 | 被動元件／旋轉 90／數值標籤 | `gen_fig794.py` |
 | 差動對／多尾電流／差動輸出埠 | `gen_fig1035.py` |
 | BJT ＋ 電源軌 | `gen_fig5170.py` |
 | 方塊圖 | `gen_cdr_blocks.py` |
 
-`gen_fig934.py`／`gen_fig983_cg.py` 是舊式獨立骨架，**不要複製**，只拿來查座標寫法。
+（2026-09-01 起 **29 支全部用共用引擎**：`gen_fig934.py`／`gen_fig983_cg.py`
+那兩支舊式獨立骨架已經移過來，不再有第二份引擎複本。）

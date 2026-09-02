@@ -126,6 +126,4 @@ f.build(long_haul={"r-rp-g",       # 80: R_P back to its own ground
         extra_evidence=[],
         viewbox=(40, 110, 470, 320),
         # plain on purpose: the polarity marks are symbols, not device names
-        expect_differ={"n-plus", "n-minus",
-                       # a product of two names, not one name
-                       "v-gm"})
+        expect_differ=set())

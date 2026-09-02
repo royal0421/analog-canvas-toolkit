@@ -146,4 +146,4 @@ f.build(long_haul={"r-v1", "r-v2", "r-l3", "r-r3", "r-s2", "r-s4",
         # plain text on purpose (values / block titles): the
         # editor's generator italicises everything, we follow the
         # textbook page instead -- SOP 4
-        expect_differ={"v-c1"})
+        expect_differ=set())

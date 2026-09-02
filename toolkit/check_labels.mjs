@@ -2,24 +2,41 @@
 // the editor's own builder Ws() would produce for the same name string.
 // Usage: node check_labels.mjs <project.icproj.json>
 import { readFileSync } from "node:fs";
-import { buildName } from "./model-adapter.mjs";
+import * as m from "./model.mjs";
 
-const Ws = buildName;                 // discovered "name -> RichText" builder
+// The bundle is minified: the export NAME of the builder changes on every
+// redeploy, so find it by running it (2026-09-01: `f` was gone).
+function findBuilder() {
+  for (const k of Object.keys(m)) {
+    try {
+      // the builder is the one that turns "M_1" into italic-bold M plus a
+      // BOLD subscript 1 -- several exports take a string and return runs
+      const r = m[k]("M_1");
+      const j = JSON.stringify(r);
+      if (r && Array.isArray(r.runs) && r.runs.length === 2
+          && r.runs[0].style === "italic" && r.runs[1].style === "subscript"
+          && j.includes('"value":"M"') && j.includes('"value":"1"'))
+        return m[k];
+    } catch { /* not it */ }
+  }
+  return null;
+}
+const Ws = findBuilder();
+if (!Ws) { console.log("no RichText builder found in model.mjs"); process.exit(2); }
 const proj = JSON.parse(readFileSync(process.argv[2], "utf8"));
 
-// flatten RichText back into the "base_sub" string that produced it
+// The v36 builder splits a name after its FIRST character and keeps every
+// other character verbatim, so the string that produced a RichText is simply
+// its flattened text -- re-inserting an underscore (what v31 needed) would
+// ask the builder for a name nobody wrote.
 function toName(rt) {
-  let base = "", sub = "", inSub = false;
-  const walk = (n, s) => {
-    if (n.kind === "text") { if (s) sub += n.value; else base += n.value; }
-    else if (n.kind === "span") {
-      const s2 = s || n.style === "subscript";
-      if (n.style === "subscript") inSub = true;
-      for (const c of n.children) walk(c, s2);
-    }
+  let out = "";
+  const walk = n => {
+    if (n.kind === "text") out += n.value;
+    else if (n.children) for (const c of n.children) walk(c);
   };
-  for (const r of rt.runs) walk(r, false);
-  return inSub ? base + "_" + sub : base;
+  for (const r of rt.runs) walk(r);
+  return out;
 }
 
 let checked = 0, bad = 0;
@@ -39,7 +56,7 @@ const report = (what, rt) => {
 };
 
 for (const doc of proj.documents) {
-  for (const i of doc.instances)
+  for (const i of doc.instances)          // v36 dropped instance.schematicName
     if (i.schematicName) report("instance " + i.id, i.schematicName);
   for (const a of doc.annotations) {
     if (a.formatOverride) report("annotation " + a.id + " (formatOverride)", a.formatOverride);

@@ -1,0 +1,23 @@
+* hand-written deck, not exported from any drawing
+.title Cascode current mirror
+.global VDD
+.subckt CascMirror out
+.iodir out=output
+.name out I_out
+IIREF VDD ref
+.alias IIREF IREF
+.name IREF I_REF
+MM1 ref ref mid1 0 nmos
+.alias MM1 M1
+.name M1 M_1
+MM2 mid1 mid1 0 0 nmos
+.alias MM2 M2
+.name M2 M_2
+MM3 out ref mid2 0 nmos
+.alias MM3 M3
+.name M3 M_3
+MM4 mid2 mid1 0 0 nmos
+.alias MM4 M4
+.name M4 M_4
+.show mid1
+.ends

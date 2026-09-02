@@ -142,8 +142,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "RP1"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "r"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "π1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -166,8 +202,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "RE"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "R"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "E"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -190,8 +262,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "RC"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "R"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "C"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -214,8 +322,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "RP2"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "r"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "π2"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         }
       ],
@@ -383,51 +527,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "RP1",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "r"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "π1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "resistor"
             },
-            "parameters": {},
-            "reference": "RP1"
-          }
+            "parameters": {}
+          },
+          "reference": "rπ1"
         },
         {
           "id": "RE",
@@ -440,51 +547,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "RE",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "R"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "E"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "resistor"
             },
-            "parameters": {},
-            "reference": "RE"
-          }
+            "parameters": {}
+          },
+          "reference": "RE"
         },
         {
           "id": "RC",
@@ -497,51 +567,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "RC",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "R"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "C"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "resistor"
             },
-            "parameters": {},
-            "reference": "RC"
-          }
+            "parameters": {}
+          },
+          "reference": "RC"
         },
         {
           "id": "RP2",
@@ -554,51 +587,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "RP2",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "r"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "π2"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "resistor"
             },
-            "parameters": {},
-            "reference": "RP2"
-          }
+            "parameters": {}
+          },
+          "reference": "rπ2"
         },
         {
           "id": "IS1",
@@ -611,51 +607,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "IS1",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "I"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "current-source"
             },
-            "parameters": {},
-            "reference": "IS1"
-          }
+            "parameters": {}
+          },
+          "reference": "I1"
         },
         {
           "id": "IS2",
@@ -668,51 +627,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "IS2",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "I"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "2"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "current-source"
             },
-            "parameters": {},
-            "reference": "IS2"
-          }
+            "parameters": {}
+          },
+          "reference": "I2"
         },
         {
           "id": "GE",
@@ -724,8 +646,7 @@
               "y": 260
             },
             "rotation": 0
-          },
-          "schematicReference": "GE"
+          }
         },
         {
           "id": "GC",
@@ -737,8 +658,7 @@
               "y": 180
             },
             "rotation": 0
-          },
-          "schematicReference": "GC"
+          }
         },
         {
           "id": "GP2",
@@ -750,8 +670,7 @@
               "y": 260
             },
             "rotation": 0
-          },
-          "schematicReference": "GP2"
+          }
         },
         {
           "id": "GS",
@@ -763,8 +682,7 @@
               "y": 150
             },
             "rotation": 270
-          },
-          "schematicReference": "GS"
+          }
         }
       ],
       "junctions": [
@@ -849,7 +767,7 @@
         "terminals": [
           {
             "id": "t-in",
-            "name": "V_in",
+            "name": "Vin",
             "netId": "net-in",
             "direction": "input",
             "interfaceInstanceIds": [
@@ -858,7 +776,7 @@
           },
           {
             "id": "t-out",
-            "name": "V_out",
+            "name": "Vout",
             "netId": "net-c",
             "direction": "output",
             "interfaceInstanceIds": [
@@ -1390,7 +1308,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-handdrawn-2stage-ss",
   "name": "Two-stage BJT amplifier -- small-signal model",
-  "schemaVersion": 32,
+  "schemaVersion": 36,
   "source": {
     "dialect": "none",
     "entry": null,

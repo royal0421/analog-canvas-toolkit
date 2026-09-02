@@ -68,17 +68,6 @@
       ],
       "connectivityEvidence": [
         {
-          "id": "cev-vdd-property",
-          "kind": "name-claim",
-          "netId": "net-power-vdd",
-          "name": "VDD",
-          "owner": {
-            "kind": "explicit-net-property"
-          },
-          "scope": "global",
-          "powerDomain": "vdd"
-        },
-        {
           "id": "cev-vdd-marker",
           "kind": "name-claim",
           "netId": "net-power-vdd",
@@ -109,47 +98,11 @@
             "rotation": 0
           },
           "symbolVariantId": "textbook-3terminal",
-          "schematicReference": "P1",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "P"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "mosBulkBinding": {
             "netId": "net-power-vdd",
             "origin": "supply-default"
-          }
+          },
+          "reference": "P1"
         },
         {
           "id": "P2",
@@ -163,47 +116,11 @@
             "rotation": 0
           },
           "symbolVariantId": "textbook-3terminal",
-          "schematicReference": "P2",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "P"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "2"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "mosBulkBinding": {
             "netId": "net-power-vdd",
             "origin": "supply-default"
-          }
+          },
+          "reference": "P2"
         },
         {
           "id": "P3",
@@ -217,47 +134,11 @@
             "rotation": 0
           },
           "symbolVariantId": "textbook-3terminal",
-          "schematicReference": "P3",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "P"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "3"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "mosBulkBinding": {
             "netId": "net-power-vdd",
             "origin": "supply-default"
-          }
+          },
+          "reference": "P3"
         },
         {
           "id": "N1",
@@ -271,47 +152,11 @@
             "rotation": 0
           },
           "symbolVariantId": "textbook-3terminal",
-          "schematicReference": "N1",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "N"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "mosBulkBinding": {
             "netId": "net-gnd-1",
             "origin": "cell-default"
-          }
+          },
+          "reference": "N1"
         },
         {
           "id": "N2",
@@ -325,47 +170,11 @@
             "rotation": 0
           },
           "symbolVariantId": "textbook-3terminal",
-          "schematicReference": "N2",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "N"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "2"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "mosBulkBinding": {
             "netId": "net-gnd-1",
             "origin": "cell-default"
-          }
+          },
+          "reference": "N2"
         },
         {
           "id": "N3",
@@ -379,47 +188,11 @@
             "rotation": 0
           },
           "symbolVariantId": "textbook-3terminal",
-          "schematicReference": "N3",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "N"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "3"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "mosBulkBinding": {
             "netId": "net-gnd-1",
             "origin": "cell-default"
-          }
+          },
+          "reference": "N3"
         },
         {
           "id": "N4",
@@ -433,47 +206,11 @@
             "rotation": 0
           },
           "symbolVariantId": "textbook-3terminal",
-          "schematicReference": "N4",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "N"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "4"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "mosBulkBinding": {
             "netId": "net-gnd-1",
             "origin": "cell-default"
-          }
+          },
+          "reference": "N4"
         },
         {
           "id": "GND",
@@ -485,8 +222,7 @@
               "y": 330
             },
             "rotation": 0
-          },
-          "schematicReference": "GND"
+          }
         }
       ],
       "junctions": [
@@ -1426,7 +1162,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-constgm-resistorless",
   "name": "Constant-gm bias without a resistor",
-  "schemaVersion": 32,
+  "schemaVersion": 36,
   "source": {
     "dialect": "none",
     "entry": null,

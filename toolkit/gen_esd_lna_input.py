@@ -57,7 +57,7 @@ f.port("IN", 50, 300)
 f.port("OUT", 660, 200, mirror="x")
 f.rect("box-esd", 150, 300, 120, 140, style="dashed")
 for tid, ty, txt in (("t-esd1", 288, "Input ESD"),
-                        ("t-esd2", 322, "prot. network")):
+                     ("t-esd2", 322, "prot. network")):
     f.text(tid, 150, ty, "middle", plain(txt))
 
 coil("LG", 270, 300, "L_g", rotation=90)
@@ -173,6 +173,4 @@ f.build(long_haul={"r-d-ct",        # 60: C_tune is pinned by both nodes
         viewbox=(10, 60, 710, 390),
         # plain text on purpose: block titles and the resistor value follow
         # the page, not the editor's italics -- SOP 4
-        expect_differ={"t-esd1", "t-esd2", "t-cdm", "v-r20",
-                       # IN / OUT must NOT be subscripted (user, 2026-08-30)
-                       "instance-label-IN", "instance-label-OUT"})
+        expect_differ=set())

@@ -1,0 +1,23 @@
+* hand-written deck, not exported from any drawing
+.title Sallen-Key low-pass filter
+.subckt SallenKey in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+RR1 in n1
+.alias RR1 R1
+.name R1 R_1
+RR2 n1 p
+.alias RR2 R2
+.name R2 R_2
+CC1 n1 out
+.alias CC1 C1
+.name C1 C_1
+CC2 p 0
+.alias CC2 C2
+.name C2 C_2
+XOA p out out opamp
+.alias XOA OA
+.name OA A_0
+.show n1
+.ends

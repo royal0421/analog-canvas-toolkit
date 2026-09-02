@@ -22,8 +22,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "L1"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "2L"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -46,32 +82,28 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "RL"
-          }
-        },
-        {
-          "id": "instance-label-RR",
-          "kind": "instance-label",
-          "alignment": "start",
-          "locked": false,
-          "rotation": 0,
-          "sizeScale": 0.58,
-          "anchor": {
-            "kind": "object",
-            "objectId": "RR",
-            "localOffset": {
-              "x": 13,
-              "y": 5
-            },
-            "fallbackPosition": {
-              "x": 493,
-              "y": 175
-            }
           },
-          "binding": {
-            "kind": "instance-schematic-name",
-            "instanceId": "RR"
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "R"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -94,32 +126,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "L2L"
-          }
-        },
-        {
-          "id": "instance-label-L2R",
-          "kind": "instance-label",
-          "alignment": "middle",
-          "locked": false,
-          "rotation": 0,
-          "sizeScale": 0.58,
-          "anchor": {
-            "kind": "object",
-            "objectId": "L2R",
-            "localOffset": {
-              "x": 0,
-              "y": -14
-            },
-            "fallbackPosition": {
-              "x": 560,
-              "y": 196
-            }
           },
-          "binding": {
-            "kind": "instance-schematic-name",
-            "instanceId": "L2R"
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "L"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "2"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -142,32 +186,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "C2L"
-          }
-        },
-        {
-          "id": "instance-label-C2R",
-          "kind": "instance-label",
-          "alignment": "start",
-          "locked": false,
-          "rotation": 0,
-          "sizeScale": 0.58,
-          "anchor": {
-            "kind": "object",
-            "objectId": "C2R",
-            "localOffset": {
-              "x": 13,
-              "y": 5
-            },
-            "fallbackPosition": {
-              "x": 653,
-              "y": 255
-            }
           },
-          "binding": {
-            "kind": "instance-schematic-name",
-            "instanceId": "C2R"
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "C"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "2"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -190,32 +246,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "C1L"
-          }
-        },
-        {
-          "id": "instance-label-C1R",
-          "kind": "instance-label",
-          "alignment": "start",
-          "locked": false,
-          "rotation": 0,
-          "sizeScale": 0.58,
-          "anchor": {
-            "kind": "object",
-            "objectId": "C1R",
-            "localOffset": {
-              "x": 13,
-              "y": 5
-            },
-            "fallbackPosition": {
-              "x": 443,
-              "y": 245
-            }
           },
-          "binding": {
-            "kind": "instance-schematic-name",
-            "instanceId": "C1R"
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "C"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -238,8 +306,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "IIN"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "I"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "in"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -488,6 +592,210 @@
       "drafting": {
         "objects": [
           {
+            "id": "instance-label-RR",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 493,
+                "y": 175
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "italic",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "R"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "instance-label-L2R",
+            "kind": "text",
+            "alignment": "middle",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 560,
+                "y": 196
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "italic",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "L"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "span",
+                  "style": "subscript",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "2"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "instance-label-C2R",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 653,
+                "y": 255
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "italic",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "C"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "span",
+                  "style": "subscript",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "2"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "instance-label-C1R",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 443,
+                "y": 245
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "italic",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "C"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "span",
+                  "style": "subscript",
+                  "children": [
+                    {
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "1"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
             "id": "v-cb",
             "kind": "text",
             "alignment": "middle",
@@ -567,51 +875,14 @@
             },
             "rotation": 90
           },
-          "schematicReference": "L1",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "2L"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "inductor"
             },
-            "parameters": {},
-            "reference": "L1"
-          }
+            "parameters": {}
+          },
+          "reference": "2L1"
         },
         {
           "id": "CB",
@@ -624,51 +895,14 @@
             },
             "rotation": 90
           },
-          "schematicReference": "CB",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "C"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "B"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "capacitor"
             },
-            "parameters": {},
-            "reference": "CB"
-          }
+            "parameters": {}
+          },
+          "reference": "CB"
         },
         {
           "id": "RL",
@@ -681,35 +915,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "RL",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "R"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "resistor"
             },
-            "parameters": {},
-            "reference": "RL"
-          }
+            "parameters": {}
+          },
+          "reference": "R"
         },
         {
           "id": "RR",
@@ -722,35 +935,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "RR",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "R"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "resistor"
             },
-            "parameters": {},
-            "reference": "RR"
-          }
+            "parameters": {}
+          },
+          "reference": "RR"
         },
         {
           "id": "L2L",
@@ -763,51 +955,14 @@
             },
             "rotation": 90
           },
-          "schematicReference": "L2L",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "L"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "2"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "inductor"
             },
-            "parameters": {},
-            "reference": "L2L"
-          }
+            "parameters": {}
+          },
+          "reference": "L2"
         },
         {
           "id": "L2R",
@@ -820,51 +975,14 @@
             },
             "rotation": 90
           },
-          "schematicReference": "L2R",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "L"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "2"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "inductor"
             },
-            "parameters": {},
-            "reference": "L2R"
-          }
+            "parameters": {}
+          },
+          "reference": "L2R"
         },
         {
           "id": "C2L",
@@ -877,51 +995,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "C2L",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "C"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "2"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "capacitor"
             },
-            "parameters": {},
-            "reference": "C2L"
-          }
+            "parameters": {}
+          },
+          "reference": "C2"
         },
         {
           "id": "C2R",
@@ -934,51 +1015,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "C2R",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "C"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "2"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "capacitor"
             },
-            "parameters": {},
-            "reference": "C2R"
-          }
+            "parameters": {}
+          },
+          "reference": "C2R"
         },
         {
           "id": "C1L",
@@ -991,51 +1035,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "C1L",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "C"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "capacitor"
             },
-            "parameters": {},
-            "reference": "C1L"
-          }
+            "parameters": {}
+          },
+          "reference": "C1"
         },
         {
           "id": "C1R",
@@ -1048,51 +1055,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "C1R",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "C"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "capacitor"
             },
-            "parameters": {},
-            "reference": "C1R"
-          }
+            "parameters": {}
+          },
+          "reference": "C1R"
         },
         {
           "id": "M1",
@@ -1106,47 +1076,11 @@
             "rotation": 0
           },
           "symbolVariantId": "textbook-3terminal",
-          "schematicReference": "M1",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "M"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "mosBulkBinding": {
             "netId": "net-gnd-1",
             "origin": "cell-default"
-          }
+          },
+          "reference": "M1"
         },
         {
           "id": "M2",
@@ -1160,47 +1094,11 @@
             "rotation": 0
           },
           "symbolVariantId": "textbook-3terminal",
-          "schematicReference": "M2",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "M"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "2"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "mosBulkBinding": {
             "netId": "net-gnd-1",
             "origin": "cell-default"
-          }
+          },
+          "reference": "M2"
         },
         {
           "id": "IIN",
@@ -1213,51 +1111,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "IIN",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "I"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "in"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "current-source"
             },
-            "parameters": {},
-            "reference": "IIN"
-          }
+            "parameters": {}
+          },
+          "reference": "Iin"
         },
         {
           "id": "G2L",
@@ -1269,8 +1130,7 @@
               "y": 280
             },
             "rotation": 0
-          },
-          "schematicReference": "G2L"
+          }
         },
         {
           "id": "G2R",
@@ -1282,8 +1142,7 @@
               "y": 280
             },
             "rotation": 0
-          },
-          "schematicReference": "G2R"
+          }
         },
         {
           "id": "G1L",
@@ -1295,8 +1154,7 @@
               "y": 270
             },
             "rotation": 0
-          },
-          "schematicReference": "G1L"
+          }
         },
         {
           "id": "G1R",
@@ -1308,8 +1166,7 @@
               "y": 270
             },
             "rotation": 0
-          },
-          "schematicReference": "G1R"
+          }
         },
         {
           "id": "GI",
@@ -1321,8 +1178,7 @@
               "y": 360
             },
             "rotation": 0
-          },
-          "schematicReference": "GI"
+          }
         },
         {
           "id": "VINP",
@@ -1467,7 +1323,7 @@
         "terminals": [
           {
             "id": "t-inp",
-            "name": "V_in+",
+            "name": "Vin+",
             "netId": "net-inp",
             "direction": "input",
             "interfaceInstanceIds": [
@@ -1476,7 +1332,7 @@
           },
           {
             "id": "t-inn",
-            "name": "V_in-",
+            "name": "Vin-",
             "netId": "net-inn",
             "direction": "input",
             "interfaceInstanceIds": [
@@ -1485,7 +1341,7 @@
           },
           {
             "id": "t-on",
-            "name": "V_out-",
+            "name": "Vout-",
             "netId": "net-dl",
             "direction": "output",
             "interfaceInstanceIds": [
@@ -1494,7 +1350,7 @@
           },
           {
             "id": "t-op",
-            "name": "V_out+",
+            "name": "Vout+",
             "netId": "net-dr",
             "direction": "output",
             "interfaceInstanceIds": [
@@ -2341,7 +2197,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-diff-lc-amp",
   "name": "Differential amplifier with LC load",
-  "schemaVersion": 32,
+  "schemaVersion": 36,
   "source": {
     "dialect": "none",
     "entry": null,

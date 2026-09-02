@@ -127,4 +127,4 @@ f.build(long_haul={"r-e-rp1",      # 60: r_pi1 across to the R_E node
         rail_ends={"JG3"},
         viewbox=(60, 60, 600, 240),
         # plain on purpose: the polarity marks are symbols, not device names
-        expect_differ={"n-plus", "n-minus"})
+        expect_differ=set())

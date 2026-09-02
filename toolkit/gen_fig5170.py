@@ -131,7 +131,8 @@ for tid, x, y, align, label, owner in (
         ("v-r50", 593, 255, "start", plain("50 \u03a9"), "R50"),
         ("v-c1", 130, 210 + dy_below(C_INK, GAP), "middle", name("C_1"), "C1"),
         ("v-c3", 550, 210 + dy_above(C_INK, GAP), "middle", name("C_3"), "C3"),
-        ("v-vcc", 495, 105, "start", name_suffix("V_CC", " = 2.5 V"), None),
+        ("v-vcc", 495, 105, "start", name_suffix("V_CC", " = 2.5 V"),
+         None),
         # X labels the INTERSTAGE node (net-c), so it sits beside Q_2's
         # base, not beside the emitter node it happens to be nearer.
         ("note-x", 415, 191, "end", name("X"), None)):
@@ -149,4 +150,4 @@ f.build(long_haul={"r-vdd-rail-1",   # the V_CC rail itself
         # plain text on purpose (values / block titles): the
         # editor's generator italicises everything, we follow the
         # textbook page instead -- SOP 4
-        expect_differ={"v-rin", "v-rfb", "v-rc", "v-r200", "v-r50", "v-vcc"})
+        expect_differ=set())

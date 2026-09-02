@@ -1,0 +1,17 @@
+* hand-written from Razavi Fig. 5.43(a) -- topology only, no geometry
+.title Razavi Fig. 5.43(a) — CE stage with base resistance
+.global VCC
+.subckt Fig5_43a vin vout
+.iodir vin=input vout=output
+.name vin v_in
+.name vout v_out
+RB vin a
+.name RB R_B
+RC VCC vout
+.name RC R_C
+Q1 vout a e npn
+.name Q1 Q_1
+RE e 0
+.name RE R_E
+.show a
+.ends

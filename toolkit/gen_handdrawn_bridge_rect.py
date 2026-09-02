@@ -139,4 +139,4 @@ f.build(long_haul={"r-in1",        # 70+110: in at the top, down to the primary
         rail_ends={"JIN2"},
         viewbox=(20, 30, 600, 340),
         # plain on purpose: a value and two polarity marks
-        expect_differ={"n-6v", "n-vip", "n-vim", "n-vop", "n-vom"})
+        expect_differ=set())

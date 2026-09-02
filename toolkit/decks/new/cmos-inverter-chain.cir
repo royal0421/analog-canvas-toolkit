@@ -1,0 +1,24 @@
+* hand-written deck, not exported from any drawing
+.title Two-stage CMOS inverter chain
+.global VDD
+.subckt InvChain in out
+.iodir in=input out=output
+.name in A
+.name out Out
+MMP1 mid in VDD VDD pmos
+.alias MMP1 MP1
+.name MP1 M_P1
+MMN1 mid in 0 0 nmos
+.alias MMN1 MN1
+.name MN1 M_N1
+MMP2 out mid VDD VDD pmos
+.alias MMP2 MP2
+.name MP2 M_P2
+MMN2 out mid 0 0 nmos
+.alias MMN2 MN2
+.name MN2 M_N2
+CCL out 0
+.alias CCL CL
+.name CL C_L
+.show mid
+.ends

@@ -1,0 +1,32 @@
+* hand-written deck, not exported from any drawing
+.title ESD RC-triggered clamp with a two-stage inverter driver
+.global VDD
+.subckt RCClamp pad
+.iodir pad=input
+.name pad PAD
+RRC VDD rc
+.alias RRC RC
+.name RC R_C
+CCC rc 0
+.alias CCC CC
+.name CC C_C
+MMP1 g1 rc VDD VDD pmos
+.alias MMP1 MP1
+.name MP1 M_P1
+MMN1 g1 rc 0 0 nmos
+.alias MMN1 MN1
+.name MN1 M_N1
+MMP2 g2 g1 VDD VDD pmos
+.alias MMP2 MP2
+.name MP2 M_P2
+MMN2 g2 g1 0 0 nmos
+.alias MMN2 MN2
+.name MN2 M_N2
+MMBIG VDD g2 0 0 nmos
+.alias MMBIG MBIG
+.name MBIG M_big
+DDESD pad VDD diode
+.alias DDESD DESD
+.name DESD D_1
+.show rc
+.ends

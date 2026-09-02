@@ -1,0 +1,16 @@
+* hand-written from Razavi Fig. 7.36(b) -- topology only, no geometry
+.title Razavi Fig. 7.36(b) — common-gate stage
+.global VDD
+.subckt Fig7_36b vin vb1 vb2 vout
+.iodir vin=input vb1=input vb2=input vout=output
+.name vin V_in
+.name vb1 V_b1
+.name vb2 V_b2
+.name vout V_out
+M2 vout vb2 VDD VDD pmos
+.name M2 M_2
+M1 vout vb1 s 0 nmos
+.name M1 M_1
+RS s vin
+.name RS R_S
+.ends

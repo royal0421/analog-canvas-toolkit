@@ -1,0 +1,12 @@
+* hand-written: the plainest common-source stage in the book
+.title Common-source stage with a resistive load
+.global VDD
+.subckt CSload vin vout
+.iodir vin=input vout=output
+.name vin V_in
+.name vout V_out
+RD VDD vout
+.name RD R_D
+M1 vout vin 0 0 nmos
+.name M1 M_1
+.ends

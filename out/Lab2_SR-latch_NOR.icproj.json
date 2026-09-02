@@ -268,43 +268,7 @@
             },
             "rotation": 0
           },
-          "schematicReference": "G1",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "G"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
+          "reference": "G1"
         },
         {
           "id": "G2",
@@ -317,43 +281,7 @@
             },
             "rotation": 0
           },
-          "schematicReference": "G2",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "G"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "2"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
+          "reference": "G2"
         },
         {
           "id": "R",
@@ -495,7 +423,7 @@
           },
           {
             "id": "t-qb",
-            "name": "Q_bar",
+            "name": "Qbar",
             "netId": "net-qb",
             "direction": "output",
             "interfaceInstanceIds": [
@@ -842,7 +770,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-lab2-srlatch",
   "name": "Lab 2 SR latch (cross-coupled NOR)",
-  "schemaVersion": 32,
+  "schemaVersion": 36,
   "source": {
     "dialect": "none",
     "entry": null,

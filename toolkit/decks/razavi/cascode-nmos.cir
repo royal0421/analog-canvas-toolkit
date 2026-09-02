@@ -1,0 +1,16 @@
+* hand-written: the plain nmos cascode of Chap. 9
+.title Cascode stage with a resistive load
+.global VDD
+.subckt Cascode vin vb vout
+.iodir vin=input vb=input vout=output
+.name vin V_in
+.name vb V_b
+.name vout V_out
+RD VDD vout
+.name RD R_D
+M2 vout vb x 0 nmos
+.name M2 M_2
+M1 x vin 0 0 nmos
+.name M1 M_1
+.show x
+.ends

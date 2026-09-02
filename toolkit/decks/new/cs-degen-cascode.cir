@@ -1,0 +1,24 @@
+* hand-written deck, not exported from any drawing
+.title Cascode common-source stage with source degeneration
+.global VDD
+.subckt CSCascode in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+RRD VDD out
+.alias RRD RD
+.name RD R_D
+MM2 out vb x 0 nmos
+.alias MM2 M2
+.name M2 M_2
+MM1 x in s 0 nmos
+.alias MM1 M1
+.name M1 M_1
+RRS s 0
+.alias RRS RS
+.name RS R_S
+CCL out 0
+.alias CCL CL
+.name CL C_L
+.show x
+.ends

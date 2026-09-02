@@ -1,0 +1,19 @@
+* hand-written from Razavi Fig. 10.34(a) -- topology only, no geometry
+.title Razavi Fig. 10.34(a) — differential pair with current-mirror load
+.global VDD
+.subckt Fig10_34a vin1 vin2 vout
+.iodir vin1=input vin2=input vout=output
+.name vin1 V_in1
+.name vin2 V_in2
+.name vout V_out
+M3 n1 n1 VDD VDD pmos
+.name M3 M_3
+M4 vout n1 VDD VDD pmos
+.name M4 M_4
+M1 n1 vin1 p 0 nmos
+.name M1 M_1
+M2 vout vin2 p 0 nmos
+.name M2 M_2
+ISS p 0
+.name ISS I_SS
+.ends

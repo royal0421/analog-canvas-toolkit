@@ -92,8 +92,10 @@ for rid, cx, cy, w, h in (("x-pplus", 460, 140, 160, 40),
                           ("x-nplus", 460, 320, 160, 40),
                           ("x-tap", 400, 260, 40, 32)):
     f.rect(rid, cx, cy, w, h)
-for tid, cx, cy, s in (("t-pp", 460, 145, "P+"), ("t-nw", 460, 195, "N-WELL"),
-                       ("t-pw", 480, 265, "P-WELL"), ("t-np", 460, 325, "N+"),
+for tid, cx, cy, s in (("t-pp", 460, 145, "P+"),
+                       ("t-nw", 460, 195, "N-WELL"),
+                       ("t-pw", 480, 265, "P-WELL"),
+                       ("t-np", 460, 325, "N+"),
                        ("t-tap", 400, 265, "P+")):
     f.text(tid, cx, cy, "middle", plain(s))
 
@@ -114,9 +116,6 @@ f.build(long_haul={"r-vdd-rail-1", "r-vdd-rail-2", "r-vdd-rail-3",
                    "r-vss-rail-1", "r-vss-rail-2", "r-vss-rail-3",
                    "r-a3", "r-b3", "r-t3", "r-s-d3", "r-s-mn"},
         extra_evidence=[
-            {"id": "cev-vdd-p", "kind": "name-claim", "netId": "net-vdd",
-             "name": "VDD", "owner": {"kind": "explicit-net-property"},
-             "scope": "global", "powerDomain": "vdd"},
             {"id": "cev-vdd-m", "kind": "name-claim", "netId": "net-vdd",
              "name": "VDD", "owner": {"kind": "power-marker",
                                       "objectId": "jvdd-end"},
@@ -126,9 +125,6 @@ f.build(long_haul={"r-vdd-rail-1", "r-vdd-rail-2", "r-vdd-rail-3",
             #   presentation === "power-rail" && powerDomain === "vdd"
             # (bundle dist-CE3Pi34B.js), so a "ground" rail draws hairline.
             # The name stays VSS, so the label and the netlist are unaffected.
-            {"id": "cev-vss-p", "kind": "name-claim", "netId": "net-vss",
-             "name": "VSS", "owner": {"kind": "explicit-net-property"},
-             "scope": "global", "powerDomain": "vdd"},
             {"id": "cev-vss-m", "kind": "name-claim", "netId": "net-vss",
              "name": "VSS", "owner": {"kind": "power-marker",
                                       "objectId": "jvss-end"},
@@ -139,4 +135,4 @@ f.build(long_haul={"r-vdd-rail-1", "r-vdd-rail-2", "r-vdd-rail-3",
         # plain text on purpose (values / block titles): the
         # editor's generator italicises everything, we follow the
         # textbook page instead -- SOP 4
-        expect_differ={"t-pp", "t-nw", "t-pw", "t-np", "t-tap"})
+        expect_differ=set())

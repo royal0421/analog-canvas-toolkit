@@ -270,4 +270,4 @@ f.build(long_haul={
         # plain text on purpose (values / block titles): the
         # editor's generator italicises everything, we follow the
         # textbook page instead -- SOP 4
-        expect_differ={"v-cl"})
+        expect_differ=set())

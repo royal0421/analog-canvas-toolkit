@@ -22,8 +22,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "Q1"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Q"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -336,8 +372,7 @@
               "y": 110
             },
             "rotation": 0
-          },
-          "schematicReference": "VCC"
+          }
         },
         {
           "id": "R500",
@@ -350,51 +385,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "R500",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "R"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "C"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "resistor"
             },
-            "parameters": {},
-            "reference": "R500"
-          }
+            "parameters": {}
+          },
+          "reference": "RC"
         },
         {
           "id": "Q1",
@@ -407,43 +405,7 @@
             },
             "rotation": 0
           },
-          "schematicReference": "Q1",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "Q"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
+          "reference": "Q1"
         },
         {
           "id": "R100",
@@ -456,51 +418,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "R100",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "R"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "E"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "resistor"
             },
-            "parameters": {},
-            "reference": "R100"
-          }
+            "parameters": {}
+          },
+          "reference": "RE"
         },
         {
           "id": "OA",
@@ -513,7 +438,7 @@
             },
             "rotation": 0
           },
-          "schematicReference": "OA"
+          "reference": "OA"
         },
         {
           "id": "VIN",
@@ -526,7 +451,7 @@
             },
             "rotation": 0
           },
-          "schematicReference": "VIN"
+          "reference": "VIN"
         },
         {
           "id": "GND1",
@@ -538,8 +463,7 @@
               "y": 320
             },
             "rotation": 0
-          },
-          "schematicReference": "GND1"
+          }
         },
         {
           "id": "GND2",
@@ -551,8 +475,7 @@
               "y": 310
             },
             "rotation": 0
-          },
-          "schematicReference": "GND2"
+          }
         },
         {
           "id": "VOUT",
@@ -595,7 +518,7 @@
         "terminals": [
           {
             "id": "terminal-vout",
-            "name": "V_out",
+            "name": "Vout",
             "netId": "net-out",
             "direction": "output",
             "interfaceInstanceIds": [
@@ -952,7 +875,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-8-69",
   "name": "Razavi Fig. 8.69 — op amp linearising a common-emitter stage",
-  "schemaVersion": 32,
+  "schemaVersion": 36,
   "source": {
     "dialect": "none",
     "entry": null,

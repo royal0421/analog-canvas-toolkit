@@ -5,4 +5,4 @@ been executed and validated.  Keeping the value here prevents standalone
 legacy generators from drifting away from the shared ``icproj`` module.
 """
 
-SCHEMA_VERSION = 32
+SCHEMA_VERSION = 36

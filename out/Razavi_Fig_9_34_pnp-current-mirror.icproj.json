@@ -8,7 +8,7 @@
           "alignment": "end",
           "locked": false,
           "rotation": 0,
-          "sizeScale": 0.65,
+          "sizeScale": 0.58,
           "anchor": {
             "kind": "object",
             "objectId": "IREF",
@@ -22,8 +22,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "IREF"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "I"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "REF"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -32,7 +68,7 @@
           "alignment": "end",
           "locked": false,
           "rotation": 0,
-          "sizeScale": 0.65,
+          "sizeScale": 0.58,
           "anchor": {
             "kind": "object",
             "objectId": "QREF1",
@@ -46,8 +82,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "QREF1"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Q"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "REF1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -56,7 +128,7 @@
           "alignment": "start",
           "locked": false,
           "rotation": 0,
-          "sizeScale": 0.65,
+          "sizeScale": 0.58,
           "anchor": {
             "kind": "object",
             "objectId": "QM",
@@ -70,8 +142,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "QM"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Q"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "M"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -80,7 +188,7 @@
           "alignment": "end",
           "locked": false,
           "rotation": 0,
-          "sizeScale": 0.65,
+          "sizeScale": 0.58,
           "anchor": {
             "kind": "object",
             "objectId": "QREF2",
@@ -94,8 +202,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "QREF2"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Q"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "REF2"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -104,7 +248,7 @@
           "alignment": "start",
           "locked": false,
           "rotation": 0,
-          "sizeScale": 0.65,
+          "sizeScale": 0.58,
           "anchor": {
             "kind": "object",
             "objectId": "Q2",
@@ -118,8 +262,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "Q2"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Q"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "2"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -128,7 +308,7 @@
           "alignment": "start",
           "locked": false,
           "rotation": 0,
-          "sizeScale": 0.65,
+          "sizeScale": 0.58,
           "anchor": {
             "kind": "object",
             "objectId": "Q1",
@@ -142,8 +322,44 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "Q1"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Q"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -152,7 +368,7 @@
           "alignment": "start",
           "locked": false,
           "rotation": 0,
-          "sizeScale": 0.65,
+          "sizeScale": 0.58,
           "anchor": {
             "kind": "object",
             "objectId": "VOUT",
@@ -168,6 +384,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "terminal-vout"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "v"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "out"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -176,7 +428,7 @@
           "alignment": "end",
           "locked": false,
           "rotation": 0,
-          "sizeScale": 0.65,
+          "sizeScale": 0.58,
           "anchor": {
             "kind": "object",
             "objectId": "VIN",
@@ -192,6 +444,42 @@
           "binding": {
             "kind": "cell-terminal-name",
             "terminalId": "terminal-vin"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "v"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "in"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
@@ -201,7 +489,7 @@
           "alignment": "start",
           "locked": false,
           "rotation": 0,
-          "sizeScale": 0.65,
+          "sizeScale": 0.58,
           "anchor": {
             "kind": "object",
             "objectId": "jvcc-end",
@@ -260,18 +548,7 @@
       ],
       "connectivityEvidence": [
         {
-          "id": "cev-vcc-property",
-          "kind": "name-claim",
-          "netId": "net-power-vcc",
-          "name": "VCC",
-          "owner": {
-            "kind": "explicit-net-property"
-          },
-          "scope": "global",
-          "powerDomain": "vdd"
-        },
-        {
-          "id": "cev-vcc-marker",
+          "id": "cev-vdd-marker",
           "kind": "name-claim",
           "netId": "net-power-vcc",
           "name": "VCC",
@@ -326,7 +603,7 @@
             "zIndex": 0,
             "typographyToken": "label",
             "styleOverride": {
-              "sizeScale": 0.65
+              "sizeScale": 0.58
             },
             "anchor": {
               "kind": "free",
@@ -375,13 +652,13 @@
           {
             "id": "note-x1",
             "kind": "text",
-            "alignment": "start",
+            "alignment": "end",
             "locked": false,
             "rotation": 0,
             "zIndex": 0,
             "typographyToken": "label",
             "styleOverride": {
-              "sizeScale": 0.65
+              "sizeScale": 0.58
             },
             "anchor": {
               "kind": "free",
@@ -436,7 +713,7 @@
             "zIndex": 0,
             "typographyToken": "label",
             "styleOverride": {
-              "sizeScale": 0.65
+              "sizeScale": 0.58
             },
             "anchor": {
               "kind": "free",
@@ -497,51 +774,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "IREF",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "I"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "REF"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "current-source"
             },
-            "parameters": {},
-            "reference": "IREF"
-          }
+            "parameters": {}
+          },
+          "reference": "IREF"
         },
         {
           "id": "QREF1",
@@ -554,43 +794,7 @@
             },
             "rotation": 0
           },
-          "schematicReference": "QREF1",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "Q"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "REF1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
+          "reference": "QREF1"
         },
         {
           "id": "GND1",
@@ -602,8 +806,7 @@
               "y": 300
             },
             "rotation": 0
-          },
-          "schematicReference": "GND1"
+          }
         },
         {
           "id": "QM",
@@ -616,43 +819,7 @@
             },
             "rotation": 0
           },
-          "schematicReference": "QM",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "Q"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "M"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
+          "reference": "QM"
         },
         {
           "id": "GND2",
@@ -664,8 +831,7 @@
               "y": 300
             },
             "rotation": 0
-          },
-          "schematicReference": "GND2"
+          }
         },
         {
           "id": "QREF2",
@@ -678,43 +844,7 @@
             },
             "rotation": 0
           },
-          "schematicReference": "QREF2",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "Q"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "REF2"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
+          "reference": "QREF2"
         },
         {
           "id": "Q2",
@@ -727,43 +857,7 @@
             },
             "rotation": 0
           },
-          "schematicReference": "Q2",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "Q"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "2"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
+          "reference": "Q2"
         },
         {
           "id": "Q1",
@@ -776,43 +870,7 @@
             },
             "rotation": 0
           },
-          "schematicReference": "Q1",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "Q"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
+          "reference": "Q1"
         },
         {
           "id": "GND3",
@@ -824,8 +882,7 @@
               "y": 300
             },
             "rotation": 0
-          },
-          "schematicReference": "GND3"
+          }
         },
         {
           "id": "VOUT",
@@ -952,7 +1009,7 @@
         "terminals": [
           {
             "id": "terminal-vout",
-            "name": "v_out",
+            "name": "vout",
             "netId": "net-out",
             "direction": "output",
             "interfaceInstanceIds": [
@@ -961,7 +1018,7 @@
           },
           {
             "id": "terminal-vin",
-            "name": "v_in",
+            "name": "vin",
             "netId": "net-in",
             "direction": "input",
             "interfaceInstanceIds": [
@@ -1687,8 +1744,8 @@
   ],
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-9-34",
-  "name": "Razavi Fig. 9.34 — current generation for pnp devices",
-  "schemaVersion": 32,
+  "name": "Razavi Fig. 9.34 — pnp current mirror driven by an npn mirror",
+  "schemaVersion": 36,
   "source": {
     "dialect": "none",
     "entry": null,

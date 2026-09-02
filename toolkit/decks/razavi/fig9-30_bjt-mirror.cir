@@ -1,0 +1,13 @@
+* hand-written from Razavi Fig. 9.30 -- topology only, no geometry
+.title Razavi Fig. 9.30 — bipolar current mirror
+.global VCC
+.subckt Fig9_30 iout
+.iodir iout=output
+.name iout I_copy
+IREF VCC b
+.name IREF I_REF
+QREF b b 0 npn
+.name QREF Q_REF
+Q1 iout b 0 npn
+.name Q1 Q_1
+.ends

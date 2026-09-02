@@ -146,6 +146,17 @@ def flat(rt):
     return out
 
 
+def flat_text(rt):
+    """RichText -> the plain string the site calls its "semantic name".
+
+    v36 rejects a formatOverride whose text does not match the instance's
+    `reference`, and the site's own builder never drops characters, so the
+    reference for a label like `R_1` is `R1` -- the underscore is ours, a
+    marker for where the subscript starts, and it must not reach the file.
+    """
+    return "".join(t for t, _s, _i, _b in flat(rt))
+
+
 def prims(sym_id, variant):
     s = sym(sym_id)
     base = list(s["primitives"])
@@ -323,6 +334,16 @@ class Schematic(object):
         self.nmos_bulk_net, self.supply_net = nmos_bulk_net, supply_net
         self.rail_end, self.supply_name = rail_end, supply_name
         self.instances, self.placed = [], {}
+        # Lane-2 (netlist -> layout) added its own checks.  They are OFF for
+        # the hand-drawn lanes: those figures are the user's own drawings and
+        # must not be judged by rules invented for the placer (user,
+        # 2026-09-02: "不能混在一起").  autoplace.py turns them on.
+        self.lane2_audits = False
+        self.term_names = {}       # terminalId -> the underscore form
+        self._refs = set()         # v36 forbids duplicate instance references
+        self.unbound = set()       # instances whose printed name is a twin
+        self.names = {}            # iid -> RichText (v36: the
+        # instance no longer carries its own schematicName)
         self.junctions, self.nets, self.routes = [], [], []
         self.terminals, self.annotations, self.drafting = [], [], []
         self._text_owner = {}          # value labels declare their component
@@ -333,6 +354,10 @@ class Schematic(object):
     # against the schema, validates, and then silently fails to import.
     # 2026-08-30: `vdd` cost a whole round trip.  Checked with
     #   grep -c 'symbolId:`vdd`,' <bundle chunk>   ->  0
+    # v36: "A power marker is identified by its visible Net name, not an
+    # Instance reference" -- these must NOT carry `reference`.
+    POWER_MARKERS = {"ground", "vdd-port"}
+
     UNPLACEABLE = {"vdd": "use `vdd-port` (same pin at (0,+20))",
                    "ndmos": "no geometry anywhere; needs a PDK",
                    "pdmos": "no geometry anywhere; needs a PDK"}
@@ -350,6 +375,34 @@ class Schematic(object):
                 "placement": {"mirror": mirror, "position": {"x": x, "y": y},
                               "rotation": rotation}}
         if extra:
+            extra = dict(extra)
+            # schema v36 (2026-09-01): the reference designator moved to a
+            # top-level `reference`, `schematicName` was dropped entirely --
+            # the printed name now lives on the label annotation's
+            # formatOverride -- and `netlist.reference` is gone too.
+            ref = extra.pop("schematicReference", None)
+            if ref is not None and symbol_id not in self.POWER_MARKERS:
+                extra["reference"] = ref
+            nm = extra.pop("schematicName", None)
+            if nm is not None:
+                self.names[iid] = nm
+                # v36 wants every reference unique, but a symmetric figure
+                # prints the SAME name on both halves (R, L_2, C_1 ...).  The
+                # twin keeps a unique hidden reference and gets its name drawn
+                # as drafting text instead of a bound label.
+                ref = flat_text(nm)
+                if ref in self._refs:
+                    ref, k = iid, 2
+                    while ref in self._refs:
+                        ref, k = "%s-%d" % (iid, k), k + 1
+                    self.unbound.add(iid)
+                self._refs.add(ref)
+                extra["reference"] = ref
+            nl = extra.get("netlist")
+            if isinstance(nl, dict) and "reference" in nl:
+                nl = dict(nl)
+                nl.pop("reference")
+                extra["netlist"] = nl
             inst.update(extra)
         self.instances.append(inst)
         self.placed[iid] = (symbol_id, x, y, mirror, rotation)
@@ -489,7 +542,13 @@ class Schematic(object):
         raise KeyError("no junction at (%s,%s)" % (x, y))
 
     def terminal(self, tid, tname, net_id, direction, instance_ids):
-        self.terminals.append({"id": tid, "name": tname, "netId": net_id,
+        # v36 checks a label's formatOverride against the terminal's own
+        # name, and the site's builder never drops characters, so the stored
+        # name is the underscore-free form; the underscore stays here only to
+        # tell our own builder where the subscript starts.
+        self.term_names[tid] = tname
+        self.terminals.append({"id": tid, "name": flat_text(name(tname)),
+                               "netId": net_id,
                                "direction": direction,
                                "interfaceInstanceIds": instance_ids})
 
@@ -501,11 +560,20 @@ class Schematic(object):
                 "fallbackPosition": {"x": ix + dx, "y": iy + dy}}
 
     def inst_label(self, iid, dx, dy, alignment, color=None):
+        if iid in self.unbound:
+            # its reference had to be made unique, so a bound label would no
+            # longer match the name we print -- draw the name instead
+            ix, iy = self.placed[iid][1], self.placed[iid][2]
+            self.text("instance-label-" + iid, ix + dx, iy + dy, alignment,
+                      self.names[iid], owner=iid)
+            return
         self.annotations.append({
             "id": "instance-label-" + iid, "kind": "instance-label",
             "alignment": alignment, "locked": False, "rotation": 0,
             "sizeScale": LABEL_SIZE, "anchor": self._anchor(iid, dx, dy),
-            "binding": {"kind": "instance-schematic-name", "instanceId": iid}})
+            "binding": {"kind": "instance-reference", "instanceId": iid}})
+        if iid in self.names:
+            self.annotations[-1]["formatOverride"] = self.names[iid]
         if color:
             raise ValueError(
                 "an instance-label cannot carry a colour: the schema has no "
@@ -533,7 +601,7 @@ class Schematic(object):
             "alignment": alignment, "locked": False, "rotation": 0,
             "sizeScale": LABEL_SIZE, "anchor": self._anchor(iid, dx, dy),
             "binding": {"kind": "cell-terminal-name", "terminalId": tid},
-            "formatOverride": name(term["name"])})
+            "formatOverride": name(self.term_names.get(tid, term["name"]))})
 
     def power_label(self, lid, net_id, obj_id, dx, dy, label,
                     alignment="start"):
@@ -575,6 +643,9 @@ class Schematic(object):
                 "instances DO take a colour -- text does not, so do not mix "
                 "the two or the picture reads as half-finished.")
         if owner:
+            # 2026-08-31: this used to sit after `return tid`, so every
+            # `f.text(..., owner=...)` was silently discarded and the crowding
+            # audit read those value labels as strays.
             self._text_owner[tid] = owner
         return tid
 
@@ -663,12 +734,15 @@ class Schematic(object):
             fb = a["anchor"]["fallbackPosition"]
             if "content" in a:
                 rt = a["content"]
+            elif "formatOverride" in a:
+                rt = a["formatOverride"]
             elif a["binding"]["kind"] == "cell-terminal-name":
                 rt = name(next(t for t in self.terminals
                                if t["id"] == a["binding"]["terminalId"])["name"])
             else:
-                rt = next(i for i in self.instances
-                          if i["id"] == a["binding"]["instanceId"])["schematicName"]
+                rt = name(next(i for i in self.instances
+                               if i["id"] == a["binding"]["instanceId"])
+                          .get("reference", ""))
             owner = a.get("binding", {}).get("instanceId") \
                 or a["anchor"].get("objectId")
             recs.append((a["id"], rt, fb["x"], fb["y"], a["alignment"], owner))
@@ -682,12 +756,12 @@ class Schematic(object):
         self._long_haul = long_haul
         doc = {
             "annotations": self.annotations,
+            # v36: one name-claim per power net, owned by the marker that
+            # makes it visible.  The old `explicit-net-property` twin is gone
+            # -- its replacement `global-declaration` demands a SPICE source
+            # file to have declared the net, which an offline drawing has not.
             "connectivityEvidence": extra_evidence
             if extra_evidence is not None else [
-                {"id": "cev-vdd-property", "kind": "name-claim",
-                 "netId": self.supply_net, "name": self.supply_name,
-                 "owner": {"kind": "explicit-net-property"},
-                 "scope": "global", "powerDomain": "vdd"},
                 {"id": "cev-vdd-marker", "kind": "name-claim",
                  "netId": self.supply_net, "name": self.supply_name,
                  "owner": {"kind": "power-marker", "objectId": self.rail_end},
@@ -744,8 +818,18 @@ class Schematic(object):
         labels = self._label_audit()
         onwire = self._wire_clearance()
         tees = self._tee_audit()
+        shorts = cross = 0
+        if self.lane2_audits:
+            # the netlist lane's own three (SOP 3J); the hand-drawn figures
+            # never run them, which is why their output is unchanged
+            shorts = (self._short_audit() + self._body_audit()
+                      + self._pin_touch_audit())
+            cross = self._cross_count()
         print("audits: legs %d | labels %d | on-wire %d | tees %d"
-              "   (all must be 0)" % (legs, labels, onwire, tees))
+              % (legs, labels, onwire, tees)
+              + ("   (all must be 0)" if not self.lane2_audits else
+                 " | shorts %d   (all must be 0)   crossings %d"
+                 % (shorts, cross)))
         if verbose:
             self._crowding()
             self._pitch()
@@ -766,7 +850,8 @@ class Schematic(object):
             if errs:
                 failures.append("self-check=%d" % len(errs))
             for key, count in (("legs", legs), ("labels", labels),
-                               ("on-wire", onwire), ("tees", tees)):
+                               ("on-wire", onwire), ("tees", tees),
+                               ("shorts", shorts)):
                 if count:
                     failures.append("%s=%d" % (key, count))
             failures.extend(external)
@@ -996,6 +1081,22 @@ class Schematic(object):
                 g = _box_gap_box(box, b)
                 if near is None or g < near[1]:
                     near = (iid, g)
+            hit = [] if not self.lane2_audits else [
+                   iid for iid, b in boxes.items()
+                   if iid != owner and _box_gap_box(box, b) < 2.0]
+            if hit:
+                print("  ! LABEL ON COMPONENT   %-18s over %s"
+                      % (lid, ", ".join(sorted(hit)[:3])))
+                bad += 1
+            for lid2, rt2, x2, y2, al2, _o2 in (
+                    self.label_records() if self.lane2_audits else []):
+                if lid2 <= lid:
+                    continue
+                g = _box_gap_box(box, label_box(rt2, x2, y2, al2))
+                if g < 2.0:
+                    print("  ! LABELS OVERLAP    %s and %s (gap %.1f)"
+                          % (lid, lid2, g))
+                    bad += 1
             if owner in boxes and near:
                 own = _box_gap_box(box, boxes[owner])
                 # Razavi's own figures: label sits ~4 units from its device and
@@ -1061,6 +1162,170 @@ class Schematic(object):
         if tight:
             print("  ! %d pair(s) closer than %d units"
                   % (len(tight), CROWD_MIN))
+
+    def gate_leads(self):
+        """[(iid, row, x_lo, x_hi)] -- the short stub between each gate pin
+        and its channel bar."""
+        out = []
+        for iid, (sid, x, _y, _mir, rot) in self.placed.items():
+            if sid not in ("nmos", "pmos", "npn", "pnp") or rot:
+                continue
+            gp = "G" if sid in ("nmos", "pmos") else "B"
+            gx, gy = self.pin(iid, gp)
+            inner = x + (10 if gx > x else -10)
+            out.append((iid, gy, min(gx, inner), max(gx, inner)))
+        return out
+
+    def _body_audit(self):
+        """A wire may touch a pin.  It may not go INSIDE the component.
+
+        One rule, three complaints (user, 2026-09-02):
+          * "不要穿過 MOS 的閘極去接線" -- the cascode mirror's bus rode over
+            M1's gate lead on its way to the source pin;
+          * "不能有 net 直接穿過 amp" -- the Sallen-Key drew IN- to OUT as a
+            straight line across the triangle;
+          * "那個電容哪有人這樣接" -- the same net came back UP THROUGH C1 to
+            reach the row it wanted.
+        All three are a wire entering a body.  `_wire_clearance` missed them
+        because it only looks for a wire that goes in one side and out the
+        other, and because a component on the wire's OWN net was exempt.
+
+        Pins sit on the boundary, so shrinking the box by one unit lets a
+        stub touch its pin and nothing else.
+        """
+        bad = 0
+        boxes = [(iid, self.ink(iid)) for iid in sorted(self.placed)]
+        for r in self.routes:
+            for rid, x0, y0, x1, y1 in self._route_segments(r):
+                sa, sb = min(x0, x1), max(x0, x1)
+                sc, sd = min(y0, y1), max(y0, y1)
+                for iid, bb in boxes:
+                    ix0, iy0, ix1, iy1 = bb[0] + 1, bb[1] + 1, bb[2] - 1, bb[3] - 1
+                    if ix0 >= ix1 or iy0 >= iy1:
+                        continue
+                    if sa < ix1 and sb > ix0 and sc < iy1 and sd > iy0:
+                        print("  ! WIRE INSIDE BODY  %s runs inside %s"
+                              % (rid, iid))
+                        bad += 1
+        return bad
+
+    def _pin_touch_audit(self):
+        """A wire may not run over a pin that belongs to a different net.
+
+        Two nets that merely touch at a point slip past `_short_audit`
+        (it compares collinear overlaps) and past `_body_audit` (pins sit on
+        the ink boundary, and the boundary is legal).  The reader still sees
+        a solder joint.  Found on the Sallen-Key draft, 2026-09-02: n1's bus
+        ran across R1's top pin (= V_in) and the output riser went straight
+        through the op-amp's IN+ on its way to IN-.
+        """
+        pinnet = {}
+        for n in self.nets:
+            for t in n["terminals"]:
+                try:
+                    xy = self.pin(t["instanceId"], t["pinName"])
+                except KeyError:
+                    continue
+                pinnet.setdefault(xy, set()).add(n["id"])
+        bad = 0
+        for r in self.routes:
+            nid = r.get("netId")
+            for rid, x0, y0, x1, y1 in self._route_segments(r):
+                for (px, py), owners in pinnet.items():
+                    if nid in owners:
+                        continue
+                    if not ((x0 == x1 == px and min(y0, y1) <= py <= max(y0, y1))
+                            or (y0 == y1 == py
+                                and min(x0, x1) <= px <= max(x0, x1))):
+                        continue
+                    print("  ! WIRE OVER PIN  %s (%s) runs over a %s pin "
+                          "at %g,%g" % (rid, nid, sorted(owners)[0], px, py))
+                    bad += 1
+        return bad
+
+    def _route_segments(self, r):
+        pt = self._axy(r["start"])
+        out = []
+        for lg in r["legs"]:
+            to = lg["to"]
+            nxt = ((to["position"]["x"], to["position"]["y"])
+                   if to["kind"] == "bend" else self._axy(to["endpoint"]))
+            out.append((r["id"], pt[0], pt[1], nxt[0], nxt[1]))
+            pt = nxt
+        return out
+
+    def _cross_count(self):
+        """How many times two UNCONNECTED nets cross.
+
+        Crossing is legal (SOP §6: no junction means no connection), but it
+        is what makes a drawing hard to read, so it is reported as a number
+        to minimise rather than an error to fix.  Endpoints touching do not
+        count -- only a true X.
+        """
+        net_of = {r["id"]: r["netId"] for r in self.routes}
+        H, V = [], []
+        for rid, x0, y0, x1, y1 in self.segments():
+            if y0 == y1 and x0 != x1:
+                H.append((net_of[rid], y0, min(x0, x1), max(x0, x1)))
+            elif x0 == x1 and y0 != y1:
+                V.append((net_of[rid], x0, min(y0, y1), max(y0, y1)))
+        n = 0
+        for na, y, xa0, xa1 in H:
+            for nb, x, yb0, yb1 in V:
+                if na == nb:
+                    continue
+                if xa0 < x < xa1 and yb0 < y < yb1:
+                    n += 1
+        return n
+
+    def _short_audit(self):
+        """Two DIFFERENT nets drawn as one line.
+
+        A reader does not see net ids, only ink: if net A's wire and net B's
+        wire lie on the same row (or the same column) and their spans
+        overlap, the picture says those two nodes are shorted.  Nothing else
+        catches this -- `on-wire` compares a wire against component BODIES,
+        `tees` counts junctions -- and the lane-2 placer traded it away on
+        Fig 7.94, where V_in and V_out came out as one continuous line
+        (2026-09-02, user spotted it in the render).
+
+        Segments merely running parallel and close get a warning instead:
+        SOP 3H rule 5 asks for 20 units of daylight between two nets.
+        """
+        net_of = {r["id"]: r["netId"] for r in self.routes}
+        rail = {r["id"] for r in self.routes
+                if r.get("presentation") == "power-rail"}
+        H, V = [], []
+        for rid, x0, y0, x1, y1 in self.segments():
+            if rid in rail:
+                continue                     # the rail is one bar by design
+            if y0 == y1 and x0 != x1:
+                H.append((rid, y0, min(x0, x1), max(x0, x1)))
+            elif x0 == x1 and y0 != y1:
+                V.append((rid, x0, min(y0, y1), max(y0, y1)))
+        bad, near = 0, []
+        for axis, segs in (("row", H), ("column", V)):
+            for i in range(len(segs)):
+                for j in range(i + 1, len(segs)):
+                    a, b = segs[i], segs[j]
+                    na, nb = net_of[a[0]], net_of[b[0]]
+                    if na == nb:
+                        continue
+                    ov = min(a[3], b[3]) - max(a[2], b[2])
+                    if ov <= 0:
+                        continue
+                    d = abs(a[1] - b[1])
+                    if d == 0:
+                        print("  ! SHORT  %s (%s) and %s (%s) share the same"
+                              " %s and overlap %d units -- they read as ONE"
+                              " wire" % (a[0], na, b[0], nb, axis, ov))
+                        bad += 1
+                    elif d < 20:
+                        near.append((a[0], na, b[0], nb, axis, d))
+        for a, na, b, nb, axis, d in near[:4]:
+            print("  ~ %s (%s) runs only %d from %s (%s) along the same %s"
+                  % (a, na, d, b, nb, axis))
+        return bad
 
     def _tee_audit(self):
         """三叉必有圓點（使用者 2026-08-30 裁示）。

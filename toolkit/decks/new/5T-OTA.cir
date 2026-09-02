@@ -1,0 +1,25 @@
+* hand-written deck, not exported from any drawing
+.title 5T OTA
+.global VDD
+.subckt OTA5T inp inn out
+.iodir inp=input inn=input out=output
+.name inp V_inp
+.name inn V_inn
+.name out V_out
+MM1 d1 inp tail 0 nmos
+.alias MM1 M1
+.name M1 M_1
+MM2 out inn tail 0 nmos
+.alias MM2 M2
+.name M2 M_2
+MM3 d1 d1 VDD VDD pmos
+.alias MM3 M3
+.name M3 M_3
+MM4 out d1 VDD VDD pmos
+.alias MM4 M4
+.name M4 M_4
+MM5 tail vb 0 0 nmos
+.alias MM5 M5
+.name M5 M_5
+.show tail
+.ends

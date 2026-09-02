@@ -82,8 +82,28 @@
             }
           },
           "binding": {
-            "kind": "instance-schematic-name",
+            "kind": "instance-reference",
             "instanceId": "R"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "R"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         }
       ],
@@ -393,51 +413,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "L1",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "L"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "inductor"
             },
-            "parameters": {},
-            "reference": "L1"
-          }
+            "parameters": {}
+          },
+          "reference": "L1"
         },
         {
           "id": "L2",
@@ -450,51 +433,14 @@
             },
             "rotation": 0
           },
-          "schematicReference": "L2",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "L"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "2"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "inductor"
             },
-            "parameters": {},
-            "reference": "L2"
-          }
+            "parameters": {}
+          },
+          "reference": "L2"
         },
         {
           "id": "D1",
@@ -507,51 +453,14 @@
             },
             "rotation": 180
           },
-          "schematicReference": "D1",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "D"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "1"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "diode"
             },
-            "parameters": {},
-            "reference": "D1"
-          }
+            "parameters": {}
+          },
+          "reference": "D1"
         },
         {
           "id": "D2",
@@ -564,51 +473,14 @@
             },
             "rotation": 180
           },
-          "schematicReference": "D2",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "D"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "2"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "diode"
             },
-            "parameters": {},
-            "reference": "D2"
-          }
+            "parameters": {}
+          },
+          "reference": "D2"
         },
         {
           "id": "D3",
@@ -621,51 +493,14 @@
             },
             "rotation": 180
           },
-          "schematicReference": "D3",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "D"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "3"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "diode"
             },
-            "parameters": {},
-            "reference": "D3"
-          }
+            "parameters": {}
+          },
+          "reference": "D3"
         },
         {
           "id": "D4",
@@ -678,51 +513,14 @@
             },
             "rotation": 180
           },
-          "schematicReference": "D4",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "D"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "span",
-                "style": "subscript",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "4"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "diode"
             },
-            "parameters": {},
-            "reference": "D4"
-          }
+            "parameters": {}
+          },
+          "reference": "D4"
         },
         {
           "id": "R",
@@ -735,35 +533,14 @@
             },
             "rotation": 90
           },
-          "schematicReference": "R",
-          "schematicName": {
-            "runs": [
-              {
-                "kind": "span",
-                "style": "italic",
-                "children": [
-                  {
-                    "kind": "span",
-                    "style": "bold",
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "R"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
           "netlist": {
             "binding": {
               "kind": "primitive",
               "deviceClass": "resistor"
             },
-            "parameters": {},
-            "reference": "R"
-          }
+            "parameters": {}
+          },
+          "reference": "R"
         },
         {
           "id": "GND",
@@ -775,8 +552,7 @@
               "y": 240
             },
             "rotation": 0
-          },
-          "schematicReference": "GND"
+          }
         }
       ],
       "junctions": [
@@ -870,7 +646,7 @@
         "terminals": [
           {
             "id": "t-in",
-            "name": "V_in",
+            "name": "Vin",
             "netId": "net-in1",
             "direction": "input",
             "interfaceInstanceIds": [
@@ -1496,7 +1272,7 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-handdrawn-bridge-rect",
   "name": "Transformer-fed bridge rectifier",
-  "schemaVersion": 32,
+  "schemaVersion": 36,
   "source": {
     "dialect": "none",
     "entry": null,

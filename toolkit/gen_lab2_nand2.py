@@ -77,4 +77,4 @@ f.build(long_haul={"r-vdd-rail-1", "r-o1", "r-o3"},
         # the editor's builder subscripts a trailing capital run
         # (IN -> I_N, CK -> C_K, Out -> O_ut); our formatOverride
         # keeps them plain, so they DIFFER on purpose -- SOP 4
-        expect_differ={"instance-label-OUT"})
+        )
