@@ -3472,6 +3472,9 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
     unconnected crossings as the drawing can manage, then the shortest wire
     -- the three numbers that already decide whether a figure is clean.
     """
+    # A missing dependency must stop the run, not quietly disable the search:
+    # the per-candidate `except Exception` below cannot tell them apart.
+    import ring_corners as _RC
     c = N.parse(open(path, encoding="utf-8").read())
     stem = os.path.basename(path)[:-4]
     out_proj = out_proj or os.path.join(HERE, "auto", stem + ".icproj.json")
@@ -3505,8 +3508,13 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
             # was therefore blind to the very thing it was supposed to be
             # minimising -- adding a corner term to the trunk cost changed
             # nothing because the score could not see the result.  Real
-            # definition (user, 2026-09-03) lives in ring_corners.
-            import ring_corners as _RC
+            # definition (user, 2026-09-03) lives in ring_corners, imported
+            # ABOVE this try: an ImportError in here would be swallowed as
+            # "this style cannot be drawn", every candidate would score the
+            # same 999 and the descent would silently do nothing.  That is
+            # exactly what a fresh clone of the public repo did when
+            # ring_corners.py was left out of it -- 6/21 clean instead of
+            # 21/21, with no error anywhere (2026-09-04).
             _pts, _gates, _x = _RC.corners(p.f)
             bends = len(_pts) + 2.5 * len(_gates)
             # crossings and wire trade against each other, so they share

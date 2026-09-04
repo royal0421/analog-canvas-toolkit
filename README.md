@@ -104,7 +104,7 @@ python -m toolkit regress
 | 指令 | 用途 |
 |---|---|
 | `doctor` | 檢查 Python、Node、NumPy、Pillow、符號、schema adapter 與 Chrome |
-| `setup` | 同步 50 個上游符號、正式站 schema、穩定 model adapter 與 schema 版本 |
+| `setup` | 同步上游符號（2026-09-04 為 59 個）、正式站 schema、穩定 model adapter 與 schema 版本 |
 | `list` | 列出 generator 與對應輸出 |
 | `generate` | 生成單張或全部專案；名稱可用 generator 或輸出檔名 |
 | `validate` | 以正式站 schema 驗證指定檔案，未指定時驗證全部 `out/` |
@@ -120,6 +120,59 @@ python -m toolkit regress
 | `AC_NO_RENDER=1` | 只略過 Chrome PNG；schema 與標籤仍完整驗證 |
 | `AC_FAST=1` | 略過所有外部驗證與 PNG，只保留內部稽核；僅供快速除錯，不可當交付或 CI 結果 |
 | `CHROME_PATH=/path/to/chrome` | 指定非標準位置的 Chrome／Chromium |
+
+## 路線二：從 netlist 自動排版
+
+上面的 generator 是「人把座標寫出來」。路線二反過來：**輸入只有拓樸**
+（SPICE 風格的 deck，沒有任何座標、鏡像或樣式），由程式決定列、欄、方向、
+主幹與標籤位置，再跑同一套稽核。它存在的理由是驗證 `SOP.md` 的排版規則
+夠不夠完整——畫不出來就代表規則還缺一條。
+
+```bash
+cd toolkit
+
+# 1. 把 out/ 的 29 張參考圖匯出成 deck（只留拓樸；21 張 netlist 是乾淨的）
+python netlist_io.py
+
+# 2. 畫其中一張：deck -> auto/<名稱>.icproj.json（含 SVG 與 PNG 預覽）
+python autoplace.py decks/Razavi_Fig_9_34_pnp-current-mirror.cir
+
+# 3. 拿 21 張手排圖當標準答案打分
+python netlist_bench.py          # 序列，約 40 分鐘
+python bench_par.py              # 同樣的數字，一張圖一核，約 14 分鐘
+```
+
+`netlist_io.py` 必須先跑——`decks/*.cir` 是從 `out/` 的專案匯出的產物，
+不在版控裡。`decks/razavi/` 與 `decks/new/` 底下另有手寫的 deck，那些是
+訓練集以外、用來測泛化的題目。
+
+### 目前的成績（2026-09-04）
+
+```
+21 figures | 21 fully clean | place 37% | wire 1.20x | bends 1.18x | crossings 6
+```
+
+- `fully clean` — 七道稽核全 0（短路、走線進入元件本體、標籤重疊、
+  輸出不在最右、走線繞過電源軌…）。**這一欄不是 21/21 就是有東西壞了。**
+- `wire` / `bends` — 總走線長度與轉角數對「手排那張」的比值，1.00x 代表
+  跟人畫的一樣。`bends` 剔掉 NAND／NOR 之後是 1.01x（那類圖有腳位重合的
+  特例，轉角數不可比，見 `SOP.md` §3J）。
+- `crossings` — 全庫沒接在一起的交叉總數。
+
+### 看轉角畫在哪裡
+
+```bash
+python ring_corners.py Razavi_Fig_12_57c_diffpair-mirror-load-Rx-test
+#   手排在上、自動在下，紅圈＝轉角、藍圈＝交叉、紫圈＝穿越閘極
+#   （需要 Chrome 把 SVG 轉成 PNG）
+
+python corner_kinds.py auto/Razavi_Fig_9_34_pnp-current-mirror.icproj.json
+#   每個轉角落在 PIN／BEND／JUNC 哪一類，以及是哪幾條線構成的
+```
+
+`ring_corners.py` **不是選用工具**：`autoplace.py` 的評分函式會 import 它來
+計算轉角，少了它每個候選版面都會丟例外、被當成「畫不出來」，座標下降等於
+沒有在運作。
 
 ## 建立自己的圖
 
