@@ -1,0 +1,14 @@
+* hand-written from Razavi Fig. 7.47 -- topology only, no geometry
+.title Razavi Fig. 7.47 — resistive bias network around M1
+.global VDD
+.subckt Fig7_47
+RG VDD g
+.name RG R_G
+RP g d
+.name RP R_P
+RD VDD d
+.name RD R_D
+M1 d g 0 0 nmos
+.name M1 M_1
+.show g d
+.ends

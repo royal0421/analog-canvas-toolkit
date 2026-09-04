@@ -1,0 +1,19 @@
+* hand-written from Razavi Fig. 10.6(a) -- topology only, no geometry
+.title Razavi Fig. 10.6(a) — bipolar differential pair
+.global VCC
+.subckt Fig10_6a vin1 vin2
+.iodir vin1=input vin2=input
+.name vin1 V_in1
+.name vin2 V_in2
+RCL VCC x
+.name RCL R_C
+RCR VCC y
+.name RCR R_C
+Q1 x vin1 p npn
+.name Q1 Q_1
+Q2 y vin2 p npn
+.name Q2 Q_2
+IEE p 0
+.name IEE I_EE
+.show x y
+.ends

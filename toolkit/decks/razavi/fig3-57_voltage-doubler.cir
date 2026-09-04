@@ -1,0 +1,17 @@
+* hand-written from Razavi Fig. 3.57 -- topology only, no geometry
+.title Razavi Fig. 3.57 — voltage doubler
+.subckt Fig3_57 vout
+.iodir vout=output
+.name vout V_out
+VIN vin 0
+.name VIN V_in
+C1 vin x
+.name C1 C_1
+D1 0 x diode
+.name D1 D_1
+D2 x vout diode
+.name D2 D_2
+C2 vout 0
+.name C2 C_2
+.show x
+.ends

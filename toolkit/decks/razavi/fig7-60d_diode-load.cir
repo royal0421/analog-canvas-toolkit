@@ -1,0 +1,15 @@
+* hand-written from Razavi Fig. 7.60(d) -- topology only, no geometry
+.title Razavi Fig. 7.60(d) — pmos input with a diode-connected load
+.global VDD
+.subckt Fig7_60d vin vb vout
+.iodir vin=input vb=input vout=output
+.name vin V_in
+.name vb V_b
+.name vout V_out
+M2 vout vin VDD VDD pmos
+.name M2 M_2
+M1 vout vb 0 0 nmos
+.name M1 M_1
+M3 vout vout 0 0 nmos
+.name M3 M_3
+.ends

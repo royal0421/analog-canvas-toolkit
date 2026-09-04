@@ -70,15 +70,182 @@ def wire_len(doc, placed=None):
     return total
 
 
+PIN_PAIRS = (("1", "2"), ("A", "K"), ("+", "-"), ("P1", "P2"))
+
+
 def bend_count(doc):
     """How many corners the drawing makes.
 
-    Total length says how far the eye travels; the number of corners says
-    how many times it has to turn.  A figure can be short and still read as
-    "太繞" (user, 2026-09-02), so this is its own number, scored against the
-    hand-drawn figure exactly like `wire`.
+    A corner is any point where a horizontal path and a vertical path meet
+    -- a T-junction included (user, 2026-09-03: "T型算成一個轉角").  The
+    paths are the route segments AND the bodies of two-terminal parts: a
+    vertical wire ending on a lying-down resistor's left pin turns 90
+    degrees there, even though the two halves are a route and a component.
+
+    ⚠️ This used to be `len(legs)-1` per route, which is wrong twice over:
+    a bus and the stub dropping off it are separate routes meeting at an L
+    (each scores 0), and a component body was not a path at all.  On
+    14.36(b) the old count said auto 8 / hand 11 -- "better than the human"
+    -- while the real numbers are auto 29 / hand 20.
     """
-    return sum(max(0, len(r["legs"]) - 1) for r in doc["routes"])
+    pos = {}
+    for i in doc["instances"]:
+        pl = i["placement"]
+        pos[i["id"]] = (pl["position"]["x"], pl["position"]["y"],
+                        pl.get("mirror", "none"), pl.get("rotation", 0),
+                        i["symbolId"])
+    variant = {i["id"]: i.get("symbolVariantId") for i in doc["instances"]}
+    jn = {j["id"]: (j["position"]["x"], j["position"]["y"])
+          for j in doc["junctions"]}
+    import icproj
+
+    def pin_xy(iid, name):
+        if iid not in pos:
+            return None
+        x, y, mir, rot, sid = pos[iid]
+        for pin in icproj.sym(sid)["pins"]:
+            if pin["name"] == name:
+                dx, dy = icproj.xf(pin["at"]["x"], pin["at"]["y"], mir, rot)
+                return (x + round(dx), y + round(dy))
+        return None
+
+    def xy(ep):
+        if ep["kind"] == "junction":
+            return jn[ep["junctionId"]]
+        return pin_xy(ep["instanceId"], ep["pinName"])
+
+    segs, rsegs = [], []
+    for r in doc["routes"]:
+        cur = xy(r["start"])
+        for lg in r["legs"]:
+            to = lg["to"]
+            nxt = ((to["position"]["x"], to["position"]["y"])
+                   if to["kind"] == "bend" else xy(to["endpoint"]))
+            if cur and nxt:
+                segs.append((cur, nxt))
+                rsegs.append((r["id"], cur, nxt))
+            cur = nxt
+    rnet0 = {r["id"]: r.get("netId") for r in doc["routes"]}
+    inc, netat = {}, {}
+    for rid, a, b in rsegs:
+        if a == b:
+            continue
+        d = "H" if a[1] == b[1] else ("V" if a[0] == b[0] else None)
+        if d is None:
+            continue
+        for p in (a, b):
+            inc.setdefault(p, set()).add(d)
+            netat.setdefault(p, set()).add(rnet0.get(rid))
+    # every pin's escape direction is a path too -- a wire dropping onto an
+    # op-amp's IN-, a port, or a ground stub turns 90 degrees there just as
+    # it does on a resistor's pin.  Counting only two-terminal bodies was
+    # unfair to the netlist lane, which has many more wires landing on
+    # op-amp and port pins (user, 2026-09-03).
+    for iid, (x, y, mir, rot, sid) in pos.items():
+        for pdef in icproj.sym(sid)["pins"]:
+            nm, dirn = pdef["name"], pdef.get("direction")
+            if not dirn or (sid in ("nmos", "pmos") and nm == "B"):
+                continue
+            p = pin_xy(iid, nm)
+            if p is None:
+                continue
+            vx, _vy = icproj.xf(*icproj.Schematic.DIRV[dirn],
+                                mirror=mir, rotation=rot)
+            inc.setdefault(p, set()).add("H" if round(vx) else "V")
+    # A part hanging off V_DD meets the rail at a right angle by
+    # construction -- that is how a rail is drawn, not a detour, so it does
+    # not count (user, 2026-09-03: "連到VDD的不算轉折").
+    skip = set()
+    supnets = {r.get("netId") for r in doc["routes"]
+               if r.get("presentation") == "power-rail"}
+    for iid, (_x, _y, _m, _r, sid) in pos.items():
+        if sid == "vdd-port":
+            for pdef in icproj.sym(sid)["pins"]:
+                p = pin_xy(iid, pdef["name"])
+                if p:
+                    skip.add(p)
+    for r in doc["routes"]:
+        if r.get("presentation") != "power-rail" and r.get("netId") not in supnets:
+            continue
+        cur = xy(r["start"])
+        for lg in r["legs"]:
+            to = lg["to"]
+            nxt = ((to["position"]["x"], to["position"]["y"])
+                   if to["kind"] == "bend" else xy(to["endpoint"]))
+            if cur:
+                skip.add(cur)
+            if nxt:
+                skip.add(nxt)
+            cur = nxt
+    # Crossing a gate NET is worth 2.5 (user, 2026-09-03).  Net level, not
+    # pin level: the crossing usually happens out on the bus, which is a
+    # different route from the stub that touches the pin -- 9.26(c)'s base
+    # bus is crossed by two collector risers and a pin-level test saw
+    # neither.
+    gate_pin = {"nmos": "G", "pmos": "G", "npn": "B", "pnp": "B"}
+    netof = {}
+    for n in doc.get("nets", ()):
+        for t in n["terminals"]:
+            netof[(t["instanceId"], t["pinName"])] = n["id"]
+    rnet = {r["id"]: r.get("netId") for r in doc["routes"]}
+    gnets = set()
+    for iid, (_x, _y, _m, _r, sid) in pos.items():
+        if sid in gate_pin and (iid, gate_pin[sid]) in netof:
+            gnets.add(netof[(iid, gate_pin[sid])])
+    gx = set()
+    lst = [(rnet.get(rid), a2, b2) for rid, a2, b2 in rsegs if a2 != b2]
+    for i, (n1, (ax0, ay0), (ax1, ay1)) in enumerate(lst):
+        h1 = ay0 == ay1
+        for n2, (bx0, by0), (bx1, by1) in lst[i + 1:]:
+            h2 = by0 == by1
+            if h1 == h2 or (n1 is not None and n1 == n2):
+                continue
+            if h1:
+                hx0, hx1, hy = min(ax0, ax1), max(ax0, ax1), ay0
+                vx, vy0, vy1 = bx0, min(by0, by1), max(by0, by1)
+            else:
+                hx0, hx1, hy = min(bx0, bx1), max(bx0, bx1), by0
+                vx, vy0, vy1 = ax0, min(ay0, ay1), max(ay0, ay1)
+            if hx0 < vx < hx1 and vy0 < hy < vy1 and (n1 in gnets or n2 in gnets):
+                gx.add((vx, hy))
+    # Two DIFFERENT nets forming a cross is a CROSSING, not a corner -- it
+    # has its own metric and must not be counted twice (user, 2026-09-03:
+    # "交叉點就是兩條不同電性的net，構成一個十字").  Pin points carry their
+    # own net, so a real junction still counts.
+    for iid, (_x, _y, _m, _r, sid) in pos.items():
+        for pdef in icproj.sym(sid)["pins"]:
+            nm = pdef["name"]
+            key = (iid, nm)
+            p = pin_xy(iid, nm)
+            if p is not None and key in netof:
+                netat.setdefault(p, set()).add(netof[key])
+    jpts = set(jn.values())
+    n = 0
+    # A bus running THROUGH a transistor body scores the same 2.5 -- even
+    # when it is the net those gates sit on (user, 2026-09-03: "匯流排穿過
+    # 電晶體本體就算 2.5").  One per transistor.
+    nbody = 0
+    for iid, (x, y, mir, rot, sid) in pos.items():
+        if sid not in ("nmos", "pmos", "npn", "pnp"):
+            continue
+        bb = icproj.ink_box(sid, variant.get(iid), x, y, mir, rot)
+        ix0, iy0, ix1, iy1 = bb[0] + 1, bb[1] + 1, bb[2] - 1, bb[3] - 1
+        if ix0 >= ix1 or iy0 >= iy1:
+            continue
+        for _rid, a, b in rsegs:
+            if (min(a[0], b[0]) < ix1 and max(a[0], b[0]) > ix0
+                    and min(a[1], b[1]) < iy1 and max(a[1], b[1]) > iy0):
+                nbody += 1
+                break
+    # L, T and a same-net cross all score one (user: "十字也算一個轉角就好")
+    for p, ds in inc.items():
+        if "H" not in ds or "V" not in ds or p in skip:
+            continue
+        nets = {x for x in netat.get(p, ()) if x}
+        if len(nets) > 1 and p not in jpts:
+            continue
+        n += 1
+    return n + 2.5 * (len(gx) + nbody)
 
 
 def ref_placement(stem):

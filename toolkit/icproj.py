@@ -339,6 +339,10 @@ class Schematic(object):
         # must not be judged by rules invented for the placer (user,
         # 2026-09-02: "不能混在一起").  autoplace.py turns them on.
         self.lane2_audits = False
+        # the instance id of the single output port, when the figure has
+        # exactly one -- autoplace.py fills it in so the audit below can ask
+        # "is the output the right-most thing in the drawing?"
+        self.lane2_out = None
         self.term_names = {}       # terminalId -> the underscore form
         self._refs = set()         # v36 forbids duplicate instance references
         self.unbound = set()       # instances whose printed name is a twin
@@ -789,7 +793,13 @@ class Schematic(object):
             "routes": self.routes,
             "sourceStatus": "in-sync",
         }
-        if not any(i.get("mosBulkBinding") for i in self.instances):
+        # mosBulkDefaults names the net an nmos bulk falls back to, so it may
+        # only be written when that net actually exists.  Razavi Fig 15.32(a)
+        # is all pmos and therefore has no ground at all: the bindings are
+        # there (they point at the supply) but the nmos default pointed at a
+        # net nobody created, and the schema rejects that.
+        if (not any(i.get("mosBulkBinding") for i in self.instances)
+                or self.nmos_bulk_net not in {n["id"] for n in self.nets}):
             del doc["mosBulkDefaults"]
         project = {
             "documents": [doc],
@@ -823,7 +833,8 @@ class Schematic(object):
             # the netlist lane's own three (SOP 3J); the hand-drawn figures
             # never run them, which is why their output is unchanged
             shorts = (self._short_audit() + self._body_audit()
-                      + self._pin_touch_audit())
+                      + self._pin_touch_audit() + self._over_supply_audit()
+                      + self._output_right_audit() + self._ground_down_audit())
             cross = self._cross_count()
         print("audits: legs %d | labels %d | on-wire %d | tees %d"
               % (legs, labels, onwire, tees)
@@ -1176,6 +1187,90 @@ class Schematic(object):
             out.append((iid, gy, min(gx, inner), max(gx, inner)))
         return out
 
+    def _supply_y(self):
+        """The height of the supply: the VDD marker, or the rail itself."""
+        ys = [p[2] for p in self.placed.values() if p[0] == "vdd-port"]
+        for r in self.routes:
+            if r.get("presentation") == "power-rail":
+                for _rid, _x0, y0, _x1, y1 in self._route_segments(r):
+                    ys.extend((y0, y1))
+        return min(ys) if ys else None
+
+    def _over_supply_audit(self):
+        """No wire may loop over the TOP of the supply (user, 2026-09-03).
+
+        V_DD is the ceiling of a textbook schematic: the reader takes the
+        rail (or the marker) as the top of the circuit, so a net that climbs
+        past it to get somewhere reads as leaving the circuit and coming
+        back.  Fig 15.32(b) did exactly that -- A ran along the very top,
+        above the marker, all the way to the right edge and back down.
+        """
+        ytop = self._supply_y()
+        if ytop is None:
+            return 0
+        bad = 0
+        for r in self.routes:
+            if r.get("presentation") == "power-rail":
+                continue
+            hits = [rid for rid, _x0, y0, _x1, y1 in self._route_segments(r)
+                    if min(y0, y1) < ytop]
+            if hits:
+                print("  ! WIRE OVER SUPPLY  %s climbs to y=%g, above the "
+                      "supply at y=%g" % (hits[0], min(
+                          min(y0, y1)
+                          for _rid, _x0, y0, _x1, y1
+                          in self._route_segments(r)), ytop))
+                bad += 1
+        return bad
+
+    def _ground_down_audit(self):
+        """Ground always points DOWN (user, 2026-09-03).
+
+        Turning a ground symbol on its side is a cheap way to lose a corner
+        and it is forbidden: the reader recognises ground by its shape AND
+        its direction, and a sideways one reads as a different part.  The
+        rule is written down as an audit precisely because corner-count
+        pressure is what would otherwise buy it.
+        """
+        bad = 0
+        for iid in sorted(self.placed):
+            sid, _x, _y, _mir, rot = self.placed[iid]
+            if sid == "ground" and rot % 360 != 0:
+                print("  ! GROUND NOT DOWN  %s is rotated %s" % (iid, rot))
+                bad += 1
+        return bad
+
+    def _output_right_audit(self):
+        """A figure with ONE output puts it at the far right (user,
+        2026-09-03).
+
+        The signal reads left to right, so the single thing the circuit
+        produces is the last thing on the page.  Anything further right --
+        another port, a part, or a wire looping round -- makes the reader
+        hunt for the output.
+        """
+        iid = self.lane2_out
+        if not iid or iid not in self.placed:
+            return 0
+        px = self.placed[iid][1]
+        bad = 0
+        for k in sorted(self.placed):
+            if k == iid:
+                continue
+            if self.placed[k][1] > px:
+                print("  ! OUTPUT NOT RIGHTMOST  %s sits at x=%g, right of "
+                      "the output at x=%g" % (k, self.placed[k][1], px))
+                bad += 1
+        for r in self.routes:
+            far = max([max(x0, x1)
+                       for _rid, x0, _y0, x1, _y1 in self._route_segments(r)]
+                      or [px])
+            if far > px:
+                print("  ! OUTPUT NOT RIGHTMOST  route %s reaches x=%g, right "
+                      "of the output at x=%g" % (r["id"], far, px))
+                bad += 1
+        return bad
+
     def _body_audit(self):
         """A wire may touch a pin.  It may not go INSIDE the component.
 
@@ -1195,13 +1290,41 @@ class Schematic(object):
         """
         bad = 0
         boxes = [(iid, self.ink(iid)) for iid in sorted(self.placed)]
+        # A bus may pass through the body of a part it CONNECTS TO, provided
+        # it runs along that part's own pin.  Razavi's current mirror draws
+        # the base bus straight through every transistor at base height --
+        # the hand-drawn 9.26(c) does exactly that through Q1 and Q2 -- and
+        # forbidding it costs one corner per base, because the bus then has
+        # to sit outside the body and drop into each pin (user, 2026-09-03).
+        # ...and ONLY for a transistor's gate/base bus.  Without the device
+        # restriction the exemption also let a net cut straight across an
+        # op-amp triangle, which the user has forbidden outright
+        # (2026-09-02 "不能有 net 直接穿過 amp", reaffirmed 2026-09-03).
+        GATE = {"nmos": "G", "pmos": "G", "npn": "B", "pnp": "B"}
+        pinnet = {}
+        for n in self.nets:
+            for t in n["terminals"]:
+                iid2 = t["instanceId"]
+                sid2 = self.placed.get(iid2, (None,))[0]
+                if GATE.get(sid2) != t["pinName"]:
+                    continue
+                try:
+                    xy = self.pin(iid2, t["pinName"])
+                except KeyError:
+                    continue
+                pinnet.setdefault((iid2, n["id"]), set()).add(xy)
         for r in self.routes:
+            nid = r.get("netId")
             for rid, x0, y0, x1, y1 in self._route_segments(r):
                 sa, sb = min(x0, x1), max(x0, x1)
                 sc, sd = min(y0, y1), max(y0, y1)
                 for iid, bb in boxes:
                     ix0, iy0, ix1, iy1 = bb[0] + 1, bb[1] + 1, bb[2] - 1, bb[3] - 1
                     if ix0 >= ix1 or iy0 >= iy1:
+                        continue
+                    own = pinnet.get((iid, nid))
+                    if own and any(sa <= px <= sb and sc <= py <= sd
+                                   for px, py in own):
                         continue
                     if sa < ix1 and sb > ix0 and sc < iy1 and sd > iy0:
                         print("  ! WIRE INSIDE BODY  %s runs inside %s"

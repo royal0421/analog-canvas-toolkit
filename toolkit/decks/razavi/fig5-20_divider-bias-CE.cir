@@ -1,0 +1,16 @@
+* hand-written from Razavi Fig. 5.20 -- topology only, no geometry
+.title Razavi Fig. 5.20 — CE stage biased by a resistive divider
+.global VCC
+.subckt Fig5_20
+R1 VCC x
+.name R1 R_1
+R2 x 0
+.name R2 R_2
+RC VCC y
+.name RC R_C
+Q1 y x p npn
+.name Q1 Q_1
+RE p 0
+.name RE R_E
+.show x y p
+.ends
