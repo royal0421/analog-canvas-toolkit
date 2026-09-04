@@ -10,12 +10,21 @@ function findBuilder() {
   for (const k of Object.keys(m)) {
     try {
       // the builder is the one that turns "M_1" into italic-bold M plus a
-      // BOLD subscript 1 -- several exports take a string and return runs
+      // bold SUBSCRIPT holding the rest -- several exports take a string
+      // and return runs.
+      //
+      // ⚠️ Do NOT test the subscript's TEXT against a literal.  Until v31 the
+      // builder ate the underscore and the subscript read "1"; v36 keeps every
+      // character after the first, so it reads "_1" -- and a detector that
+      // asked for '"value":"1"' silently found nothing, reported "no RichText
+      // builder found in model.mjs" and took the whole label check offline
+      // (2026-09-04: it had been failing since the v36 redeploy).  Test the
+      // SHAPE plus "the runs flatten back to what I passed in", which is true
+      // of any version.
       const r = m[k]("M_1");
-      const j = JSON.stringify(r);
       if (r && Array.isArray(r.runs) && r.runs.length === 2
           && r.runs[0].style === "italic" && r.runs[1].style === "subscript"
-          && j.includes('"value":"M"') && j.includes('"value":"1"'))
+          && toName(r) === "M_1")
         return m[k];
     } catch { /* not it */ }
   }

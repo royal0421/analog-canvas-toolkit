@@ -29,13 +29,30 @@ if (!f) { console.log("{}"); process.exit(0); }
 const p = m[f]("p", "P");
 const s = Object.keys(m).find(k => m[k] && m[k].safeParse
                                  && m[k].safeParse(p).success);
+// ⚠️ Match the SHAPE and "the runs flatten back to what I passed in".
+// Testing the subscript's text against a literal is what broke this:
+// until v31 the builder ate the underscore, so `"V_DD"` produced a run
+// reading `"DD"`; v36 keeps it and the run reads `"_DD"`, which does not
+// contain the substring `"DD"` (with its leading quote).  The probe then
+// found no label builder in ANY chunk, rejected every one of them and
+// reported "bundle changed?" -- so `setup` could not fetch model.mjs at
+// all and a fresh clone could not run (2026-09-04).
+const flat = r => {
+  let out = "";
+  const w = n => {
+    if (n.kind === "text") out += n.value;
+    else if (n.children) n.children.forEach(w);
+  };
+  r.runs.forEach(w);
+  return out;
+};
 const l = Object.keys(m).find(k => {
   try {
     if (typeof m[k] !== "function") return false;
     const a = m[k]("V_in"), b = m[k]("V_DD");
     return a && b && Array.isArray(a.runs) && Array.isArray(b.runs)
-           && JSON.stringify(a).includes('"subscript"')
-           && JSON.stringify(b).includes('"DD"');
+           && a.runs.length === 2 && a.runs[1].style === "subscript"
+           && flat(a) === "V_in" && flat(b) === "V_DD";
   } catch { return false; }
 });
 console.log(JSON.stringify({ factory: f, schema: s, label: l,
