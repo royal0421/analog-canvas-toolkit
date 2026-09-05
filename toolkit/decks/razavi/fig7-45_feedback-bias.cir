@@ -1,0 +1,14 @@
+* hand-written from Razavi Fig. 7.45 -- topology only, no geometry
+.title Razavi Fig. 7.45 — feedback-biased CS stage
+.global VDD
+.subckt Fig7_45
+RD VDD d
+.name RD R_D
+R1 g d
+.name R1 R_1
+R2 g 0
+.name R2 R_2
+M1 d g 0 0 nmos
+.name M1 M_1
+.show g d
+.ends

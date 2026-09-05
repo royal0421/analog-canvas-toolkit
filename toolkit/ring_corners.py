@@ -164,6 +164,61 @@ def body_passes(f):
     return out
 
 
+BLOCK_TIGHT = 5
+
+
+def block_shaves(f, tight=BLOCK_TIGHT):
+    """Blocks a wire passes closer to than HALF A GRID.
+
+    Outside the ink box is not the same as clear of it.  8.69's `x` bus ran
+    5 units under the op amp -- legal by every audit, and rejected on sight
+    (user, 2026-09-05: 「從 OP 下面繞過去的線離 op 有點太近」), the same
+    complaint as constant-gm's detour along P2's edge on 2026-09-04.
+
+    Reported here, beside corners and crossings, because that is the scale
+    it has to be judged on.  Priced inside the TRUNK cost it cannot work:
+    that cost has no corner term at all, so every version of it traded
+    clearance against wire and took the trade even when it cost 8.57 three
+    corners.  Measured: clearing the op amp costs 8.69 ten units of wire and
+    8.57 three corners.  One number in the outer score separates those.
+    """
+    import netlist_io as _N
+    segs = [s for s in f.segments() if not (s[1] == s[3] and s[2] == s[4])]
+    out = []
+    for iid in sorted(f.placed):
+        sid = f.placed[iid][0]
+        if sid not in _N.BLOCKS:
+            continue
+        # A wire that ENDS on one of this block's own pins is not shaving it
+        # -- the pin sits on the ink box by construction, so every lead would
+        # score 0 and the measure would fire on every block in the library.
+        # It did: `shave=hard` produced a layout with a clean 15-unit gap and
+        # this still reported a shave, which made the outer score's 30-point
+        # term constant and therefore useless (2026-09-05).
+        own = set()
+        for pdef in icproj.sym(sid)["pins"]:
+            try:
+                own.add(f.pin(iid, pdef["name"]))
+            except (KeyError, TypeError):
+                pass
+        x0, y0, x1, y1 = f.ink(iid)
+        for _rid, ax0, ay0, ax1, ay1 in segs:
+            if (ax0, ay0) in own or (ax1, ay1) in own:
+                continue
+            lo, hi = min(ax0, ax1), max(ax0, ax1)
+            vlo, vhi = min(ay0, ay1), max(ay0, ay1)
+            if not (lo <= x1 + tight and hi >= x0 - tight
+                    and vlo <= y1 + tight and vhi >= y0 - tight):
+                continue
+            if ay0 == ay1 and not (y0 - tight <= ay0 <= y1 + tight):
+                continue
+            if ax0 == ax1 and not (x0 - tight <= ax0 <= x1 + tight):
+                continue
+            out.append(((x0 + x1) // 2, (y0 + y1) // 2))
+            break
+    return out
+
+
 def gate_crossings(f):
     return _cross_points(f, True) + body_passes(f)
 

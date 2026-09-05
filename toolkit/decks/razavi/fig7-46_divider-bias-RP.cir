@@ -1,0 +1,18 @@
+* hand-written from Razavi Fig. 7.46 -- topology only, no geometry
+.title Razavi Fig. 7.46 — divider-biased CS stage with a parasitic R_P
+.global VDD
+.subckt Fig7_46
+R1 VDD g
+.name R1 R_1
+R2 g 0
+.name R2 R_2
+RD VDD d
+.name RD R_D
+RP d s
+.name RP R_P
+RS s 0
+.name RS R_S
+M1 d g s 0 nmos
+.name M1 M_1
+.show g d s
+.ends

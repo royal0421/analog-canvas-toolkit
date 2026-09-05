@@ -51,6 +51,9 @@ LABEL_PORT = 14            # port label offset from the port CENTRE.  The
                            # (Approved 2026-08-29.  A dragged adjustment in the
                            # editor snaps by a whole grid step to 21, which is
                            # too far -- change this constant instead.)
+# two different nets end-to-end on one line, closer than this, read as a
+# single wire (user, 2026-09-04 -- P2's drain and source at constant-gm)
+COLLINEAR_GAP = 10
 CROWD_MIN = 6              # tightest acceptable ink-to-ink clearance.  The
                            # user accepted 7.0-7.1 (Fig 14.36 caps, Fig 5.170
                            # R_E1/C_2) but not 0.6.
@@ -834,7 +837,8 @@ class Schematic(object):
             # never run them, which is why their output is unchanged
             shorts = (self._short_audit() + self._body_audit()
                       + self._pin_touch_audit() + self._over_supply_audit()
-                      + self._output_right_audit() + self._ground_down_audit())
+                      + self._output_right_audit() + self._ground_down_audit()
+                      + self._collinear_audit())
             cross = self._cross_count()
         print("audits: legs %d | labels %d | on-wire %d | tees %d"
               % (legs, labels, onwire, tees)
@@ -1448,6 +1452,57 @@ class Schematic(object):
         for a, na, b, nb, axis, d in near[:4]:
             print("  ~ %s (%s) runs only %d from %s (%s) along the same %s"
                   % (a, na, d, b, nb, axis))
+        return bad
+
+    def _collinear_audit(self):
+        """Two DIFFERENT nets end-to-end on ONE line with barely a gap.
+
+        `_short_audit` needs the two spans to OVERLAP, so it sees nothing
+        when they merely queue up on the same line.  On constant-gm that
+        left this: net-b climbed the column x=220 from P2's drain up to
+        y=140, and P2's SOURCE at (220,130) ran its own wire up to VDD.
+        Same column, ten units apart, the transistor body sitting between
+        them -- the drawing says P2's drain and source are tied together at
+        the mouth of the device.  Every other audit passed: the wire was on
+        the ink BOUNDARY so `_body_audit` let it through, and the spans do
+        not overlap so `_short_audit` skipped the pair.  The user caught it
+        by eye (2026-09-04), which is the definition of a missing audit.
+
+        The gap is measured on the grid: one step of daylight between two
+        nets on the same line is not daylight, it is a solder joint the
+        reader has to guess about.
+        """
+        net_of = {r["id"]: r["netId"] for r in self.routes}
+        rail = {r["id"] for r in self.routes
+                if r.get("presentation") == "power-rail"}
+        H, V = [], []
+        for rid, x0, y0, x1, y1 in self.segments():
+            if rid in rail:
+                continue                     # the rail is one bar by design
+            if y0 == y1 and x0 != x1:
+                H.append((rid, y0, min(x0, x1), max(x0, x1)))
+            elif x0 == x1 and y0 != y1:
+                V.append((rid, x0, min(y0, y1), max(y0, y1)))
+        bad = 0
+        for axis, segs in (("row", H), ("column", V)):
+            seen = set()
+            for i in range(len(segs)):
+                for j in range(i + 1, len(segs)):
+                    a, b = segs[i], segs[j]
+                    na, nb = net_of[a[0]], net_of[b[0]]
+                    if na == nb or a[1] != b[1]:
+                        continue
+                    gap = max(a[2], b[2]) - min(a[3], b[3])
+                    if gap < 0 or gap > COLLINEAR_GAP:
+                        continue      # overlapping is `_short_audit`'s job
+                    key = tuple(sorted((na, nb))) + (axis, a[1])
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    print("  ! COLLINEAR  %s (%s) and %s (%s) queue up on "
+                          "the same %s %g with a %g gap -- they read as ONE"
+                          " wire" % (a[0], na, b[0], nb, axis, a[1], gap))
+                    bad += 1
         return bad
 
     def _tee_audit(self):

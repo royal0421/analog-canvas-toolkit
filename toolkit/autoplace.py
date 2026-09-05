@@ -68,6 +68,21 @@ LBL_DX = {"nmos": 18, "pmos": 18, "npn": 8, "pnp": 8,
           "diode": 16}
 
 
+# Did the wide bus detour actually draw anything?  `place_deck` needs to
+# know: a NEW SHAPE OF CANDIDATE reshapes the whole search space, so the
+# descent can lose a layout it used to find even on a figure that never
+# draws one (9.26(c) went 11 corners -> 14.5 with zero wide detours in its
+# winning drawing -- the same drift `stage`, `gaterow` and `ltrunk` all
+# caused).  The cure is the same one: run it as a STARTING POINT and keep
+# the better of the two.  The flag makes the second pass free on the
+# figures where nothing was ever blocked.
+_WIDE_FIRED = [False]
+_SNAP_FIRED = [False]
+_PARA_FIRED = [False]
+_ROW_FIRED = [False]
+_MID_FIRED = [False]
+
+
 def span_of(sym):
     return SPAN.get(sym, 40)
 
@@ -818,6 +833,7 @@ class Placer(object):
             if (0 <= i < len(seq) and 0 <= j < len(seq)
                     and same_stage(seq[i], seq[j])):
                 seq.insert(j, seq.pop(i))
+        self._pull_parallel(seq, chains)
         self.ncols = len(seq)
         pos = {k: i for i, k in enumerate(seq)}
         order = [k for k in seq if k[0] == "c"]
@@ -825,6 +841,54 @@ class Placer(object):
         self.colpos = {k: pos[k] - lo for k in pos}
         self.col_order = order
         self._spread()
+
+    def _pull_parallel(self, seq, chains):
+        """A parallel branch sits NEXT TO the branch it parallels.
+
+        SOP 3J already says two parts across the same pair of nodes are
+        parallel branches and must land in DIFFERENT columns.  The half that
+        was missing is "and right beside each other": Fig 5.170's C_2 is in
+        parallel with R_E1 and Razavi draws them side by side, while here it
+        landed in the left-most column with a 230-unit horizontal wire in
+        between (user, 2026-09-05).
+
+        Why `anchor` does not cover it: `anchor` is a STYLE AXIS, one switch
+        for the whole figure, and 5.170's descent picks `anchor=0` (measured:
+        844 layouts tried, `anchor=0` wins).  Turning the switch off un-anchors
+        the parallel pair along with every other hanger.  And the score will
+        keep buying that trade -- a corner is worth 60, the 230 units of wire
+        only 23 -- so this cannot be left to the weights.  Hence a rule that
+        holds OUTSIDE the switch, applied last so no colswap/colmove can undo
+        it.
+
+        Nothing here is a free parameter: the column offered is the one a
+        device with the SAME unordered node pair already occupies.
+        """
+        if not int(self.opt("paracol", 1)):
+            return
+        pairs = {}
+        for i, ch in enumerate(chains):
+            for d in ch:
+                pairs.setdefault(frozenset((d.pins[d.top], d.pins[d.bot])),
+                                 set()).add(i)
+        for cols in pairs.values():
+            if len(cols) < 2:
+                continue
+            # the longer chain carries the column and stays put; a branch of
+            # one part is the one that moves (a series stack of its own is a
+            # column in its own right, not a hanger)
+            host = max(cols, key=lambda i: (len(chains[i]), -i))
+            for i in sorted(cols):
+                if i == host or len(chains[i]) != 1:
+                    continue
+                a, b = ("c", i), ("c", host)
+                if a not in seq or b not in seq:
+                    continue
+                if abs(seq.index(a) - seq.index(b)) == 1:
+                    continue
+                seq.remove(a)
+                seq.insert(seq.index(b) + 1, a)
+                _PARA_FIRED[0] = True
 
     def _slot_half(self, key):
         """How much room this column needs either side of its centre."""
@@ -1287,13 +1351,37 @@ class Placer(object):
                 break
         return best
 
+    SWAP_SYM = {"opamp": "opamp-inputs-swapped",
+                "opamp-inputs-swapped": "opamp",
+                "comparator": "comparator-inputs-swapped",
+                "comparator-inputs-swapped": "comparator",
+                "opamp-differential": "opamp-differential-inputs-swapped",
+                "opamp-differential-inputs-swapped": "opamp-differential"}
+
+    def _block_sym(self, d):
+        """Which way up this block's two inputs are drawn.
+
+        `opamp` and `opamp-inputs-swapped` are the SAME part: one puts IN+
+        on top, the other IN-.  Choosing between them is the block's version
+        of turning a transistor over, which the user long ago asked to be a
+        move the search itself can make (2026-09-03: 「你還是沒把鏡像電晶體
+        視為一種方法去降低彎折、降低交叉」).  8.57 needs it: the feedback
+        node comes down the LEFT of the op amp to reach IN- while V_in runs
+        in to IN+ on the row between, so the two cross -- and they stop
+        crossing the moment the inputs change places (user, 2026-09-05:
+        「那個交叉點應該是有辦法避免的」).
+        """
+        if d.ref in (self.opt("oaswap", ()) or ()):
+            return self.SWAP_SYM.get(d.sym, d.sym)
+        return d.sym
+
     def _place_block(self, d):
         f = self.f
         pins = N.BLOCKS[d.sym]
         cx = self._cond_x(d)
         ys = [self.ynode[d.pins[p]] for p in pins if d.pins[p] in self.ynode]
         cy = int(round((sum(ys) / float(len(ys)) if ys else 200) / 10.0)) * 10
-        f.place(d.ref, d.sym, cx, cy, extra={
+        f.place(d.ref, self._block_sym(d), cx, cy, extra={
             "schematicReference": d.ref, "schematicName": name(d.label)})
         self._record(d)
 
@@ -1753,6 +1841,8 @@ class Placer(object):
         (the reader sees a short).  The rest is comfort.
         """
         M = 8
+        TIGHT = 5                 # half a grid: closer than this is shaving
+        SHAVE_W = int(os.environ.get("AC_SHAVEW", "40"))   # enough to move a trunk one row
         spec = (axis, c, spur)
         segs = self._spec_segments(spec, pts)
         if segs is None:
@@ -1819,10 +1909,33 @@ class Placer(object):
             return (lo + 1 < cc < hi - 1
                     and not (s1 <= alo + 1 or s0 >= ahi - 1))
 
-        def near(seg, bb):
+        def near_by(seg, bb, m):
             cc, s0, s1, lo, hi, alo, ahi = _band(seg, bb)
-            return (lo - M <= cc <= hi + M
-                    and not (s1 < alo - M or s0 > ahi + M))
+            return (lo - m <= cc <= hi + m
+                    and not (s1 < alo - m or s0 > ahi + m))
+
+        def near(seg, bb):
+            return near_by(seg, bb, M)
+
+        def shaving(seg, bb):
+            """Closer to the body than HALF A GRID.
+
+            Outside the ink box is not the same as clear of it.  8.69's `x`
+            bus ran 5 units under the op amp -- legal by every audit, and
+            the user rejected it on sight (2026-09-05: 「從 OP 下面繞過去的
+            線離 op 有點太近」), exactly as constant-gm's detour along P2's
+            edge was rejected on 2026-09-04.
+
+            ⚠️ Used ONLY on a part this net already owns a pin of.  Applying
+            it to foreign bodies as well was measured and reverted the same
+            day: 5.170 went 9.0 corners / 0 crossings to 22.0 / 2 at one
+            fixed style, because a foreign body's clearance is already
+            priced by `near` and the `bodycost` AXIS, and making it hard as
+            well takes away most of the trunk positions at once.  The own
+            body has no such pricing -- owning a pin skipped the check
+            entirely -- so that is the hole this fills.
+            """
+            return near_by(seg, bb, TIGHT)
 
         bodies = risers = 0
         for iid, bb in inks:
@@ -1851,6 +1964,47 @@ class Placer(object):
                     hard += 1                    # the trunk itself is inside
                 if any(inside(s, bb) for s in rsegs):
                     hard += 1                    # a riser dips inside
+                # Owning a pin on this net buys the right to REACH the pin,
+                # not the right to shave the body on the way past.  8.69's
+                # `x` bus ran 5 units under the op amp precisely here: the
+                # op amp is a terminal of `x`, so the foreign-body clearance
+                # below never looked at it.  The gate-lead exemption above
+                # (`onpin`) has already returned by this point, so a mirror's
+                # base bus is untouched.
+                #
+                # BLOCKS ONLY.  A two-terminal part's own bus runs along its
+                # centre line by construction -- that is what a row of
+                # lying-down parts IS -- so shaving is meaningless there and
+                # banning it costs everything: 5.170 measured 9.0 corners /
+                # 0 crossings against 22.0 / 2 at one fixed style.  A block
+                # takes its pins on the left and right edges, so a bus has
+                # no business grazing the sloping face.
+                mode = str(self.opt("shave", "off"))
+                if (mode != "off"
+                        and self.f.placed.get(iid, ("",))[0] in N.BLOCKS
+                        and any(shaving(s, bb) for s in trunks)):
+                    if mode == "hard":
+                        hard += 1
+                    elif mode == "soft":
+                        bodies += 1
+                    else:
+                        # A TIE-BREAK, not a veto.  Measured on the two
+                        # figures that show the defect: 8.69 clears the op
+                        # amp for FREE (5.0 corners either way, the trunk
+                        # just picks the next row down), while 8.57 pays
+                        # THREE corners for it (4.0 -> 7.0) and the user
+                        # judged the tight version acceptable there
+                        # (2026-09-05: 「4 轉角的稍微好一點，沒有明顯違規」).
+                        # `hard` and `bodies` both outrank everything else,
+                        # so either takes the expensive trade too; even
+                        # priced in WIRE it still flipped 8.57 (4.0 -> 6.0
+                        # at a penalty of 20 units, because the trunk cost
+                        # compares wire//10 and nothing else below it).
+                        # `overlap` is the LAST term of every cost order,
+                        # so this decides only between trunks that are
+                        # otherwise identical -- which is exactly when
+                        # clearing the block is free.
+                        wire += SHAVE_W
                 continue
             # Entering someone else's body is exactly as illegal as entering
             # your own: `_body_audit` does not care whose part it is.  The
@@ -1961,12 +2115,24 @@ class Placer(object):
         self._add_ports()
         self._label_above = self._gate_row_labels()
         self._spread_for_labels()
-        if str(self.opt("compact", "0")) == "1":
-            self._compact()
+        # `compact` is the GAP to squeeze to, not a flag.  1 keeps its old
+        # meaning (20) so nothing already tuned moves; 40 is the wider
+        # setting 8.57 needs -- squeezing to 20 leaves its `Y` bus 20 units
+        # long with D_1 sitting on every spot the node name could take, and
+        # the whole compact layout (wire 450 -> 370, width 280 -> 240) was
+        # being thrown out for that one label (user, 2026-09-05: 「距離可以
+        # 平移縮短一些」).  Which gap a figure can afford depends on what
+        # has to fit between its columns, so the search picks it.
+        _cg = int(self.opt("compact", 0) or 0)
+        if _cg:
+            self._compact(gap=20 if _cg == 1 else _cg)
         self._add_supply()
         self.tracks()
         self._settle_ports()
         self._settle_laterals()
+        self._snap_to_junction()
+        self._snap_to_row()
+        self._centre_laterals()
         # grounds go in AFTER the lying-down parts have slid into place: a
         # lateral that moves into a column can land between two pins that
         # were already grouped onto one ground symbol, and then the drop
@@ -2563,6 +2729,332 @@ class Placer(object):
             self.f.placed[pid] = (sid, x, y, mir, rot)
             self.pinxy[(pid, "P")] = self.f.pin(pid, "P")
 
+    def _snap_to_junction(self):
+        """Slide a leaf onto the column where its own net already turns.
+
+        Fig 8.57: R_1 hangs off the feedback node ONE grid step to the right
+        of the junction that feeds D_1, so the drawing turns twice -- once
+        at the junction, once at R_1's own pin, which faces down while the
+        bus runs across it.  Put them on one column and it is a four-way
+        cross, which the corner definition counts as a SINGLE corner (user,
+        2026-09-04: "R1 左移湊成十字，就可以省一個轉角").
+
+        Nothing here is a free parameter either: the only column offered is
+        one another pin of the SAME net already occupies.
+        """
+        if not int(self.opt("snapcol", 0)):
+            return
+        for d in list(self.c.devices):
+            if d.ref not in self.f.placed or d in self.horiz:
+                continue
+            sid, x, y, mir, rot = self.f.placed[d.ref]
+            best = None
+            for pn, nd in d.pins.items():
+                spec = self.trunk.get(nd)
+                if not spec or spec[2] or spec[0] != "h":
+                    continue
+                p = self.pinxy.get((d.ref, pn))
+                if p is None or p[1] != spec[1]:
+                    continue          # this pin is not ON the trunk
+                for t in self.netterms.get(nd, ()):
+                    if t[0] == d.ref or t not in self.pinxy:
+                        continue
+                    q = self.pinxy[t]
+                    # a pin OFF the trunk is what makes the junction; a pin
+                    # already on it needs no riser and so has no corner to
+                    # merge with
+                    if q[1] == spec[1] or q[0] == p[0]:
+                        continue
+                    if abs(q[0] - p[0]) > 20:
+                        continue      # a real move, not a slide
+                    dx = q[0] - p[0]
+                    if best is None or abs(dx) < abs(best):
+                        best = dx
+            if best is None:
+                # ...and the case where NEITHER pin is on the trunk.  Both
+                # then drop a riser, and two risers a single grid step apart
+                # make TWO junctions where one column makes one (user,
+                # 2026-09-05, on 8.57: 「D1 右邊你就直接直走接上線，就變成
+                # 4 轉角了」).  D_1's anode sat at x=380 and R_1's top at
+                # x=390, both dropping onto the same bus: three corners for
+                # what is one node.
+                for pn, nd in d.pins.items():
+                    spec = self.trunk.get(nd)
+                    if not spec or spec[2] or spec[0] != "h":
+                        continue
+                    p = self.pinxy.get((d.ref, pn))
+                    if p is None or p[1] == spec[1]:
+                        continue          # this pin IS on the trunk
+                    for t in self.netterms.get(nd, ()):
+                        if t[0] == d.ref or t not in self.pinxy:
+                            continue
+                        q = self.pinxy[t]
+                        if q[1] == spec[1] or q[0] == p[0]:
+                            continue      # on the trunk, or already aligned
+                        if abs(q[0] - p[0]) > 10:
+                            continue      # one grid step, not a relocation
+                        dx = q[0] - p[0]
+                        if best is None or abs(dx) < abs(best):
+                            best = dx
+            if best is None or self._collides(d, x + best, y):
+                continue
+            for i in self.f.instances:
+                if i["id"] == d.ref:
+                    i["placement"]["position"]["x"] = x + best
+            self.f.placed[d.ref] = (sid, x + best, y, mir, rot)
+            for pn in d.pins:
+                try:
+                    self.pinxy[(d.ref, pn)] = self.f.pin(d.ref, pn)
+                except KeyError:
+                    pass
+            _SNAP_FIRED[0] = True
+
+    def _snap_to_row(self, verbose=False):
+        """The vertical twin of `_snap_to_junction`.
+
+        Fig 8.69: the op amp's output sits ONE grid step above the base it
+        drives, so a net with exactly two pins -- both facing sideways, one
+        at each end -- is drawn as a Z with two corners where the book draws
+        one straight line (user, 2026-09-05).  `_snap_to_junction` solves the
+        same problem on the other axis; nothing in the action set could slide
+        a part VERTICALLY onto the row its own net already wants.
+
+        No free parameter: the row offered is the one the other pin of the
+        SAME net already occupies, and only when the gap is a single step.
+
+        Which part moves is decided, not guessed: a pin that currently sits
+        ON its own net's trunk pays a corner the moment it leaves, so the
+        part with FEWER such pins is the one that slides.  In 8.69 that is
+        the op amp (0) rather than Q_1 (collector on the `out` trunk,
+        emitter on the `x` trunk = 2).
+        """
+        if not int(self.opt("snaprow", 0)):
+            return
+        step = 20
+
+        def committed(t):
+            """Is this pin holding a ROW that a vertical slide would break?
+
+            Two ways it can be.  It may sit on its net's horizontal trunk --
+            move it off and the trunk needs a riser, which is a corner.  Or
+            it may already share a row with a pin it connects to, which is
+            the very alignment this method exists to create: breaking one to
+            make another buys nothing.  8.69 measured that the hard way --
+            sliding the op amp down put its output on Q_1's base and took
+            V_in's input pin OFF the row it already shared, two corners for
+            two corners.
+
+            A pin on a VERTICAL trunk is not committed: sliding along that
+            trunk keeps it on the trunk and only changes the wire's length.
+            """
+            nd = None
+            for d in self.c.devices:
+                if d.ref == t[0]:
+                    nd = d.pins.get(t[1])
+                    break
+            if nd is None or self.c.is_ground(nd) or self.c.is_supply(nd):
+                return False
+            p = self.pinxy.get(t)
+            if p is None:
+                return False
+            spec = self.trunk.get(nd)
+            if spec and not spec[2] and spec[0] == "h" and p[1] == spec[1]:
+                return True
+            for u in self.netterms.get(nd, ()):
+                q = self.pinxy.get(u)
+                if u != t and q is not None and q[1] == p[1]:
+                    return True
+            return False
+
+        def sideways(t):
+            """Does this pin stick out to the left or the right?"""
+            pl = self.f.placed.get(t[0])
+            p = self.pinxy.get(t)
+            return pl is not None and p is not None and p[1] == pl[2] and p[0] != pl[1]
+
+        byref = dict((d.ref, d) for d in self.c.devices)
+        for nd, terms in sorted(self.netterms.items()):
+            if (len(terms) != 2 or self.c.is_ground(nd)
+                    or self.c.is_supply(nd)):
+                continue
+            a, b = terms
+            pa, pb = self.pinxy.get(a), self.pinxy.get(b)
+            if pa is None or pb is None or pa[1] == pb[1]:
+                continue
+            if abs(pa[1] - pb[1]) > step:
+                continue
+            if not (sideways(a) and sideways(b)):
+                continue
+            # move the part whose OTHER pins hold the fewest rows
+            def cost(t):
+                d = byref.get(t[0])
+                if d is None:
+                    return 99
+                return sum(1 for pn in d.pins if (t[0], pn) != t
+                           and committed((t[0], pn)))
+            mover, anchor = (a, b) if cost(a) <= cost(b) else (b, a)
+            d = byref.get(mover[0])
+            if d is None or d.ref not in self.f.placed:
+                continue
+            sid, x, y, mir, rot = self.f.placed[d.ref]
+            ny = y + (self.pinxy[anchor][1] - self.pinxy[mover][1])
+            if self._collides_at(d.ref, sid, x, ny, mir, rot):
+                continue
+            for i in self.f.instances:
+                if i["id"] == d.ref:
+                    i["placement"]["position"]["y"] = ny
+            self.f.placed[d.ref] = (sid, x, ny, mir, rot)
+            for pn in d.pins:
+                try:
+                    self.pinxy[(d.ref, pn)] = self.f.pin(d.ref, pn)
+                except KeyError:
+                    pass
+            _ROW_FIRED[0] = True
+
+    def _centre_laterals(self):
+        """A lying-down part sits MIDWAY between the two things it joins.
+
+        Squeezing the columns together pushes every part as far left as it
+        will go, so a part ends up flush against the column on its right with
+        all the slack on its left: 8.57's D_1 had 20 units of `Y` wire on one
+        side and none on the other (user, 2026-09-05: 「二極體能置在中間
+        嗎」).  The textbook centres it.
+
+        The MOVE is free -- the part keeps its row and its two connections,
+        so the wire it saves on one side it spends on the other.  The
+        SEARCH is not: offering a new placement action reshapes the space
+        and the descent settles somewhere else even where nothing is
+        centred.  Diff-amp shunt-peak measured 8.0 corners -> 10.0 with
+        C_1 and R_1 merely swapping ROWS, neither of them moved sideways at
+        all.  So it runs as a STARTING POINT like `ltrunk`, `bdwide`,
+        `snapcol` and `snaprow`, and each figure keeps whichever it wants.
+        Nothing here is a free parameter; the two targets are where its own
+        net's nearest neighbour already sits.
+        """
+        if not int(self.opt("midlat", 1)):
+            return
+        for d in self.horiz:
+            if d.ref not in self.f.placed:
+                continue
+            if d.ref in getattr(self, "fb_track", {}):
+                continue          # a part up on a feedback track is placed
+            sid, x, y, mir, rot = self.f.placed[d.ref]
+            bb = self.f.ink(d.ref)
+            lo = hi = None
+            for pn, nd in d.pins.items():
+                p = self.pinxy.get((d.ref, pn))
+                if p is None or self.c.is_ground(nd) or self.c.is_supply(nd):
+                    continue
+                for t in self.netterms.get(nd, ()):
+                    if t[0] == d.ref:
+                        continue
+                    q = self.pinxy.get(t)
+                    if q is None:
+                        continue
+                    if q[0] <= bb[0] and (lo is None or q[0] > lo):
+                        lo = q[0]
+                    if q[0] >= bb[2] and (hi is None or q[0] < hi):
+                        hi = q[0]
+            if lo is None or hi is None:
+                continue
+            # ...unless one of its pins is already sharing a column with
+            # another terminal of its own net.  That shared column IS the
+            # junction -- one riser serving both, one dot on the bus -- and
+            # centring the part pulls it off and makes two (8.57: D_1's
+            # anode and R_1's top both rise to the X bus at x=340; centring
+            # D_1 splits that into risers at 320 and 340, one extra corner
+            # and one extra dot).  Same ruling as「D1 右邊直走接上線」.
+            shared = False
+            for pn, nd in d.pins.items():
+                p = self.pinxy.get((d.ref, pn))
+                if p is None:
+                    continue
+                for t in self.netterms.get(nd, ()):
+                    q = self.pinxy.get(t)
+                    if t[0] != d.ref and q is not None and q[0] == p[0]:
+                        shared = True
+            if shared:
+                continue
+            want = int(round(((lo + hi) / 2.0
+                              - (bb[0] + bb[2]) / 2.0 + x) / 10.0)) * 10
+            if want == x or self._collides_at(d.ref, sid, want, y, mir, rot):
+                continue
+            for i in self.f.instances:
+                if i["id"] == d.ref:
+                    i["placement"]["position"]["x"] = want
+            self.f.placed[d.ref] = (sid, want, y, mir, rot)
+            for pn in d.pins:
+                try:
+                    self.pinxy[(d.ref, pn)] = self.f.pin(d.ref, pn)
+                except KeyError:
+                    pass
+            _MID_FIRED[0] = True
+
+    def _collides_at(self, ref, sid, cx, cy, mir, rot):
+        """Would this part overlap something already placed if it moved?
+
+        Unlike `_collides` this uses the part's OWN orientation: a block or
+        an upright transistor is not a lying-down passive, and judging it by
+        a rotated-90 box either misses an overlap or invents one.
+
+        Touching is not overlapping, and there is no margin.  The whole point
+        of the row snap is to put a driver's output pin on the same row as
+        the pin it feeds; at the usual pitch the two pin tips then meet
+        exactly, and `_collides`'s 6-unit cushion would call that meeting a
+        collision and veto the one move that was wanted.  Whether the result
+        is too tight is what the audits and the score are for.
+        """
+        box = ink_box(sid, None, cx, cy, mir, rot)
+        for iid in self.f.placed:
+            if iid == ref:
+                continue
+            b = self.f.ink(iid)
+            if not (box[2] <= b[0] or box[0] >= b[2]
+                    or box[3] <= b[1] or box[1] >= b[3]):
+                return True
+        return False
+
+    def lateral_row_offsets(self):
+        """For each lying-down part, the row shifts that land it on a row a
+        pin it CONNECTS TO already occupies.
+
+        The descent could nudge a lateral by a fixed +/-20 or +/-40, and
+        Fig 5.170 needs -50: pulling `R_in` back onto the input row (where
+        `C_1` and `R_fb` already are) keeps `V_in -> C_1 -> R_in` one straight
+        line instead of folding it down a row, and measured 9.0 corners /
+        1000 wire against 11.0 / 1050 for the fold -- the same score as the
+        layout that ships today, with the parallel branch fixed as well.
+        A step list cannot reach a row it was not told about; the rows in
+        the drawing can.
+        """
+        lat = set(d.ref for d in self.horiz)
+        out = {}
+        for d in self.horiz:
+            dys = set()
+            for pn, nd in d.pins.items():
+                p = self.pinxy.get((d.ref, pn))
+                if p is None or self.c.is_ground(nd) or self.c.is_supply(nd):
+                    continue
+                for t in self.netterms.get(nd, ()):
+                    # Only ANOTHER LYING-DOWN PART counts.  Offering the row
+                    # of any connected pin was measured much too wide: 5.170
+                    # then pulled C_3 down 40 onto its own load's row and the
+                    # whole output stage came with it -- 15 corners against
+                    # 9.  Two laterals wired together ARE the series signal
+                    # chain, and keeping them on one row is the thing worth
+                    # reaching for.
+                    if t[0] == d.ref or t[0] not in lat:
+                        continue
+                    q = self.pinxy.get(t)
+                    if q is None:
+                        continue
+                    dy = q[1] - p[1]
+                    if dy and abs(dy) <= 120:
+                        dys.add(int(dy))
+            if dys:
+                out[d.ref] = sorted(dys, key=lambda v: (abs(v), v))
+        return out
+
     def _settle_laterals(self):
         """A lying-down part belongs ON its own net's row.  If the row moved,
         the part follows it -- otherwise it floats beside its own bus and
@@ -2843,12 +3335,11 @@ class Placer(object):
         if self._seg_clear(nd, axis, c, k0, k1):
             return None
         e = 10
-        if k1 - k0 <= 3 * e:
-            return None
         other = "v" if axis == "h" else "h"
-        if not (self._seg_clear(nd, axis, c, k0, k0 + e)
-                and self._seg_clear(nd, axis, c, k1 - e, k1)):
-            return None
+        if (k1 - k0 <= 3 * e
+                or not (self._seg_clear(nd, axis, c, k0, k0 + e)
+                        and self._seg_clear(nd, axis, c, k1 - e, k1))):
+            return self._bus_detour_wide(nd, axis, c, k0, k1)
         best, bestk = None, None
         for off in (10, -10, 20, -20, 30, -30, 40, -40):
             c2 = c + off
@@ -2862,7 +3353,89 @@ class Placer(object):
                    self._xy(axis, k1 - e, c), self._xy(axis, k1, c)]
             key = (self._crosses_committed(nd, pts), abs(off))
             if bestk is None or key < bestk:
-                best, bestk = (c2, e), key
+                best, bestk = (c2, e, e), key
+        if best is None:
+            return self._bus_detour_wide(nd, axis, c, k0, k1)
+        return best
+
+    def _bus_detour_wide(self, nd, axis, c, k0, k1):
+        """The fallback for when the fixed 10-unit inset has no answer.
+
+        Fig 8.57: net-x leaves OA.IN- at (170,210) and its trunk row y=220
+        runs 90 units INSIDE the op-amp's ink, so even the FIRST ten units
+        of the run are blocked -- the jog above never got started, returned
+        None, and the caller drew the bus straight through the triangle
+        (`! WIRE INSIDE BODY  r-x-bus0 runs inside OA`, the single audit
+        standing between this lane and 8.57's five-corner layout).
+
+        A person walks round the outside of the body, so WHERE the run
+        leaves the line has to be searched, not fixed.  The candidates are
+        one or two grid steps in from each tap and the grid line just
+        outside each ink the straight run walks through: every one comes
+        from the drawing, none is a free parameter.
+
+        ⚠ THE TURN MAY NOT HAPPEN AT THE TAP ITSELF (user, 2026-09-04).
+        A zero inset lets the jog leave the line exactly where a pin sits,
+        and on constant-gm that drew the bus round P2's bottom edge, onto
+        its drain pin, and back up the right edge to y=140 -- ten units
+        below P2's SOURCE pin at (220,130), collinear with the source's own
+        run up to VDD.  Two nets, one line, a ten-unit gap: the drawing
+        says P2's drain and source are tied together at the mouth of the
+        transistor.  The netlist is fine (P2 is diode-connected, so the
+        loop itself is real) and every audit passed -- the user caught it
+        by eye.  Both insets are therefore at least one grid step.
+
+        Returns (offset row/column, inset at k0, inset at k1) or None.
+        """
+        if not int(self.opt("bdwide", 1)):
+            return None
+        other = "v" if axis == "h" else "h"
+        ai = 0 if axis == "h" else 1
+        edges = []
+        for iid in self.f.placed:
+            b = self.f.ink(iid)
+            lo_, hi_ = b[ai], b[ai + 2]
+            edges += [int((lo_ - 10) // 10) * 10,
+                      int(-((-(hi_ + 10)) // 10)) * 10]
+        inside = [q for q in edges if k0 <= q <= k1]
+        near0 = sorted(set([k0, k0 + 10, k0 + 20] + inside),
+                       key=lambda a: (abs(a - k0), a))[:8]
+        near1 = sorted(set([k1, k1 - 10, k1 - 20] + inside),
+                       key=lambda a: (abs(a - k1), a))[:8]
+        a0s = sorted(a for a in near0
+                     if k0 + 10 <= a <= k1
+                     and self._seg_clear(nd, axis, c, k0, a))
+        a1s = sorted(a for a in near1
+                     if k0 <= a <= k1 - 10
+                     and self._seg_clear(nd, axis, c, a, k1))
+        if not a0s or not a1s:
+            return None
+        best, bestk = None, None
+        for a0 in a0s:
+            for a1 in a1s:
+                if a1 - a0 < 10:
+                    continue
+                for off in (10, -10, 20, -20, 30, -30, 40, -40,
+                            50, -50, 60, -60):
+                    c2 = c + off
+                    lo, hi = min(c, c2), max(c, c2)
+                    if not (self._seg_clear(nd, axis, c2, a0, a1)
+                            and self._seg_clear(nd, other, a0, lo, hi)
+                            and self._seg_clear(nd, other, a1, lo, hi)):
+                        continue
+                    pts = [self._xy(axis, k0, c), self._xy(axis, a0, c),
+                           self._xy(axis, a0, c2), self._xy(axis, a1, c2),
+                           self._xy(axis, a1, c), self._xy(axis, k1, c)]
+                    # same preference as the fixed-inset jog (fewest wires
+                    # walked over, then hug the trunk), then the SHORTEST
+                    # sidestep: a person clears the obstacle and comes back,
+                    # rather than riding the offset line the whole way
+                    key = (self._crosses_committed(nd, pts), abs(off),
+                           a1 - a0, a0)
+                    if bestk is None or key < bestk:
+                        best, bestk = (c2, a0 - k0, k1 - a1), key
+        if best is not None:
+            _WIDE_FIRED[0] = True
         return best
 
     def _wire_node(self, nd):
@@ -2919,6 +3492,23 @@ class Placer(object):
 
         def xy(along, across):
             return (along, across) if axis == "h" else (across, along)
+
+        def thin(mid, prev, nxt):
+            """Drop a jog corner that merely repeats its neighbour.
+
+            A zero-inset detour turns AT the tap, so its first (or last)
+            corner IS the tap; emitting it again would draw an empty leg.
+            """
+            out = []
+            for q in mid:
+                if out:
+                    if q != out[-1]:
+                        out.append(q)
+                elif q != prev:
+                    out.append(q)
+            while out and out[-1] == nxt:
+                out.pop()
+            return out
 
         groups = {}
         for t in ts:
@@ -3001,17 +3591,19 @@ class Placer(object):
                 pts = pts + post + [xy(k1, v1)]
                 jog = self._bus_detour(nd, axis, c, k0, k1)
                 if jog:
-                    c2, e = jog
-                    mid = [xy(k0 + e, c), xy(k0 + e, c2),
-                           xy(k1 - e, c2), xy(k1 - e, c)]
+                    c2, e0, e1 = jog
+                    mid = thin([xy(k0 + e0, c), xy(k0 + e0, c2),
+                                xy(k1 - e1, c2), xy(k1 - e1, c)],
+                               pts[0], pts[1])
                     steps = [("bend", q[0], q[1]) for q in mid] + steps
                     pts = pts[:1] + mid + pts[1:]
             else:
                 jog = self._bus_detour(nd, axis, c, k0, k1)
                 if jog:
-                    c2, e = jog
-                    mid = [xy(k0 + e, c), xy(k0 + e, c2),
-                           xy(k1 - e, c2), xy(k1 - e, c)]
+                    c2, e0, e1 = jog
+                    mid = thin([xy(k0 + e0, c), xy(k0 + e0, c2),
+                                xy(k1 - e1, c2), xy(k1 - e1, c)],
+                               pts[-2], pts[-1])
                     steps += [("bend", q[0], q[1]) for q in mid]
                     pts = pts[:-1] + mid + pts[-1:]
                 steps += [("to", anchor[k1])]
@@ -3185,6 +3777,24 @@ class Placer(object):
             # the GAP is fixed; which of the four sides it takes is still
             # free, otherwise a crowded figure has nowhere to put it
             return (over + side) if rot else (side + over)
+        if sym in ("voltage-source", "current-source"):
+            # A source's name sits BESIDE the circle at the fixed SOP 3A
+            # distance, on its centre line -- that is how lane 1 draws it
+            # (`gen_handdrawn_lc_tank_ss` labels I_in at dx -18, dy 5, and
+            # `gen_fig869` puts V_in level with the circle).  Left to the
+            # generic ladder the name drifts ABOVE the circle, where it
+            # reads as a label for the wire leaving the top (user,
+            # 2026-09-05: 「Vin 標籤固定一下，參考手排圖」).  Only the side
+            # is free, never the gap -- the same ruling as the capacitor.
+            # ...and above/below stay as a LAST resort.  Returning only the
+            # two side spots left 12.57(c)'s V_X with nowhere legal to go and
+            # the figure came back `labels=1` -- 20/21 clean instead of
+            # 21/21.  Ordered candidates already mean the sides win whenever
+            # they fit, which is what "pin it down" asks for; deleting the
+            # fallback only buys a broken figure.
+            over = [(0, dy_above(hi), "middle"), (0, dy_below(hi), "middle")]
+            return [(first, 5, "start" if first > 0 else "end"),
+                    (-first, 5, "end" if first > 0 else "start")] + over
         if sym in CTRL:
             # A transistor's name goes at its OPENING -- the side away from
             # the gate, where the drain/source leads are -- at the fixed
@@ -3310,17 +3920,50 @@ class Placer(object):
             rt = name(nd.upper() if len(nd) == 1 else nd)
             lo = min(p[0] for p in pts), min(p[1] for p in pts)
             hi = max(p[0] for p in pts), max(p[1] for p in pts)
+            # Anywhere along its OWN bus, not just three points on it.  The
+            # node name belongs beside the wire it names, and which spot is
+            # clear depends on what the layout put there -- with only the two
+            # end pins and the midpoint on offer, a short net has three
+            # candidates and one part can cover all of them.  8.57 hit that:
+            # squeezing the columns together (which is what the drawing
+            # wanted -- wire 450 -> 330) slid D_1 over every spot `Y` had,
+            # and the whole compact layout was thrown out for one label
+            # (user, 2026-09-05: 「距離可以平移縮短一些」).  Stepping along
+            # the run adds no free parameter: the positions are the bus.
+            def _along(a, b):
+                # ONE GRID STEP.  At 20 the midpoint of a 20-long run is
+                # skipped -- exactly 8.57's `Y` bus (260 to 280), whose only
+                # legal spot is the middle.
+                out, step = [], 10
+                x = int(a)
+                while x <= b:
+                    out.append(x)
+                    x += step
+                out.append(int(b))
+                mid = (int(a) + int(b)) // 2
+                # nearest the middle first: a name centred on its own run is
+                # what the textbook does, the ends are the fallback
+                return sorted(set(out), key=lambda v: (abs(v - mid), v))[:24]
+
+            # ...and CENTRED on the run, not only pushed off one pin.  A
+            # short bus has no room either side of a pin, but plenty in the
+            # middle: 8.57's `Y` runs 20 units between the op amp's apex and
+            # D_1, and a centred name clears both by 3 -- the audit's bar is
+            # 2 (user, 2026-09-05: 「Y 那一小段線也可以縮一下」).  Same two
+            # offsets as the others, so no new distance is invented.
             cands = []
             if axis == "h":
-                for x in (lo[0], (lo[0] + hi[0]) // 2, hi[0]):
+                for x in _along(lo[0], hi[0]):
                     cands += [(x - 12, c - 8, "end"), (x + 12, c - 8, "start"),
                               (x - 12, c + 20, "end"), (x + 12, c + 20,
-                                                        "start")]
+                                                        "start"),
+                              (x, c - 8, "middle"), (x, c + 20, "middle")]
             else:
-                for y in (lo[1], (lo[1] + hi[1]) // 2, hi[1]):
+                for y in _along(lo[1], hi[1]):
                     cands += [(c - 12, y - 8, "end"), (c + 12, y - 8, "start"),
                               (c - 12, y + 20, "end"), (c + 12, y + 20,
-                                                        "start")]
+                                                        "start"),
+                              (c - 12, y, "end"), (c + 12, y, "start")]
             best, bestkey = cands[0], None
             for x, y, al in cands:
                 box = label_box(rt, x, y, al)
@@ -3330,7 +3973,13 @@ class Placer(object):
                            for i in f.placed] or [999])
                 other = min([_box_gap_box(box, b)
                              for b in self._lbox] or [999])
-                key = ((2 if wire >= LABEL_INK_GAP else 1 if wire >= 2
+                # Clearing the AUDIT comes first.  Everything below is a
+                # preference, and a preference must never outrank a spot
+                # that is legal: 8.57 picked a `Y` 0.4 units off D_1 over a
+                # centred one 3.6 clear, because the illegal spot happened to
+                # sit 0.1 further from a wire.  The audit's bar is 2.
+                key = (1 if ink >= 2.0 else 0,
+                       (2 if wire >= LABEL_INK_GAP else 1 if wire >= 2
                         else 0) + (2 if other >= LABEL_INK_GAP else 0)
                        + (2 if ink >= LABEL_INK_GAP else 0),
                        min(wire, 30), min(other, 30), min(ink, 30))
@@ -3431,17 +4080,27 @@ STYLE_AXES = (("sigpath", (1, 0)),
               ("sccorder", ("decl", "ctrl")),
               ("levels", ("asap", "alap")),
               ("colorder", ("decl", "bary")),
-              ("compact", (0, 1)),
+              ("compact", (0, 1, 40)),
               ("freecol", ("own", "share")),
               ("latup", (1, 0)),
               ("portnudge", ("label", "pin")),
               ("bodycost", ("soft", "hard")),
+              # NB `shave` is NOT here.  It was tried as an axis and 8.69
+              # kept picking `off` and shaving the op amp even though the
+              # clear layout scores 27 better -- the descent simply never
+              # walked to it.  It is a STARTING POINT instead (see below),
+              # the same cure as `ltrunk`, `bdwide` and `snapcol`.
               # last: it reshapes the whole column order, so it
               # is swept only once the cheaper axes have settled
               )
 STYLE0 = {"gaterow": 0, "sigpath": "rail", "spans": 1, "cost": "hbRwo", "anchor": 1,
           "sccorder": "decl", "levels": "asap", "colorder": "decl", "compact": 0, "freecol": "own", "latup": 1,
-          "portnudge": "label", "bodycost": "soft"}
+          "portnudge": "label", "bodycost": "soft",
+          # `paracol` is NOT an axis and is not in STYLE_AXES: a parallel
+          # branch beside the branch it parallels is structure, like the
+          # stage split, and it loses on score every time it is weighed
+          # (5.170: +1 corner, -140 wire, which the weights price 46 worse).
+          "paracol": 1, "snaprow": 1, "shave": "off"}
 
 
 def _grids(tune):
@@ -3527,6 +4186,15 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
             # move the search itself can make: 40 -> 21 crossings / wire
             # 1.13x, 80 -> 18 / 1.17x, 120 -> 17 / 1.21x.  Crossings are
             # what makes a drawing unreadable, so 80.
+            # A wire shaving a block is a drawing defect on the same scale
+            # as a corner or a crossing, so it is priced HERE and not in the
+            # trunk cost -- that cost has no corner term, so every attempt to
+            # put it there traded clearance against wire alone and cost 8.57
+            # three corners.  Measured: clearing costs 8.69 ten units of wire
+            # (1 point) and 8.57 three corners (180), so anything between
+            # takes the cheap one and leaves the dear one.
+            sw = int(os.environ.get("AC_SW", "30"))
+            shaves = len(_RC.block_shaves(p.f))
             xw = int(os.environ.get("AC_XW", "80"))
             # measured on the 21-figure bench: 0 -> bends 1.18x,
             # 10 -> 1.11x, 25 -> 1.01x, 60 -> 1.00x and place back to 39%.
@@ -3540,7 +4208,8 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
             # 92% -> 86%: a search that can only see crossings settles into
             # a worse corner of the space.
             out = (_audit_count(log),
-                   _cross_from(log) * xw + bends * bw + wire // 10, wire)
+                   _cross_from(log) * xw + bends * bw + shaves * sw
+                   + wire // 10, wire)
         except Exception:                      # a style that cannot be drawn
             out = (999, 999, 10 ** 9)          # scores itself out
         tried[key] = out
@@ -3609,6 +4278,21 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
                     return [d.ref for d in pr.horiz]
                 except Exception:
                     return []
+
+            def probe_latrows(g, st, fm):
+                """Which rows each lying-down part could be pulled onto."""
+                st = dict(st)
+                if fm:
+                    st["formir"] = tuple(sorted(fm.items()))
+                buf = io.StringIO()
+                try:
+                    pr = Placer(c, out_proj, out_svg, pitch=g[0], rowgap=g[1],
+                                portstub=g[2], style=st)
+                    with contextlib.redirect_stdout(buf):
+                        pr.run(verbose=True)
+                    return pr.lateral_row_offsets()
+                except Exception:
+                    return {}
 
             def transistors(g, st, fm):
                 """Which parts can be turned over, and which way they face now."""
@@ -3762,13 +4446,23 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
                 rows = list(style.get("latrow") or ())
                 for _pass in range(2):
                     nudged = False
+                    onto = probe_latrows(grid, style, formir)
                     for ref in probe_laterals(grid, style, formir):
                         if any(r[0] == ref for r in rows):
                             continue
                         # rows are not always a whole 40 apart -- a pin row and
                         # a node row can sit 20 apart (Fig 3.57's C_1 at 200 and
-                        # D_2 at 220), so the step has to be able to reach that
-                        for dy in (-20, 20, -40, 40):
+                        # D_2 at 220), so the step has to be able to reach that.
+                        # The fixed steps still cannot reach a row nobody
+                        # listed: 5.170 needs -50 to keep the input line
+                        # straight.  Offer the rows this part's own net
+                        # actually uses FIRST, then fall back to the steps.
+                        seen_dy, dys = set(), []
+                        for dy in list(onto.get(ref, ())) + [-20, 20, -40, 40]:
+                            if dy not in seen_dy:
+                                seen_dy.add(dy)
+                                dys.append(dy)
+                        for dy in dys:
                             cand = dict(style)
                             cand["latrow"] = tuple(rows + [(ref, dy)])
                             sc = sc_of(grid, cand, formir)
@@ -3799,6 +4493,24 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
                     if not dropped:
                         break
                     moved = True
+                # An op amp's two inputs may change places.  `opamp` and
+                # `opamp-inputs-swapped` are the same part drawn two ways, so
+                # this is the block's version of turning a transistor over --
+                # a layout move, swept here against the real score like the
+                # flip beside it.  8.57 is what asks for it: the feedback
+                # node comes down the LEFT of the op amp to reach IN- while
+                # V_in runs in to IN+ on the row between, and the two cross
+                # (user, 2026-09-05: 「那個交叉點應該是有辦法避免的」).
+                oasw = list(style.get("oaswap") or ())
+                for ref in _swappable:
+                    if ref in oasw:
+                        continue
+                    cand = dict(style, oaswap=tuple(oasw + [ref]))
+                    sc, g2 = probe(grid, cand, formir)
+                    if sc < best:
+                        best, style, grid = sc, cand, g2
+                        oasw = list(cand["oaswap"])
+                        moved = True
                 for _pass in range(3):
                     flipped = False
                     for ref, cur in transistors(grid, style, formir):
@@ -3825,6 +4537,7 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
                 style["formir"] = tuple(sorted(formir.items()))
             return best, style, grid
 
+        _swappable = [d.ref for d in c.devices if d.sym in Placer.SWAP_SYM]
         _g = {}
         for _d in c.devices:
             if _d.sym in CTRL:
@@ -3849,11 +4562,60 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
         # (HW2 went 16 -> 18 that way).  Run both and keep the better; each
         # figure gets whichever it wants.
         _res = None
+        _WIDE_FIRED[0] = _SNAP_FIRED[0] = _ROW_FIRED[0] = False
+        _MID_FIRED[0] = False
         for _gr in _starts:
             for _lt in (1, 0):
-                _r = descend(_gr, start={"ltrunk": _lt})
+                _r = descend(_gr, start={"ltrunk": _lt, "bdwide": 1,
+                                         "snapcol": 1})
                 if _res is None or _r[0] < _res[0]:
                     _res = _r
+        # The wide detour and the column snap are starting points, not
+        # axes, for the same reason `ltrunk` is: each adds a move the
+        # search did not have, and a figure that never uses one can still
+        # be pushed off the layout it used to find (9.26(c) lost 3.5
+        # corners to a detour it never drew).  Only pay for the extra
+        # passes where the move actually fired -- elsewhere they draw the
+        # same thing.
+        # Clearing a block costs a different figure a wildly different
+        # amount -- 8.69 ten units of wire, 8.57 three corners -- so it
+        # cannot be one global price inside the trunk cost, which has no
+        # corner term at all.  Run the descent from both, and let the outer
+        # score (which DOES see corners, crossings and `block_shaves`)
+        # decide.  Only figures that draw a block can want it.
+        if any(d.sym in N.BLOCKS for d in c.devices):
+            for _gr in _starts:
+                for _lt in (1, 0):
+                    # `hard` here, not a price: as a STARTING POINT its job
+                    # is to make the layout that clears the block reachable
+                    # at all, and the outer score then decides whether to
+                    # keep it.  Priced in wire the nudge was too weak to
+                    # move 8.69's trunk (clearing costs it one wire point),
+                    # and priced anywhere inside the trunk cost it cannot
+                    # see the three corners it costs 8.57.
+                    _r = descend(_gr, start={"ltrunk": _lt, "bdwide": 1,
+                                             "snapcol": 1, "shave": "hard"})
+                    if _r[0] < _res[0]:
+                        _res = _r
+        _extra = []
+        if _WIDE_FIRED[0]:
+            _extra.append({"bdwide": 0, "snapcol": 1})
+        if _SNAP_FIRED[0]:
+            _extra.append({"bdwide": 1, "snapcol": 0})
+        if _WIDE_FIRED[0] and _SNAP_FIRED[0]:
+            _extra.append({"bdwide": 0, "snapcol": 0})
+        # ...and the row snap for the same reason (8.69: 7 corners -> 5).
+        if _ROW_FIRED[0]:
+            _extra.append({"bdwide": 1, "snapcol": 1, "snaprow": 0})
+        # ...and centring the lying-down parts, for the same reason.
+        if _MID_FIRED[0]:
+            _extra.append({"bdwide": 1, "snapcol": 1, "midlat": 0})
+        for _st in _extra:
+            for _gr in _starts:
+                for _lt in (1, 0):
+                    _r = descend(_gr, start=dict(_st, ltrunk=_lt))
+                    if _r[0] < _res[0]:
+                        _res = _r
         # Still dirty?  Run the whole descent again without the newer cost
         # orders.  Coordinate descent is path-sensitive: adding "hnbRwo"
         # was enough to hide the clean layout 8.57 had been finding, and no
