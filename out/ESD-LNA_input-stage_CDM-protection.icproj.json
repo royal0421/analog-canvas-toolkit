@@ -1994,7 +1994,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-esd-lna-input",
   "name": "ESD-protected LNA input stage",
-  "schemaVersion": 36,
+  "schemaVersion": 48,
+  "simulationSetups": [],
   "source": {
     "dialect": "none",
     "entry": null,

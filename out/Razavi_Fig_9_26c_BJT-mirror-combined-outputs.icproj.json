@@ -1112,7 +1112,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-9-26c",
   "name": "Razavi Fig. 9.26(c) — BJT current mirror with combined outputs",
-  "schemaVersion": 36,
+  "schemaVersion": 48,
+  "simulationSetups": [],
   "source": {
     "dialect": "none",
     "entry": null,

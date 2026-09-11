@@ -24,6 +24,10 @@ f = Schematic(
 # "+" on top -> opamp-inputs-swapped.  The diode ships horizontal (A at -20,
 # K at +20), so no rotation.  GND1's pin lands exactly on R_1's lower pin, so
 # that connection needs no wire at all.
+# 2026-09-11: upstream shrank the opamp -- inputs moved -50 -> -30 and the
+# symbol now draws only a 3-unit stub instead of a 20-unit input lead.  The
+# body stays where it was (centre 300); what used to be the symbol's own lead
+# is now drawn as wire, so node X still turns 20 units clear of the triangle.
 f.place("OA", "opamp-inputs-swapped", 300, 150,
         extra={"schematicReference": "OA"})
 f.place("D1", "diode", 310, 200, extra={
@@ -48,7 +52,8 @@ T, J = f.term, f.jn
 f.route("r-in", "net-in", T("VIN", "P"), [("to", T("OA", "IN+"))])
 f.route("r-y", "net-y", T("OA", "OUT"), [("bend", 350, 150), ("bend", 350, 200),
                                          ("to", T("D1", "K"))])
-f.route("r-x-in", "net-x", T("OA", "IN-"), [("to", J("JX"))])
+f.route("r-x-in", "net-x", T("OA", "IN-"), [("bend", 250, 160),
+                                           ("to", J("JX"))])
 f.route("r-x-d", "net-x", J("JX"), [("to", T("D1", "A"))])
 f.route("r-x-vout", "net-x", J("JX"), [("to", T("VOUT", "P"))])
 f.route("r-x-r1", "net-x", J("JX"), [("to", T("R1", "1"))])

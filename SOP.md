@@ -15,7 +15,7 @@
 
 ```
 audits: legs 0 | labels 0 | on-wire 0 | tees 0 | shorts 0  (all 0)
-  schema: VALID (v36)
+  schema: VALID (v48)
   labels: OK (3 declared plain)
   png: preview_xxx.png (1770x895)
 ```
@@ -38,12 +38,12 @@ audits: legs 0 | labels 0 | on-wire 0 | tees 0 | shorts 0  (all 0)
 
 | 要什麼 | 去哪裡拿 |
 |---|---|
-| 符號腳位座標、外觀 | `toolkit/sym/*.json`，**48 個已全數快取**（2026-08-29）。
+| 符號腳位座標、外觀 | `toolkit/sym/*.json`，**67 個已全數快取**（2026-09-11 重抓）。
 Analog Canvas 是活的專案、上游會持續新增符號，所以把 `sym/` 當快取看：
 **要用的符號不在裡面 → 跑 `python fetch_symbols.py`（約 4 秒），不要一個一個手動找** |
 | 渲染／腳位變換的實作 | 同 repo 的 `apps/editor/src/canvas/canvas-geometry.ts`、`packages/derived/src/*.ts`；
 幾何 ground truth 在 `fixtures/visual-reference/razavi-reference-v1/*.json`（**先查 fixture，不要逐檔翻原始碼**） |
-| 專案檔 schema（**v36**，2026-09-01 實測） | `toolkit/model.mjs`。**網站會改版，chunk 檔名每次都不一樣**：不要手動找，跑 `python refresh_model.py`（它會走完 bundle、用「執行看看」挑出 model chunk，並告訴你新的 schemaVersion）。版本一落後，匯入就可能整張進不去。 |
+| 專案檔 schema（**v48**，2026-09-11 實測） | `toolkit/model.mjs`。**網站會改版，chunk 檔名每次都不一樣**：不要手動找，跑 `python refresh_model.py`（它會走完 bundle、用「執行看看」挑出 model chunk，並告訴你新的 schemaVersion）。版本一落後，匯入就可能整張進不去。 |
 | 標籤 RichText 產生器 | 同上，匯出名 `Ws`（`m.f`） |
 | 樣式設定檔 | bundle `dist-DMiczVQI.js` 內 `razavi-textbook-v1` 的 typography |
 | 別人怎麼畫的 | `GET /api/gallery` 列表 →`GET /api/gallery/{id}` 回傳完整 `projectText` |
@@ -210,6 +210,40 @@ factory ＝ 呼叫後回得出 `{documents:[], schemaVersion:number}` 的那個�
 schema ＝ `safeParse(factory 輸出)` 會成功的那個；
 名字產生器 ＝ 把 `"M_1"` 變成「斜體 M ＋下標」的那個。
 **以後改版不要再去改字母，直接跑就好。**
+
+## 2B. schema v48 改了什麼（2026-09-11，網站又改版）
+
+> 一次從 v36 跳到 **v48**。跟上次不同的是：**json 本身只多一個欄位，痛點在符號**。
+
+| 改了什麼 | 怎麼應對 |
+|---|---|
+| 頂層多了必填的 `simulationSetups`（陣列） | `icproj.py` 已固定寫 `[]`。缺這欄 zod 直接擋，錯誤訊息是 `simulationSetups \| invalid_type`。 |
+| **22 個符號換了幾何**（上游 repo，部署站已經在用） | 跑 `python fetch_symbols.py --force`。**只跑不帶 `--force` 的版本沒用**——它只補缺檔，不會更新已存在的。 |
+| `opamp` / `comparator` 全系列腳位 −50/+40 → **−30/+30**，輸入引線 20 → **3**，viewBox 98 → 68 寬 | 見下方「引線變短要自己補」。 |
+| `resistor`／`voltage-source`／`pulse-voltage-source` | 只加了 `bounds`／`part` 標記或把折線併成 polyline，**幾何沒動**，不必改圖。 |
+
+### ⚠️ 輸入引線變短要自己補成走線
+
+舊 opamp 的輸入腳位在 −50，符號自己畫了一段 20 單位的引線到三角形邊（−27 附近）。
+新 opamp 腳位在 −30，符號只畫 **3 單位**。於是「垂直走線停在腳位 x 上」的舊畫法，
+**線會貼著三角形本體**（Fig. 8.57 與 8.69 都中了）。
+
+正解是**元件本體留在原位**，把符號原本自己畫的那 20 單位改成自己的走線：
+
+```python
+# 8.57：X 節點原本直接垂直上去接 IN-，現在先橫走 20 再轉
+f.route("r-x-in", "net-x", T("OA", "IN-"), [("bend", 250, 160),
+                                           ("to", J("JX"))])
+```
+
+副作用要一起檢查：`OUT` 也內縮了 10，可能剛好落在下一顆元件的腳位上
+（8.69 的 `OA.OUT` 就壓在 `Q_1.B` 上，走線長度變 0 被稽核擋下）。
+**座標重合的兩個腳位不需要走線**，把那條 route 整條刪掉即可。
+
+### 官方符號庫現在有 67 個（原本快取 48）
+
+`fetch_symbols.py` 會一併核對 catalog：`sym/` 內多出來的 `vdd.json` 上游已經沒有，
+但 `vdd-port` 還在，我們用的 21 個 symbolId **全部在部署站的 bundle 裡查得到**。
 
 ## 3A. 絕對排版規則（**優先用這個，不需要原圖**）
 
@@ -1483,7 +1517,7 @@ wire（不可壓線） > anyink（不可壓元件） > near（歸屬要清楚）
 
 | 指標 | 值 |
 |---|---|
-| 網站 schema v36 | **23 / 23 通過** |
+| 網站 schema v48 | **29 / 29 通過**（2026-09-11 重驗） |
 | **六道稽核全 0 的圖** | **19 / 23** |
 | 全庫殘餘錯誤 | `on-wire` 6（散在 4 張），其餘 `labels`／`legs`／`tees`／`self` 全 0 |
 | 位置完全對上手排圖（`place`） | 35% |

@@ -1850,7 +1850,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-hw2-constgm",
   "name": "HW2 constant-gm reference with V_REF",
-  "schemaVersion": 36,
+  "schemaVersion": 48,
+  "simulationSetups": [],
   "source": {
     "dialect": "none",
     "entry": null,

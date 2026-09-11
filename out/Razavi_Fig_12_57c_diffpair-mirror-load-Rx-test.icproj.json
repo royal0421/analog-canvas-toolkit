@@ -2073,7 +2073,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-12-57c",
   "name": "Razavi Fig. 12.57(c) — differential pair with PMOS mirror load and V_X test",
-  "schemaVersion": 36,
+  "schemaVersion": 48,
+  "simulationSetups": [],
   "source": {
     "dialect": "none",
     "entry": null,

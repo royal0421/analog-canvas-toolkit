@@ -457,7 +457,23 @@
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Vout"
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "out"
                       }
                     ]
                   }
@@ -501,7 +517,23 @@
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Vb"
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "b"
                       }
                     ]
                   }
@@ -545,7 +577,23 @@
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Vin"
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "in"
                       }
                     ]
                   }
@@ -1893,7 +1941,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-9-83",
   "name": "Razavi Fig. 9.83 — common-gate stage",
-  "schemaVersion": 36,
+  "schemaVersion": 48,
+  "simulationSetups": [],
   "source": {
     "dialect": "none",
     "entry": null,

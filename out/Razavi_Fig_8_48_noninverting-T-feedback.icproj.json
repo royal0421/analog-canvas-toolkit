@@ -999,7 +999,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-8-48",
   "name": "Razavi Fig. 8.48 — non-inverting amplifier with T-network feedback",
-  "schemaVersion": 36,
+  "schemaVersion": 48,
+  "simulationSetups": [],
   "source": {
     "dialect": "none",
     "entry": null,

@@ -905,7 +905,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-constgm-r",
   "name": "Constant-gm bias with a resistor",
-  "schemaVersion": 36,
+  "schemaVersion": 48,
+  "simulationSetups": [],
   "source": {
     "dialect": "none",
     "entry": null,

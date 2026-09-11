@@ -810,6 +810,9 @@ class Schematic(object):
             "id": self.pid,
             "name": self.pname,
             "schemaVersion": SCHEMA_VERSION,
+            # schema 48 (2026-09-11) made simulationSetups a required array;
+            # the toolkit never defines a setup, so an empty list is correct.
+            "simulationSetups": [],
             "source": {"dialect": "none", "entry": None, "files": [],
                        "sourcePolicy": "copy"},
             "structureRevision": 0,

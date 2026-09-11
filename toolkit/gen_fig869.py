@@ -36,6 +36,11 @@ f.place("VCC", "vdd-port", 420, 110, extra={"schematicReference": "VCC"})
 f.passive("R500", "resistor", 420, 150, "R_C")
 f.bjt("Q1", "npn", 420, 220, "none", "Q_1")
 f.passive("R100", "resistor", 420, 290, "R_E")
+# 2026-09-11: upstream shrank the opamp -- inputs -50 -> -30, OUT +40 -> +30,
+# and the input leads are now 3-unit stubs instead of 20.  The body stays at
+# 350; the feedback turns up at x=300 as before and the last 20 units into
+# IN- are drawn as wire, which is exactly what the old symbol drew itself.
+# OUT now lands on Q_1's base, so that connection needs no wire at all.
 f.place("OA", "opamp-inputs-swapped", 350, 220,
         extra={"schematicReference": "OA"})
 f.place("VIN", "voltage-source", 270, 270,
@@ -64,11 +69,11 @@ T, J = f.term, f.jn
 f.route("r-out-rc", "net-out", T("R500", "2"), [("to", J("JOUT"))])
 f.route("r-out-c", "net-out", J("JOUT"), [("to", T("Q1", "C"))])
 f.route("r-out-port", "net-out", J("JOUT"), [("to", T("VOUT", "P"))])
-f.route("r-base", "net-base", T("OA", "OUT"), [("to", T("Q1", "B"))])
+# OA.OUT and Q_1.B are coincident at (380,220) -- no wire needed.
 f.route("r-x-e", "net-x", T("Q1", "E"), [("to", J("JX"))])
 f.route("r-x-re", "net-x", J("JX"), [("to", T("R100", "1"))])
 # Feedback X -> IN-: left along the emitter row, then straight up.
-f.route("r-x-fb", "net-x", J("JX"), [("bend", 300, 260),
+f.route("r-x-fb", "net-x", J("JX"), [("bend", 300, 260), ("bend", 300, 230),
                                      ("to", T("OA", "IN-"))])
 f.route("r-in", "net-in", T("VIN", "+"), [("bend", 270, 210),
                                           ("to", T("OA", "IN+"))])

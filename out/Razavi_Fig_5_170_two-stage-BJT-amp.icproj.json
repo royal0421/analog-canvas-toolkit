@@ -1893,7 +1893,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-5-170",
   "name": "Razavi Fig. 5.170 — two-stage BJT amplifier",
-  "schemaVersion": 36,
+  "schemaVersion": 48,
+  "simulationSetups": [],
   "source": {
     "dialect": "none",
     "entry": null,

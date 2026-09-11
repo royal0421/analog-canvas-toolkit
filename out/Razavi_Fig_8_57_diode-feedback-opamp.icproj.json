@@ -616,6 +616,18 @@
               "id": "route-leg-65c12f90e1ae568a",
               "mode": "manual",
               "to": {
+                "kind": "bend",
+                "bendId": "route-bend-65c12f90e1ae568a",
+                "position": {
+                  "x": 250,
+                  "y": 160
+                }
+              }
+            },
+            {
+              "id": "route-leg-4665aebd672753cb",
+              "mode": "manual",
+              "to": {
                 "kind": "endpoint",
                 "endpoint": {
                   "kind": "junction",
@@ -698,7 +710,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-8-57",
   "name": "Razavi Fig. 8.57 — op amp with a diode in the feedback path",
-  "schemaVersion": 36,
+  "schemaVersion": 48,
+  "simulationSetups": [],
   "source": {
     "dialect": "none",
     "entry": null,

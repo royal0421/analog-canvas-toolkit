@@ -1745,7 +1745,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-9-34",
   "name": "Razavi Fig. 9.34 — pnp current mirror driven by an npn mirror",
-  "schemaVersion": 36,
+  "schemaVersion": 48,
+  "simulationSetups": [],
   "source": {
     "dialect": "none",
     "entry": null,

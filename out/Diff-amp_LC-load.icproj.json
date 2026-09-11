@@ -2197,7 +2197,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-diff-lc-amp",
   "name": "Differential amplifier with LC load",
-  "schemaVersion": 36,
+  "schemaVersion": 48,
+  "simulationSetups": [],
   "source": {
     "dialect": "none",
     "entry": null,

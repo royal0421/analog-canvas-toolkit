@@ -4534,7 +4534,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-comparator-19",
   "name": "Latched comparator with cross-coupled load and inverter output",
-  "schemaVersion": 36,
+  "schemaVersion": 48,
+  "simulationSetups": [],
   "source": {
     "dialect": "none",
     "entry": null,

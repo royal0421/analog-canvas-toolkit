@@ -110,9 +110,12 @@ f.route("r-g2", "net-gnd-2", T("M5", "S"), [("to", T("GND2", "0"))])
 f.route("r-g3", "net-gnd-3", T("M2", "S"), [("to", T("GND3", "0"))])
 
 # ------------------------------------------------- cell terminals for ports
-f.terminal("terminal-vout", "Vout", "net-vout", "output", ["VOUT"])
-f.terminal("terminal-vin", "Vin", "net-vin", "input", ["VIN"])
-f.terminal("terminal-vb", "Vb", "net-vb", "input", ["VB"])
+# The underscore is our marker for where the subscript starts (it never
+# reaches the file -- the stored terminal name stays "Vout").  Without it
+# these three printed FLAT while every M_n beside them was subscripted.
+f.terminal("terminal-vout", "V_out", "net-vout", "output", ["VOUT"])
+f.terminal("terminal-vin", "V_in", "net-vin", "input", ["VIN"])
+f.terminal("terminal-vb", "V_b", "net-vb", "input", ["VB"])
 
 # ---------------------------------------------------------------- annotations
 f.inst_label("IREF", -18, 5, "end")
