@@ -1,0 +1,1660 @@
+{
+  "documents": [
+    {
+      "annotations": [
+        {
+          "id": "instance-label-PVON",
+          "kind": "instance-label",
+          "alignment": "start",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "PVON",
+            "localOffset": {
+              "x": 14,
+              "y": 5
+            },
+            "fallbackPosition": {
+              "x": 764,
+              "y": 205
+            }
+          },
+          "binding": {
+            "kind": "cell-terminal-name",
+            "terminalId": "t-von"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "on"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "instance-label-PVOP",
+          "kind": "instance-label",
+          "alignment": "start",
+          "locked": false,
+          "rotation": 0,
+          "sizeScale": 0.58,
+          "anchor": {
+            "kind": "object",
+            "objectId": "PVOP",
+            "localOffset": {
+              "x": 14,
+              "y": 5
+            },
+            "fallbackPosition": {
+              "x": 764,
+              "y": 265
+            }
+          },
+          "binding": {
+            "kind": "cell-terminal-name",
+            "terminalId": "t-vop"
+          },
+          "formatOverride": {
+            "runs": [
+              {
+                "kind": "span",
+                "style": "italic",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "V"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "span",
+                "style": "subscript",
+                "children": [
+                  {
+                    "kind": "span",
+                    "style": "bold",
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "op"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "connectivityEvidence": [],
+      "constraints": [],
+      "drafting": {
+        "objects": [
+          {
+            "id": "box-cmp",
+            "kind": "rectangle",
+            "locked": false,
+            "zIndex": 0,
+            "center": {
+              "x": 560,
+              "y": 230
+            },
+            "width": 160,
+            "height": 200,
+            "rotation": 0,
+            "lineStyle": "solid",
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 560,
+                "y": 230
+              }
+            }
+          },
+          {
+            "id": "p-vin",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 488,
+                "y": 175
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "VIN"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "p-vip",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 488,
+                "y": 255
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "VIP"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "p-vdd",
+            "kind": "text",
+            "alignment": "middle",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 560,
+                "y": 150
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "VDD"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "p-clk",
+            "kind": "text",
+            "alignment": "middle",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 520,
+                "y": 322
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "CLK"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "p-vss",
+            "kind": "text",
+            "alignment": "middle",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 600,
+                "y": 322
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "VSS"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "p-von",
+            "kind": "text",
+            "alignment": "end",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 632,
+                "y": 205
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "VON"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "p-vop",
+            "kind": "text",
+            "alignment": "end",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 632,
+                "y": 265
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "VOP"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "t-cmp",
+            "kind": "text",
+            "alignment": "end",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.8119999999999999
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 640,
+                "y": 122
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "CMP"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "v-v3a",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 264,
+                "y": 205
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "PWL"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "v-v3b",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 264,
+                "y": 225
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "−20 → +20 mV"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "v-v2a",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 344,
+                "y": 285
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "PWL"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "v-v2b",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 344,
+                "y": 305
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "+20 → −20 mV"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "v-v0",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 304,
+                "y": 375
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "350 mV"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "v-v4",
+            "kind": "text",
+            "alignment": "end",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 476,
+                "y": 75
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "800 mV"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "v-v1a",
+            "kind": "text",
+            "alignment": "end",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 496,
+                "y": 375
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "pulse"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "v-v1b",
+            "kind": "text",
+            "alignment": "end",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 496,
+                "y": 395
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "0 → 800 mV"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "v-v1c",
+            "kind": "text",
+            "alignment": "end",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 496,
+                "y": 415
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "tr = 10 ps"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "v-c1",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 713,
+                "y": 175
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "20 fF"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "v-c0",
+            "kind": "text",
+            "alignment": "start",
+            "locked": false,
+            "rotation": 0,
+            "zIndex": 0,
+            "typographyToken": "label",
+            "styleOverride": {
+              "sizeScale": 0.58
+            },
+            "anchor": {
+              "kind": "free",
+              "position": {
+                "x": 713,
+                "y": 295
+              }
+            },
+            "content": {
+              "runs": [
+                {
+                  "kind": "span",
+                  "style": "bold",
+                  "children": [
+                    {
+                      "kind": "text",
+                      "value": "20 fF"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "id": "document-main",
+      "instances": [
+        {
+          "id": "V3",
+          "symbolId": "voltage-source",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 240,
+              "y": 210
+            },
+            "rotation": 0
+          },
+          "reference": "V3"
+        },
+        {
+          "id": "V2",
+          "symbolId": "voltage-source",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 320,
+              "y": 290
+            },
+            "rotation": 0
+          },
+          "reference": "V2"
+        },
+        {
+          "id": "V0",
+          "symbolId": "voltage-source",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 280,
+              "y": 370
+            },
+            "rotation": 0
+          },
+          "reference": "V0"
+        },
+        {
+          "id": "V4",
+          "symbolId": "voltage-source",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 500,
+              "y": 70
+            },
+            "rotation": 0
+          },
+          "reference": "V4"
+        },
+        {
+          "id": "V1",
+          "symbolId": "voltage-source",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 520,
+              "y": 390
+            },
+            "rotation": 0
+          },
+          "reference": "V1"
+        },
+        {
+          "id": "G0",
+          "symbolId": "ground",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 280,
+              "y": 400
+            },
+            "rotation": 0
+          }
+        },
+        {
+          "id": "G4",
+          "symbolId": "ground",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 500,
+              "y": 100
+            },
+            "rotation": 0
+          }
+        },
+        {
+          "id": "G1",
+          "symbolId": "ground",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 520,
+              "y": 420
+            },
+            "rotation": 0
+          }
+        },
+        {
+          "id": "GS",
+          "symbolId": "ground",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 600,
+              "y": 350
+            },
+            "rotation": 0
+          }
+        },
+        {
+          "id": "C1",
+          "symbolId": "capacitor",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 700,
+              "y": 170
+            },
+            "rotation": 0
+          },
+          "netlist": {
+            "binding": {
+              "kind": "primitive",
+              "deviceClass": "capacitor"
+            },
+            "parameters": {}
+          },
+          "reference": "C1"
+        },
+        {
+          "id": "C0",
+          "symbolId": "capacitor",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 700,
+              "y": 290
+            },
+            "rotation": 0
+          },
+          "netlist": {
+            "binding": {
+              "kind": "primitive",
+              "deviceClass": "capacitor"
+            },
+            "parameters": {}
+          },
+          "reference": "C0"
+        },
+        {
+          "id": "GC1",
+          "symbolId": "ground",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 700,
+              "y": 140
+            },
+            "rotation": 180
+          }
+        },
+        {
+          "id": "GC0",
+          "symbolId": "ground",
+          "placement": {
+            "mirror": "none",
+            "position": {
+              "x": 700,
+              "y": 320
+            },
+            "rotation": 0
+          }
+        },
+        {
+          "id": "PVON",
+          "symbolId": "port",
+          "placement": {
+            "mirror": "x",
+            "position": {
+              "x": 750,
+              "y": 200
+            },
+            "rotation": 0
+          }
+        },
+        {
+          "id": "PVOP",
+          "symbolId": "port",
+          "placement": {
+            "mirror": "x",
+            "position": {
+              "x": 750,
+              "y": 260
+            },
+            "rotation": 0
+          }
+        }
+      ],
+      "junctions": [
+        {
+          "id": "JCM",
+          "netId": "net-cm",
+          "position": {
+            "x": 280,
+            "y": 330
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JE-VIN",
+          "netId": "net-vin",
+          "position": {
+            "x": 480,
+            "y": 170
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JE-VIP",
+          "netId": "net-vip",
+          "position": {
+            "x": 480,
+            "y": 250
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JE-VDD",
+          "netId": "net-vdd",
+          "position": {
+            "x": 560,
+            "y": 130
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JE-CLK",
+          "netId": "net-clk",
+          "position": {
+            "x": 520,
+            "y": 330
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JE-VSS",
+          "netId": "net-vss",
+          "position": {
+            "x": 600,
+            "y": 330
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JE-VON",
+          "netId": "net-von",
+          "position": {
+            "x": 640,
+            "y": 200
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JON",
+          "netId": "net-von",
+          "position": {
+            "x": 700,
+            "y": 200
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JE-VOP",
+          "netId": "net-vop",
+          "position": {
+            "x": 640,
+            "y": 260
+          },
+          "role": "branch"
+        },
+        {
+          "id": "JOP",
+          "netId": "net-vop",
+          "position": {
+            "x": 700,
+            "y": 260
+          },
+          "role": "branch"
+        }
+      ],
+      "layoutGroups": [],
+      "name": "Main",
+      "netlist": {
+        "formalParameters": [],
+        "name": "CMP_OFFSET_TB",
+        "terminals": [
+          {
+            "id": "t-von",
+            "name": "Von",
+            "netId": "net-von",
+            "direction": "output",
+            "interfaceInstanceIds": [
+              "PVON"
+            ]
+          },
+          {
+            "id": "t-vop",
+            "name": "Vop",
+            "netId": "net-vop",
+            "direction": "output",
+            "interfaceInstanceIds": [
+              "PVOP"
+            ]
+          }
+        ]
+      },
+      "nets": [
+        {
+          "id": "net-vin",
+          "terminals": [
+            {
+              "instanceId": "V3",
+              "pinName": "+"
+            }
+          ]
+        },
+        {
+          "id": "net-vip",
+          "terminals": [
+            {
+              "instanceId": "V2",
+              "pinName": "+"
+            }
+          ]
+        },
+        {
+          "id": "net-cm",
+          "terminals": [
+            {
+              "instanceId": "V3",
+              "pinName": "-"
+            },
+            {
+              "instanceId": "V2",
+              "pinName": "-"
+            },
+            {
+              "instanceId": "V0",
+              "pinName": "+"
+            }
+          ]
+        },
+        {
+          "id": "net-vdd",
+          "terminals": [
+            {
+              "instanceId": "V4",
+              "pinName": "+"
+            }
+          ]
+        },
+        {
+          "id": "net-clk",
+          "terminals": [
+            {
+              "instanceId": "V1",
+              "pinName": "+"
+            }
+          ]
+        },
+        {
+          "id": "net-gnd-1",
+          "terminals": [
+            {
+              "instanceId": "V0",
+              "pinName": "-"
+            },
+            {
+              "instanceId": "G0",
+              "pinName": "0"
+            }
+          ]
+        },
+        {
+          "id": "net-gnd-2",
+          "terminals": [
+            {
+              "instanceId": "V4",
+              "pinName": "-"
+            },
+            {
+              "instanceId": "G4",
+              "pinName": "0"
+            }
+          ]
+        },
+        {
+          "id": "net-gnd-3",
+          "terminals": [
+            {
+              "instanceId": "V1",
+              "pinName": "-"
+            },
+            {
+              "instanceId": "G1",
+              "pinName": "0"
+            }
+          ]
+        },
+        {
+          "id": "net-vss",
+          "terminals": [
+            {
+              "instanceId": "GS",
+              "pinName": "0"
+            }
+          ]
+        },
+        {
+          "id": "net-von",
+          "terminals": [
+            {
+              "instanceId": "C1",
+              "pinName": "2"
+            },
+            {
+              "instanceId": "PVON",
+              "pinName": "P"
+            }
+          ]
+        },
+        {
+          "id": "net-vop",
+          "terminals": [
+            {
+              "instanceId": "C0",
+              "pinName": "1"
+            },
+            {
+              "instanceId": "PVOP",
+              "pinName": "P"
+            }
+          ]
+        },
+        {
+          "id": "net-gc1",
+          "terminals": [
+            {
+              "instanceId": "C1",
+              "pinName": "1"
+            },
+            {
+              "instanceId": "GC1",
+              "pinName": "0"
+            }
+          ]
+        },
+        {
+          "id": "net-gc0",
+          "terminals": [
+            {
+              "instanceId": "C0",
+              "pinName": "2"
+            },
+            {
+              "instanceId": "GC0",
+              "pinName": "0"
+            }
+          ]
+        }
+      ],
+      "noConnects": [],
+      "presentation": {
+        "compactness": "compact",
+        "grid": 10,
+        "styleProfileId": "razavi-textbook-v1",
+        "styleOverrides": {
+          "symbolStrokeScale": 1.5,
+          "wireStrokeScale": 1.5,
+          "annotationStrokeScale": 1.5,
+          "junctionRadiusScale": 1.3,
+          "fontScale": 2.0
+        }
+      },
+      "revision": 0,
+      "routes": [
+        {
+          "id": "r-vin",
+          "netId": "net-vin",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "V3",
+            "pinName": "+"
+          },
+          "legs": [
+            {
+              "id": "route-leg-79ef5f3a96987176",
+              "mode": "manual",
+              "to": {
+                "kind": "bend",
+                "bendId": "route-bend-79ef5f3a96987176",
+                "position": {
+                  "x": 240,
+                  "y": 170
+                }
+              }
+            },
+            {
+              "id": "route-leg-1752350fc8bd2e2d",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JE-VIN"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-vip",
+          "netId": "net-vip",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "V2",
+            "pinName": "+"
+          },
+          "legs": [
+            {
+              "id": "route-leg-87a80434cc0bba37",
+              "mode": "manual",
+              "to": {
+                "kind": "bend",
+                "bendId": "route-bend-87a80434cc0bba37",
+                "position": {
+                  "x": 320,
+                  "y": 250
+                }
+              }
+            },
+            {
+              "id": "route-leg-7858f05ae2b3e93d",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JE-VIP"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-cm3",
+          "netId": "net-cm",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "V3",
+            "pinName": "-"
+          },
+          "legs": [
+            {
+              "id": "route-leg-c2c644921ad19036",
+              "mode": "manual",
+              "to": {
+                "kind": "bend",
+                "bendId": "route-bend-c2c644921ad19036",
+                "position": {
+                  "x": 240,
+                  "y": 330
+                }
+              }
+            },
+            {
+              "id": "route-leg-8c4ebe3728f92fd2",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JCM"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-cm2",
+          "netId": "net-cm",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "V2",
+            "pinName": "-"
+          },
+          "legs": [
+            {
+              "id": "route-leg-46a5c30434c906fd",
+              "mode": "manual",
+              "to": {
+                "kind": "bend",
+                "bendId": "route-bend-46a5c30434c906fd",
+                "position": {
+                  "x": 320,
+                  "y": 330
+                }
+              }
+            },
+            {
+              "id": "route-leg-01bc817925a0d9ac",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JCM"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-cm0",
+          "netId": "net-cm",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JCM"
+          },
+          "legs": [
+            {
+              "id": "route-leg-eb190c6896b05f66",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "V0",
+                  "pinName": "+"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-vdd",
+          "netId": "net-vdd",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JE-VDD"
+          },
+          "legs": [
+            {
+              "id": "route-leg-ac45526b73e45e11",
+              "mode": "manual",
+              "to": {
+                "kind": "bend",
+                "bendId": "route-bend-ac45526b73e45e11",
+                "position": {
+                  "x": 560,
+                  "y": 50
+                }
+              }
+            },
+            {
+              "id": "route-leg-2b5e795c942078b0",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "V4",
+                  "pinName": "+"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-clk",
+          "netId": "net-clk",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "V1",
+            "pinName": "+"
+          },
+          "legs": [
+            {
+              "id": "route-leg-6bffecff4be244ae",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JE-CLK"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-vss",
+          "netId": "net-vss",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JE-VSS"
+          },
+          "legs": [
+            {
+              "id": "route-leg-844622ea082e1b50",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "GS",
+                  "pinName": "0"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-on1",
+          "netId": "net-von",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JE-VON"
+          },
+          "legs": [
+            {
+              "id": "route-leg-1d8b4eb2e6ed7343",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JON"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-on2",
+          "netId": "net-von",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JON"
+          },
+          "legs": [
+            {
+              "id": "route-leg-cfb8ceec9ed2ff6a",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "C1",
+                  "pinName": "2"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-on3",
+          "netId": "net-von",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JON"
+          },
+          "legs": [
+            {
+              "id": "route-leg-266286bad99badae",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "PVON",
+                  "pinName": "P"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-op1",
+          "netId": "net-vop",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JE-VOP"
+          },
+          "legs": [
+            {
+              "id": "route-leg-43716b8ec8418160",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "junction",
+                  "junctionId": "JOP"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-op2",
+          "netId": "net-vop",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JOP"
+          },
+          "legs": [
+            {
+              "id": "route-leg-8d4cc7c0fce0fb19",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "C0",
+                  "pinName": "1"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-op3",
+          "netId": "net-vop",
+          "start": {
+            "kind": "junction",
+            "junctionId": "JOP"
+          },
+          "legs": [
+            {
+              "id": "route-leg-5fc07d934a1f04cb",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "PVOP",
+                  "pinName": "P"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "sourceStatus": "in-sync"
+    }
+  ],
+  "externalSubcircuitDefinitions": [],
+  "id": "project-aic-hw2-cmp_offset_tb",
+  "name": "AIC HW2 CMP_OFFSET_TB",
+  "schemaVersion": 48,
+  "simulationSetups": [],
+  "source": {
+    "dialect": "none",
+    "entry": null,
+    "files": [],
+    "sourcePolicy": "copy"
+  },
+  "structureRevision": 0,
+  "symbolLibrary": {
+    "hash": "razavi-reference-v1",
+    "id": "razavi-symbols",
+    "version": "1"
+  },
+  "topDocumentId": "document-main"
+}

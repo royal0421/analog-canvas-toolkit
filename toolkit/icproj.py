@@ -1895,8 +1895,14 @@ class Schematic(object):
             P.append('<circle cx="%g" cy="%g" r="%g" fill="#111" '
                      'stroke="none"/>' % (p[0], p[1], 2.8 * J))
         P.append('</g><g font-family="' + FONT_STACK + '" fill="#111">')
-        base = BASE_FONT * FONT_SCALE * LABEL_SIZE
+        base0 = BASE_FONT * FONT_SCALE * LABEL_SIZE
+        # a drafting text may carry its own sizeScale (a bigger title);
+        # the site honours it, so the preview must too (2026-10-22)
+        own = {o["id"]: o["styleOverride"]["sizeScale"]
+               for o in self.drafting if o.get("kind") == "text"
+               and "sizeScale" in o.get("styleOverride", {})}
         for _lid, rt, x, y, align, _o in self.label_records():
+            base = base0 * own.get(_lid, LABEL_SIZE) / LABEL_SIZE
             parts, prev = [], False
             for t, sub, ital, bold in flat(rt):
                 dy = (base * SUB_SHIFT if sub and not prev
