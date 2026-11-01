@@ -127,7 +127,7 @@ f.build(long_haul={"r-t3", "r-t4", "r-u3", "r-u4",
                    "r-t2", "r-u2",      # the C_B/2 bridge
                    "r-l-l2", "r-r-l2"},  # drain node out to L_2
         extra_evidence=[],
-        viewbox=(40, 65, 700, 330),
+        viewbox=(20, 65, 740, 330),
         # plain text on purpose (values / block titles): the
         # editor's generator italicises everything, we follow the
         # textbook page instead -- SOP 4

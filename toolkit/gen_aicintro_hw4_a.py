@@ -92,6 +92,6 @@ f.build(long_haul={
             "r-o-jc",      # 60: room for the M_1 label between drain and C_L
         },
         rail_ends={"jvdd-start", "jvdd-end"},
-        viewbox=(100, 80, 410, 240),
+        viewbox=(80, 80, 460, 240),
         expect_differ={"label-vdd", "note-rd", "note-cl", "note-rs",
                        "note-vin-dc", "note-vin-ac"})   # value text, upright on purpose (SOP 4)

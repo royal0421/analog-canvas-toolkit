@@ -134,4 +134,4 @@ f.build(long_haul={"r-vcc-rail-0", "r-vcc-rail-1", "r-vcc-rail-2",
                    "r-cm-1",         # 50: Q_M collector up to the pnp node
                    "r-cm-3"},        # 60+50: pnp node across to Q_2's base
         rail_ends={"jvcc-start", "jvcc-end"},
-        viewbox=(120, 75, 470, 260))
+        viewbox=(100, 75, 490, 260))

@@ -131,7 +131,7 @@ f.build(long_haul={"r-vdd-rail-1", "r-vdd-rail-2", "r-vdd-rail-3",
              "scope": "global", "powerDomain": "vdd"}],
         rail_ends={"jvdd-start", "jvdd-end", "jvss-start", "jvss-end",
                    "JW", "JPP", "JNP"},
-        viewbox=(85, 85, 520, 305),
+        viewbox=(85, 85, 530, 305),
         # plain text on purpose (values / block titles): the
         # editor's generator italicises everything, we follow the
         # textbook page instead -- SOP 4

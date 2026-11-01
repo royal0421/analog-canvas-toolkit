@@ -137,5 +137,5 @@ f.build(long_haul={"r-in1",        # 70+110: in at the top, down to the primary
                    "r-n-g"},       # out to the ground
         extra_evidence=[],
         rail_ends={"JIN2"},
-        viewbox=(20, 30, 600, 340),
+        viewbox=(10, 30, 610, 340),
         expect_differ={"n-6v"})   # value (SOP §4)

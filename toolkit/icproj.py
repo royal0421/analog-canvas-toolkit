@@ -1022,6 +1022,7 @@ class Schematic(object):
             self._crowding()
             self._pitch()
             self._density(density_ref)
+        clipped = self._viewbox_audit(viewbox)
         self._preview(viewbox)
 
         out_dir = os.path.dirname(os.path.abspath(self.out_proj))
@@ -1039,7 +1040,7 @@ class Schematic(object):
                 failures.append("self-check=%d" % len(errs))
             for key, count in (("legs", legs), ("labels", labels),
                                ("on-wire", onwire), ("tees", tees),
-                               ("shorts", shorts)):
+                               ("shorts", shorts), ("viewbox", clipped)):
                 if count:
                     failures.append("%s=%d" % (key, count))
             failures.extend(external)
@@ -1054,6 +1055,30 @@ class Schematic(object):
         return project
 
     # ---------------------------------------------------------- checks
+    def _viewbox_audit(self, vb, margin=1.0):
+        """Every part and every label must lie inside the preview viewBox.
+
+        The viewBox is hand-written per figure, and labels are measured in
+        DejaVu Sans Bold (what the site and a Linux Chrome draw with).  A
+        Windows Chrome falls back to the narrower Arial, so a box that fitted
+        there clipped `DC = 0.53 V` and `C_L = 0.03 pF` once the gallery was
+        re-rendered on Linux (2026-11-01).  Measure, do not eyeball.
+        """
+        x0, y0, x1, y1 = vb[0], vb[1], vb[0] + vb[2], vb[1] + vb[3]
+        items = [(iid, self.ink(iid)) for iid in sorted(self.placed)]
+        items += [(lid, label_box(rt, lx, ly, al))
+                  for lid, rt, lx, ly, al, _own in self.label_records()]
+        bad = 0
+        for oid, b in items:
+            over = {"left": x0 - b[0], "top": y0 - b[1],
+                    "right": b[2] - x1, "bottom": b[3] - y1}
+            over = {k: v for k, v in over.items() if v > margin}
+            if over:
+                bad += 1
+                print("  ! %s sticks out of the viewbox: %s" % (oid, ", ".join(
+                    "%s by %.1f" % kv for kv in sorted(over.items()))))
+        return bad
+
     def _selfcheck(self, rail_ends):
         errs = []
         self.warnings = []

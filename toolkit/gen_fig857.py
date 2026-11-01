@@ -73,4 +73,4 @@ f.text("note-y", 360, 155, "start", "Y")
 # r-y is the feedback wrap from the op amp output back down to the
 # diode: both ends are pinned by the topology, so it is a long haul.
 f.build(long_haul={"r-y"}, extra_evidence=[], density_ref=("OA", 40.9),
-        viewbox=(170, 118, 215, 165))
+        viewbox=(160, 118, 225, 165))

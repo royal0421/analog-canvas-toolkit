@@ -125,5 +125,5 @@ f.build(long_haul={"r-e-rp1",      # 60: r_pi1 across to the R_E node
                    "r-g-top"},     # 60: source 2 across to its ground
         extra_evidence=[],
         rail_ends={"JG3"},
-        viewbox=(60, 60, 600, 240),
+        viewbox=(50, 60, 610, 240),
         expect_differ=set())
