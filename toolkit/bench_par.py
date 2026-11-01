@@ -33,10 +33,16 @@ def main():
                 os.path.join(NB.ROOT, stem + ".icproj.json"))
             if not problems:
                 stems.append(stem)
-    pool = mp.Pool(min(len(stems), max(1, mp.cpu_count() - 1)))
-    rows = pool.map(one, stems)
+    import time
+    t0 = time.time()
+    # the parent only waits, so every core gets a figure; chunksize=1 hands
+    # them out one at a time (the default batches them, and the last batch
+    # then runs on a single core while the others idle)
+    pool = mp.Pool(min(len(stems), max(1, mp.cpu_count())))
+    rows = pool.map(one, stems, chunksize=1)
     pool.close()
     pool.join()
+    elapsed = time.time() - t0
     keys = ("self", "legs", "labels", "on-wire", "tees", "shorts")
     tot = dict((k, 0) for k in keys)
     clean = nerr = 0
@@ -69,6 +75,7 @@ def main():
           % (len(rows), clean, 100 * sum(pls) / n, sum(wrs) / n,
              sum(bds) / n, sum(xrs),
              " ".join("%s=%d" % kv for kv in sorted(tot.items())), nerr))
+    print("wall %.0f s on %d workers" % (elapsed, pool._processes))
 
 
 if __name__ == "__main__":
