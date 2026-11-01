@@ -197,7 +197,7 @@ Copy-Item toolkit\gen_fig848.py toolkit\gen_my_circuit.py
 python toolkit\gen_my_circuit.py
 ```
 
-完整的腳位、旋轉、標籤、密度、電源軌與手繪圖判讀規則在 [SOP.md](SOP.md)。新增正式範例前，請同時閱讀 [CONTRIBUTING.md](CONTRIBUTING.md)。
+畫新圖先看 [SOP_QUICK.md](SOP_QUICK.md)（生圖速查，約 SOP 的 1/18）；完整的腳位、旋轉、標籤、密度、電源軌與手繪圖判讀規則在 [SOP.md](SOP.md)。新增正式範例前，請同時閱讀 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ### 範本選擇
 
@@ -237,6 +237,7 @@ analog-canvas-toolkit/
 ├─ examples/      README gallery 與手繪參考圖
 ├─ tests/         核心正確性與 workflow 單元測試
 ├─ .github/       GitHub Actions CI
+├─ SOP_QUICK.md   生圖速查（手寫 generator 需要的規則）
 ├─ SOP.md         詳細繪圖規則與實測理由
 └─ requirements.txt
 ```

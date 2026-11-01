@@ -26,7 +26,7 @@ audits: legs 0 | labels 0 | on-wire 0 | tees 0 | shorts 0  (all 0)
   （只想快速跑產物：`AC_FAST=1`；想看完整走線表：`AC_VERBOSE=1`。）
 - **`scan_figure.py` 預設已經是精簡輸出**（只印 MOS 表、帶 `GAP` 的走線、junction 圓點、
   密度）。要逐條核對走線時才加 `--full`——那是上百行，別隨手加。
-- **不要重讀本檔全文**：照本節走，需要哪節再翻哪節。
+- **不要重讀本檔全文**：先讀 `SOP_QUICK.md`（生圖速查，約本檔 1/10），需要哪節再翻哪節。
 - **不要複製產生器骨架**：`from icproj import Schematic`，新圖只寫五段資料。
 
 **絕不跳過稽核。** 每一道都抓到過我自己看不出來的錯。
