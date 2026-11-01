@@ -286,17 +286,11 @@
                 "children": [
                   {
                     "kind": "span",
-                    "style": "italic",
+                    "style": "bold",
                     "children": [
                       {
-                        "kind": "span",
-                        "style": "bold",
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "DD"
-                          }
-                        ]
+                        "kind": "text",
+                        "value": "DD"
                       }
                     ]
                   }
@@ -876,7 +870,7 @@
           "id": "M2",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 470,
               "y": 310
@@ -1034,7 +1028,7 @@
           "id": "VIN",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 530,
               "y": 310
@@ -1046,7 +1040,7 @@
           "id": "VOL",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 360,
               "y": 270
@@ -1948,8 +1942,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-diff-deg-amp",
   "name": "Differential pair with shunt peaking and RC degeneration",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

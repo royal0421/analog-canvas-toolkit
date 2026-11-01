@@ -960,7 +960,7 @@
           "id": "PVON",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 750,
               "y": 200
@@ -972,7 +972,7 @@
           "id": "PVOP",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 750,
               "y": 260
@@ -1642,8 +1642,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-aic-hw2-cmp_offset_tb",
   "name": "AIC HW2 CMP_OFFSET_TB",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

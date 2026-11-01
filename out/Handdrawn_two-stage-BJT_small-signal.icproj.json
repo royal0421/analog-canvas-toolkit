@@ -508,7 +508,7 @@
           "id": "VOUT",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 480,
               "y": 100
@@ -1308,8 +1308,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-handdrawn-2stage-ss",
   "name": "Two-stage BJT amplifier -- small-signal model",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

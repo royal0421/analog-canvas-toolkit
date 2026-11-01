@@ -21,12 +21,17 @@ VERSION_FILE = os.path.join(HERE, "schema_version.py")
 SITE = "https://analog-canvas.tokenzhang.com"
 IMPORT_RE = re.compile(r'from\s*"\./([A-Za-z0-9_.\-]+\.js)"')
 PROBE = '''import * as m from "./%s";
+import vm from "node:vm";
+// Every export is called blindly, so each call runs under a 1 s timeout: in
+// v58 one export loops forever on ("p", "P") and hung the whole refresh.
+const call = (fn, ...a) =>
+  vm.runInNewContext("f(...a)", { f: fn, a }, { timeout: 1000 });
 const f = Object.keys(m).find(k => {
-  try { const o = m[k]("p", "P"); return o && Array.isArray(o.documents)
+  try { const o = call(m[k], "p", "P"); return o && Array.isArray(o.documents)
         && typeof o.schemaVersion === "number"; } catch { return false; }
 });
 if (!f) { console.log("{}"); process.exit(0); }
-const p = m[f]("p", "P");
+const p = call(m[f], "p", "P");
 const s = Object.keys(m).find(k => m[k] && m[k].safeParse
                                  && m[k].safeParse(p).success);
 // ⚠️ Match the SHAPE and "the runs flatten back to what I passed in".
@@ -49,7 +54,7 @@ const flat = r => {
 const l = Object.keys(m).find(k => {
   try {
     if (typeof m[k] !== "function") return false;
-    const a = m[k]("V_in"), b = m[k]("V_DD");
+    const a = call(m[k], "V_in"), b = call(m[k], "V_DD");
     return a && b && Array.isArray(a.runs) && Array.isArray(b.runs)
            && a.runs.length === 2 && a.runs[1].style === "subscript"
            && flat(a) === "V_in" && flat(b) === "V_DD";
@@ -113,8 +118,12 @@ def main():
             continue
         io.open(os.path.join(tmp, "_probe.mjs"), "w", encoding="utf-8",
                 newline="\n").write(PROBE % nm)
-        r = subprocess.run(["node", "_probe.mjs"], cwd=tmp,
-                           capture_output=True, text=True)
+        try:
+            r = subprocess.run(["node", "_probe.mjs"], cwd=tmp,
+                               capture_output=True, text=True, timeout=120)
+        except subprocess.TimeoutExpired:
+            print("  ! probe of %s timed out; skipped" % nm)
+            continue
         try:
             info = json.loads((r.stdout or "{}").strip() or "{}")
         except ValueError:

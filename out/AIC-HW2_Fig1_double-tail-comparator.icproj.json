@@ -1306,17 +1306,11 @@
                 "children": [
                   {
                     "kind": "span",
-                    "style": "italic",
+                    "style": "bold",
                     "children": [
                       {
-                        "kind": "span",
-                        "style": "bold",
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "DD"
-                          }
-                        ]
+                        "kind": "text",
+                        "value": "DD"
                       }
                     ]
                   }
@@ -1369,17 +1363,11 @@
                 "children": [
                   {
                     "kind": "span",
-                    "style": "italic",
+                    "style": "bold",
                     "children": [
                       {
-                        "kind": "span",
-                        "style": "bold",
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "DD"
-                          }
-                        ]
+                        "kind": "text",
+                        "value": "DD"
                       }
                     ]
                   }
@@ -1700,7 +1688,7 @@
           "id": "M3",
           "symbolId": "pmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 160,
               "y": 100
@@ -1754,7 +1742,7 @@
           "id": "M2",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 280,
               "y": 180
@@ -1802,7 +1790,7 @@
           "id": "M6",
           "symbolId": "pmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 380,
               "y": 280
@@ -1856,7 +1844,7 @@
           "id": "M9",
           "symbolId": "pmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 500,
               "y": 340
@@ -1892,7 +1880,7 @@
           "id": "M11",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 380,
               "y": 420
@@ -1928,7 +1916,7 @@
           "id": "M13",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 580,
               "y": 420
@@ -1996,7 +1984,7 @@
           "id": "P-VIN",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 320,
               "y": 180
@@ -2032,7 +2020,7 @@
           "id": "P-VAN2",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 620,
               "y": 420
@@ -2056,7 +2044,7 @@
           "id": "P-VOP",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 130,
               "y": 390
@@ -2080,7 +2068,7 @@
           "id": "P-VON",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 130,
               "y": 450
@@ -3931,6 +3919,98 @@
               }
             }
           ]
+        },
+        {
+          "id": "r-inv1-a",
+          "netId": "net-inv1-in",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "P-VSN",
+            "pinName": "P"
+          },
+          "legs": [
+            {
+              "id": "route-leg-2dc09d1b4e890753",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "INV1",
+                  "pinName": "A"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-inv1-y",
+          "netId": "net-inv1-out",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "INV1",
+            "pinName": "Y"
+          },
+          "legs": [
+            {
+              "id": "route-leg-6ddfacd3813c9b66",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "P-VOP",
+                  "pinName": "P"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-inv2-a",
+          "netId": "net-inv2-in",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "P-VSP",
+            "pinName": "P"
+          },
+          "legs": [
+            {
+              "id": "route-leg-a72ca582204a8525",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "INV2",
+                  "pinName": "A"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-inv2-y",
+          "netId": "net-inv2-out",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "INV2",
+            "pinName": "Y"
+          },
+          "legs": [
+            {
+              "id": "route-leg-58e74d134e9b48f1",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "P-VON",
+                  "pinName": "P"
+                }
+              }
+            }
+          ]
         }
       ],
       "sourceStatus": "in-sync"
@@ -3939,8 +4019,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-aic-hw2-cmp",
   "name": "AIC HW2 Fig. 1 double-tail comparator",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

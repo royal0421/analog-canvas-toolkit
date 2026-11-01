@@ -39,7 +39,7 @@ f.bjt("Q1", "npn", 300, 210, "none", "Q_1")
 f.bjt("Q2", "npn", 400, 210, "none", "Q_2")
 f.bjt("Q3", "npn", 500, 210, "none", "Q_3")
 for iid, x in (("GNDR", 180), ("GND1", 300), ("GND2", 400), ("GND3", 500)):
-    f.gnd(iid, x, 250)                            # pin on each emitter pin
+    f.gnd(iid, x, 250)                            # 10 under each emitter (v58)
 
 # ---------------------------------------------------------------- junctions
 for jid, net, x, y in (
@@ -62,8 +62,8 @@ f.net("net-gnd-4", [("Q3", "E"), ("GND3", "0")])
 
 # ---------------------------------------------------------------- routes
 T, J = f.term, f.jn
-# V_CC bar sits pin-on-pin on I_REF's top terminal, and every ground sits
-# pin-on-pin under its emitter: neither needs a wire (SOP §3D trick 2).
+# V_CC bar sits pin-on-pin on I_REF's top terminal: no wire (SOP §3D trick
+# 2).  The grounds did too until v58 shortened the emitter lead (see below).
 f.route("r-a-iref", "net-b", T("IREF", "-"), [("to", J("JA"))])
 f.route("r-a-qc", "net-b", J("JA"), [("to", T("QREF", "C"))])
 f.route("r-tie", "net-b", J("JA"), [("bend", 240, 170), ("to", J("JB"))])
@@ -76,6 +76,12 @@ f.route("r-c-b1", "net-c", J("JC1"), [("to", J("JC2"))])
 f.route("r-c-q2", "net-c", J("JC2"), [("to", T("Q2", "C"))])
 f.route("r-c-b2", "net-c", J("JC2"), [("to", J("JC3"))])
 f.route("r-c-q3", "net-c", J("JC3"), [("to", T("Q3", "C"))])
+# v58 symbols pull E in from +30 to +20: each ground that sat pin-on-pin now
+# needs the 10-unit emitter run the old symbol drew itself.
+for q, g, n in (("QREF", "GNDR", 1), ("Q1", "GND1", 2), ("Q2", "GND2", 3),
+                ("Q3", "GND3", 4)):
+    f.route("r-e-%s" % q.lower(), "net-gnd-%d" % n, T(q, "E"),
+            [("to", T(g, "0"))])
 
 # ---------------------------------------------------------------- annotations
 # BJT ink sits on the centre line, so the device labels take the +/-8 offset;
@@ -95,7 +101,9 @@ f.text("note-icopy", 412, 122, "start",
 
 f.build(long_haul={"r-tie",                    # 60: collector node to the bus
                    "r-b-q2", "r-b-q3",         # 100: the mirror base bus
-                   "r-c-b1", "r-c-b2"},        # 100: the shared collector bus
+                   "r-c-b1", "r-c-b2",         # 100: the shared collector bus
+                   # 50: v58 symbols drew 10 less of this run
+                   "r-c-q1", "r-c-q2", "r-c-q3"},
         density_ref=("Q1", 40.2),
         viewbox=(110, 85, 425, 190),
         # plain text on purpose (values / block titles): the

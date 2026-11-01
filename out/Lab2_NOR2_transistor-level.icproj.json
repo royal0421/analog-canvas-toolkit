@@ -506,17 +506,11 @@
                 "children": [
                   {
                     "kind": "span",
-                    "style": "italic",
+                    "style": "bold",
                     "children": [
                       {
-                        "kind": "span",
-                        "style": "bold",
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "DD"
-                          }
-                        ]
+                        "kind": "text",
+                        "value": "DD"
                       }
                     ]
                   }
@@ -682,7 +676,7 @@
           "id": "OUT",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 330,
               "y": 250
@@ -1208,6 +1202,98 @@
               }
             }
           ]
+        },
+        {
+          "id": "r-a1",
+          "netId": "net-a",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "A1",
+            "pinName": "P"
+          },
+          "legs": [
+            {
+              "id": "route-leg-5d3477ce4c27ab9c",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "MP1",
+                  "pinName": "G"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-a2",
+          "netId": "net-a",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "A2",
+            "pinName": "P"
+          },
+          "legs": [
+            {
+              "id": "route-leg-7f3de03d786c7aea",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "MN1",
+                  "pinName": "G"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-b1",
+          "netId": "net-b",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "B1",
+            "pinName": "P"
+          },
+          "legs": [
+            {
+              "id": "route-leg-eecfee54517968f3",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "MP2",
+                  "pinName": "G"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-b2",
+          "netId": "net-b",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "B2",
+            "pinName": "P"
+          },
+          "legs": [
+            {
+              "id": "route-leg-792d7a20c4a7bff2",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "MN2",
+                  "pinName": "G"
+                }
+              }
+            }
+          ]
         }
       ],
       "sourceStatus": "in-sync"
@@ -1216,8 +1302,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-lab2-nor2",
   "name": "Lab 2 NOR2 (transistor level)",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

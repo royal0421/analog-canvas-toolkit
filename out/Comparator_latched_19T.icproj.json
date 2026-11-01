@@ -1366,17 +1366,11 @@
                 "children": [
                   {
                     "kind": "span",
-                    "style": "italic",
+                    "style": "bold",
                     "children": [
                       {
-                        "kind": "span",
-                        "style": "bold",
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "DD"
-                          }
-                        ]
+                        "kind": "text",
+                        "value": "DD"
                       }
                     ]
                   }
@@ -1498,7 +1492,7 @@
           "id": "M1",
           "symbolId": "pmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 120,
               "y": 190
@@ -1516,7 +1510,7 @@
           "id": "M2",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 120,
               "y": 320
@@ -1534,7 +1528,7 @@
           "id": "M3",
           "symbolId": "pmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 210,
               "y": 140
@@ -1570,7 +1564,7 @@
           "id": "M5",
           "symbolId": "pmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 270,
               "y": 190
@@ -1588,7 +1582,7 @@
           "id": "M6",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 270,
               "y": 270
@@ -1624,7 +1618,7 @@
           "id": "M8",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 380,
               "y": 320
@@ -1678,7 +1672,7 @@
           "id": "M10",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 550,
               "y": 320
@@ -1696,7 +1690,7 @@
           "id": "M11",
           "symbolId": "pmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 630,
               "y": 230
@@ -2004,7 +1998,7 @@
           "id": "VINP",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 650,
               "y": 230
@@ -2016,7 +2010,7 @@
           "id": "VOUT",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 960,
               "y": 230
@@ -4390,52 +4384,6 @@
           ]
         },
         {
-          "id": "r-inn",
-          "netId": "net-inn",
-          "start": {
-            "kind": "terminal",
-            "instanceId": "VINN",
-            "pinName": "P"
-          },
-          "legs": [
-            {
-              "id": "route-leg-e82c7fdf39d259a2",
-              "mode": "manual",
-              "to": {
-                "kind": "endpoint",
-                "endpoint": {
-                  "kind": "terminal",
-                  "instanceId": "M7",
-                  "pinName": "G"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "id": "r-inp",
-          "netId": "net-inp",
-          "start": {
-            "kind": "terminal",
-            "instanceId": "VINP",
-            "pinName": "P"
-          },
-          "legs": [
-            {
-              "id": "route-leg-70b0fff6c7f914fe",
-              "mode": "manual",
-              "to": {
-                "kind": "endpoint",
-                "endpoint": {
-                  "kind": "terminal",
-                  "instanceId": "M11",
-                  "pinName": "G"
-                }
-              }
-            }
-          ]
-        },
-        {
           "id": "r-gnd-M6",
           "netId": "net-gnd-1",
           "start": {
@@ -4534,8 +4482,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-comparator-19",
   "name": "Latched comparator with cross-coupled load and inverter output",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

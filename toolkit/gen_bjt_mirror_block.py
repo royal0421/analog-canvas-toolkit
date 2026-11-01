@@ -36,7 +36,7 @@ f = Schematic(
 f.isrc("IREF", 180, 140, "I_REF")
 f.bjt("QREF", "npn", 180, 230, "x", "Q_REF")      # base plate faces right
 f.bjt("Q1", "npn", 320, 230, "none", "Q_1")
-f.gnd("GNDR", 180, 270)                           # pin-on-pin under each E
+f.gnd("GNDR", 180, 270)                           # 10 under each E (v58)
 f.gnd("GND1", 320, 270)
 f.rect("box-circuit", 320, 145, 100, 50)
 f.text("t-circuit", 320, 150, "middle", plain("Circuit"))
@@ -71,6 +71,10 @@ f.route("r-a-qc", "net-b", Jn("JA"), [("to", T("QREF", "C"))])
 f.route("r-tie", "net-b", Jn("JA"), [("bend", 240, 180), ("to", Jn("JB"))])
 f.route("r-b-ref", "net-b", T("QREF", "B"), [("to", Jn("JB"))])
 f.route("r-b-q1", "net-b", Jn("JB"), [("to", T("Q1", "B"))])
+# v58 symbols pull E in from +30 to +20: the emitter that sat pin-on-pin on
+# its ground now needs the 10-unit run the old symbol drew itself.
+f.route("r-e-ref", "net-gnd-1", T("QREF", "E"), [("to", T("GNDR", "0"))])
+f.route("r-e-q1", "net-gnd-2", T("Q1", "E"), [("to", T("GND1", "0"))])
 
 # ---------------------------------------------------------------- annotations
 f.inst_label("IREF", -18, 5, "end")

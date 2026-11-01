@@ -10,7 +10,7 @@ import json
 import os
 import sys
 
-from icproj import Schematic, label_box
+from icproj import Schematic, label_box, mirror_in
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -29,9 +29,11 @@ def load(path, out_svg=None):
     f.instances = doc["instances"]
     for i in f.instances:
         pl = i["placement"]
+        # v58 files store none/horizontal/vertical/both (after rotation);
+        # Schematic.placed keeps the internal pre-rotation "x"/"y"
         f.placed[i["id"]] = (i["symbolId"], pl["position"]["x"],
-                             pl["position"]["y"], pl.get("mirror", "none"),
-                             pl.get("rotation", 0))
+                             pl["position"]["y"]) + mirror_in(
+                                 pl.get("mirror", "none"), pl.get("rotation", 0))
     f.junctions = doc.get("junctions", [])
     f.routes = doc.get("routes", [])
     f.nets = doc.get("nets", [])

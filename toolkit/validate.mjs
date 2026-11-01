@@ -1,5 +1,11 @@
 import { readFileSync } from "node:fs";
 import * as m from "./model.mjs";
+import vm from "node:vm";
+
+// Exports are called blindly while searching; one of them loops forever on
+// a (string, string) argument since v58, so each probe call gets 1 s.
+const call = (fn, ...a) =>
+  vm.runInNewContext("f(...a)", { f: fn, a }, { timeout: 1000 });
 
 // The bundle is minified, so the export NAMES change on every redeploy
 // (2026-08-30: schema `a`, factory `n`; 2026-09-01: schema `s`, factory `i`).
@@ -8,7 +14,7 @@ import * as m from "./model.mjs";
 function findFactory() {
   for (const k of Object.keys(m)) {
     try {
-      const o = m[k]("probe-id", "Probe");
+      const o = call(m[k], "probe-id", "Probe");
       if (o && Array.isArray(o.documents) && typeof o.schemaVersion === "number")
         return k;
     } catch { /* not it */ }

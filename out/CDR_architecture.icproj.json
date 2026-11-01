@@ -1065,7 +1065,7 @@
           "id": "DOUT",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 490,
               "y": 30
@@ -1077,7 +1077,7 @@
           "id": "CK",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 990,
               "y": 160
@@ -2154,8 +2154,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-cdr-blocks",
   "name": "CDR architecture",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

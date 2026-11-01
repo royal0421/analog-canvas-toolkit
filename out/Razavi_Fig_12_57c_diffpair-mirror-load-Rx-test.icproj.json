@@ -349,17 +349,11 @@
                 "children": [
                   {
                     "kind": "span",
-                    "style": "italic",
+                    "style": "bold",
                     "children": [
                       {
-                        "kind": "span",
-                        "style": "bold",
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "SS"
-                          }
-                        ]
+                        "kind": "text",
+                        "value": "SS"
                       }
                     ]
                   }
@@ -652,17 +646,11 @@
                 "children": [
                   {
                     "kind": "span",
-                    "style": "italic",
+                    "style": "bold",
                     "children": [
                       {
-                        "kind": "span",
-                        "style": "bold",
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "DD"
-                          }
-                        ]
+                        "kind": "text",
+                        "value": "DD"
                       }
                     ]
                   }
@@ -877,7 +865,7 @@
           "id": "M5",
           "symbolId": "pmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 250,
               "y": 140
@@ -931,7 +919,7 @@
           "id": "M4",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 350,
               "y": 240
@@ -2073,8 +2061,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-12-57c",
   "name": "Razavi Fig. 12.57(c) — differential pair with PMOS mirror load and V_X test",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

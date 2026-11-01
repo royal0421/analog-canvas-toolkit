@@ -572,7 +572,7 @@
           "id": "VOUT",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 350,
               "y": 150
@@ -999,8 +999,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-8-48",
   "name": "Razavi Fig. 8.48 — non-inverting amplifier with T-network feedback",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

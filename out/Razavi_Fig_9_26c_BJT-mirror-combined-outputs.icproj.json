@@ -346,17 +346,11 @@
                 "children": [
                   {
                     "kind": "span",
-                    "style": "italic",
+                    "style": "bold",
                     "children": [
                       {
-                        "kind": "span",
-                        "style": "bold",
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "CC"
-                          }
-                        ]
+                        "kind": "text",
+                        "value": "CC"
                       }
                     ]
                   }
@@ -551,7 +545,7 @@
           "id": "QREF",
           "symbolId": "npn",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 180,
               "y": 210
@@ -1104,6 +1098,98 @@
               }
             }
           ]
+        },
+        {
+          "id": "r-e-qref",
+          "netId": "net-gnd-1",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "QREF",
+            "pinName": "E"
+          },
+          "legs": [
+            {
+              "id": "route-leg-355d3c35129fd84e",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "GNDR",
+                  "pinName": "0"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-e-q1",
+          "netId": "net-gnd-2",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "Q1",
+            "pinName": "E"
+          },
+          "legs": [
+            {
+              "id": "route-leg-8555cb84306e6af7",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "GND1",
+                  "pinName": "0"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-e-q2",
+          "netId": "net-gnd-3",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "Q2",
+            "pinName": "E"
+          },
+          "legs": [
+            {
+              "id": "route-leg-dc9539826e513c91",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "GND2",
+                  "pinName": "0"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-e-q3",
+          "netId": "net-gnd-4",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "Q3",
+            "pinName": "E"
+          },
+          "legs": [
+            {
+              "id": "route-leg-63643008b75b687f",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "GND3",
+                  "pinName": "0"
+                }
+              }
+            }
+          ]
         }
       ],
       "sourceStatus": "in-sync"
@@ -1112,8 +1198,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-9-26c",
   "name": "Razavi Fig. 9.26(c) — BJT current mirror with combined outputs",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

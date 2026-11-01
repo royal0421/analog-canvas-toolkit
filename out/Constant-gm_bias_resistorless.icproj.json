@@ -46,17 +46,11 @@
                 "children": [
                   {
                     "kind": "span",
-                    "style": "italic",
+                    "style": "bold",
                     "children": [
                       {
-                        "kind": "span",
-                        "style": "bold",
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "DD"
-                          }
-                        ]
+                        "kind": "text",
+                        "value": "DD"
                       }
                     ]
                   }
@@ -90,7 +84,7 @@
           "id": "P1",
           "symbolId": "pmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 150,
               "y": 140
@@ -108,7 +102,7 @@
           "id": "P2",
           "symbolId": "pmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 230,
               "y": 140
@@ -144,7 +138,7 @@
           "id": "N1",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 230,
               "y": 220
@@ -180,7 +174,7 @@
           "id": "N3",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 150,
               "y": 280
@@ -1162,8 +1156,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-constgm-resistorless",
   "name": "Constant-gm bias without a resistor",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

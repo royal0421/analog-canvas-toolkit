@@ -169,17 +169,11 @@
                   "children": [
                     {
                       "kind": "span",
-                      "style": "italic",
+                      "style": "bold",
                       "children": [
                         {
-                          "kind": "span",
-                          "style": "bold",
-                          "children": [
-                            {
-                              "kind": "text",
-                              "value": "CC"
-                            }
-                          ]
+                          "kind": "text",
+                          "value": "CC"
                         }
                       ]
                     }
@@ -481,7 +475,7 @@
           "id": "VOUT",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 470,
               "y": 180
@@ -710,6 +704,29 @@
           ]
         },
         {
+          "id": "r-base",
+          "netId": "net-base",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "OA",
+            "pinName": "OUT"
+          },
+          "legs": [
+            {
+              "id": "route-leg-bbfab40a6445e7d9",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "Q1",
+                  "pinName": "B"
+                }
+              }
+            }
+          ]
+        },
+        {
           "id": "r-x-e",
           "netId": "net-x",
           "start": {
@@ -864,8 +881,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-8-69",
   "name": "Razavi Fig. 8.69 — op amp linearising a common-emitter stage",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

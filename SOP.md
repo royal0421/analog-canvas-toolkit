@@ -15,7 +15,7 @@
 
 ```
 audits: legs 0 | labels 0 | on-wire 0 | tees 0 | shorts 0  (all 0)
-  schema: VALID (v48)
+  schema: VALID (v58)
   labels: OK (3 declared plain)
   png: preview_xxx.png (1770x895)
 ```
@@ -38,12 +38,12 @@ audits: legs 0 | labels 0 | on-wire 0 | tees 0 | shorts 0  (all 0)
 
 | 要什麼 | 去哪裡拿 |
 |---|---|
-| 符號腳位座標、外觀 | `toolkit/sym/*.json`，**67 個已全數快取**（2026-09-11 重抓）。
+| 符號腳位座標、外觀 | `toolkit/sym/*.json`，**110 個**（schema v58，2026-11-01 由上游 TS 原始碼解析，見 §2C）。
 Analog Canvas 是活的專案、上游會持續新增符號，所以把 `sym/` 當快取看：
 **要用的符號不在裡面 → 跑 `python fetch_symbols.py`（約 4 秒），不要一個一個手動找** |
 | 渲染／腳位變換的實作 | 同 repo 的 `apps/editor/src/canvas/canvas-geometry.ts`、`packages/derived/src/*.ts`；
 幾何 ground truth 在 `fixtures/visual-reference/razavi-reference-v1/*.json`（**先查 fixture，不要逐檔翻原始碼**） |
-| 專案檔 schema（**v48**，2026-09-11 實測） | `toolkit/model.mjs`。**網站會改版，chunk 檔名每次都不一樣**：不要手動找，跑 `python refresh_model.py`（它會走完 bundle、用「執行看看」挑出 model chunk，並告訴你新的 schemaVersion）。版本一落後，匯入就可能整張進不去。 |
+| 專案檔 schema（**v58**，2026-11-01） | `toolkit/model.mjs`。**網站會改版，chunk 檔名每次都不一樣**：不要手動找，跑 `python refresh_model.py`（它會走完 bundle、用「執行看看」挑出 model chunk，並告訴你新的 schemaVersion）。版本一落後，匯入就可能整張進不去。 |
 | 標籤 RichText 產生器 | 同上，匯出名 `Ws`（`m.f`） |
 | 樣式設定檔 | bundle `dist-DMiczVQI.js` 內 `razavi-textbook-v1` 的 typography |
 | 別人怎麼畫的 | `GET /api/gallery` 列表 →`GET /api/gallery/{id}` 回傳完整 `projectText` |
@@ -52,7 +52,7 @@ Analog Canvas 是活的專案、上游會持續新增符號，所以把 `sym/` �
 
 ---
 
-## 2. 符號硬事實（rotation 0；`mirror:"x"` 把 x 取負）
+## 2. 符號硬事實（rotation 0；`mirror:"x"` 把 x 取負；**v58 腳位，見 §2C**）
 
 | symbolId | 腳位（相對中心） | 備註 |
 |---|---|---|
@@ -61,7 +61,7 @@ Analog Canvas 是活的專案、上游會持續新增符號，所以把 `sym/` �
 | `resistor` | `1`(0,−20) `2`(0,+20) | 墨跡 x −4.99~+5.37 ⇒ **標籤 ±13**；本體 40 高 |
 | `capacitor` | `1`(0,−20) `2`(0,+20) | 極板 y ∓3.23、半寬 8.05 ⇒ 直立時標籤 ±16 |
 | `ground` | `0`(0,−10) | 本體向下延伸到 +17 |
-| `port` / `port-filled` | `P`(+10,0) | 圈圈在 −7.09；輸出端要 `mirror:"x"` |
+| `port` / `port-filled` | `P`(0,0) | 圈圈不動（v58 前腳位在 +10）；輸出端要 `mirror:"x"` |
 | `vdd-port` | `P`(0,+20) | 有電源軌就不要用它 |
 | `current-source` | `+`(0,−20) `−`(0,+20) | 箭頭朝下 |
 | `voltage-amplifier` | IN(−40,0) OUT(+40,0) | 三角形，`-23.63,±28.62 → 23.63,0` |
@@ -71,7 +71,8 @@ Analog Canvas 是活的專案、上游會持續新增符號，所以把 `sym/` �
 
 ### 轉 90 度（橫放的電容／電阻）
 
-`rotation` 的合法值是 **0 / 90 / 180 / 270**，`mirror` 只有 `none` / `x`。
+`rotation` 的合法值是 **0 / 90 / 180 / 270**。generator 裡的 `mirror` 只用 `none` / `x`
+（toolkit 內部語意），寫檔時 `icproj` 會轉成 v58 的 enum（見 §2C）。
 腳位變換 = **先鏡射、再旋轉**，公式照 repo 自己的 `rotatePointByDegrees`：
 
 ```
@@ -94,13 +95,13 @@ y' = x·sin θ + y·cos θ
 > 3. 還是沒有 → **停下來告訴使用者缺什麼**，不要用近似符號代替、也不要自繪幾何
 
 ```bash
-python toolkit/fetch_symbols.py           # 只補缺的
-python toolkit/fetch_symbols.py --force   # 上游改過符號時整批重抓
+python toolkit/fetch_symbols.py           # 補缺的，並列出內容已變的符號
+python toolkit/fetch_symbols.py --force   # 上游改過符號時整批覆寫
+python toolkit/fetch_symbols.py --check   # 只列 missing/changed，不寫檔
 ```
 
-它做三件事：列上游 `packages/symbols/assets/razavi-v1/*.symbol.json`、
-平行下載成 `sym/<id>.json`、再拿編輯器的 `razavi-catalog.generated.ts`
-交叉比對「catalog 有引用但本地沒有檔案」的 id。
+v58 起上游**沒有逐檔資產了**，做法見 §2C「符號來源」。（v48 以前是列
+`packages/symbols/assets/razavi-v1/*.symbol.json` 再逐檔下載。）
 
 **上游 = repo `main`，且與正式站 bundle 一致**（2026-08-29 雙向 diff 為空，
 逐檔位元相同），所以抓 repo 就等於抓正式站，不必碰站上的 Agent／MCP。
@@ -244,6 +245,56 @@ f.route("r-x-in", "net-x", T("OA", "IN-"), [("bend", 250, 160),
 
 `fetch_symbols.py` 會一併核對 catalog：`sym/` 內多出來的 `vdd.json` 上游已經沒有，
 但 `vdd-port` 還在，我們用的 21 個 symbolId **全部在部署站的 bundle 裡查得到**。
+
+## 2C. schema v58 改了什麼（2026-11-01，網站又改版）
+
+> 一次從 v48 跳到 **v58**。json 本身只動兩處；痛點又是符號（29 個腳位移動）。
+
+| 改了什麼 | 怎麼應對 |
+|---|---|
+| `placement.mirror` 的 enum 變成 `none` / `horizontal` / `vertical` / `both`，而且是**旋轉之後**才鏡射 | generator 照舊寫 `"x"`（內部語意＝先把本地 x 取負再旋轉）。`icproj.mirror_out(m, rot)` 寫檔時轉換：`x` 在 0/180 度＝`horizontal`、在 90/270 度＝`vertical`。讀檔一律過 `icproj.mirror_in(m, rot)`（`both`＝旋轉 +180）；`place()`、`xf()`、`netlist_bench.py`（參考圖 vs 自動排版的 mirror 比對）、`render_project.py` 都已改用它。序列化是對**副本**轉換，`self.instances` 仍是 `"x"`，稽核與 autoplace 不受影響。 |
+| 頂層 `simulationSetups` 拿掉 | 改寫 `simulationFolders: []` |
+| 標籤產生器不再把 DD/SS/CC/EE/BB 的下標包斜體 | `icproj.ITALIC_SUBSCRIPTS = set()`，下標一律正體粗 |
+| `ndmos` / `pdmos` 變成真的符號（Extended Devices） | 從 `Schematic.UNPLACEABLE` 移除；`vdd` 仍禁用 |
+| bundle 裡有一個 export 拿 `("p","P")` 呼叫會**無限迴圈** | `refresh_model.py` 的探針、`validate.mjs`、`check_labels.mjs` 的搜尋都改成 `vm.runInNewContext(..., {timeout:1000})`；探針子程序另有 120 秒上限，逾時跳過該 chunk |
+
+### 符號來源
+
+上游刪掉了 `packages/symbols/assets/razavi-v1/`。執行期的符號庫在
+`packages/symbols/src/builtins.ts`：`[...razaviLibrarySymbols, ...expandedDeviceSymbols]`。
+
+- `razaviLibrarySymbols`＝`razavi-catalog.generated.ts` 的 `razaviCatalogSymbols`，
+  依 `razaviSymbolCatalogEntries` 的順序、用 `isRazaviLibraryCatalogEntry` 過濾
+  （`reviewStatus=="reviewed"`，且 `provenance=="house"` 時不得有 `visualAuthority`，
+  否則 `visualAuthority.kind=="razavi-reference-v1"`）。
+- `expandedDeviceSymbols`＝`expanded-components.generated.ts` 的 `expandedComponentSymbols`。
+
+`fetch_symbols.py` 抓這兩個 `.ts` 原始檔，用小型 tokenizer 把 JS 物件字面值轉成資料
+（裸 key 補引號、去尾逗號與註解，遇到識別字／展開／樣板字串等非字面值就丟例外），
+**絕不執行下載來的程式碼**，再照舊格式寫 `sym/<id>.json`（`indent=1`、
+`ensure_ascii=False`、結尾換行、LF）。v58 共 **110** 個符號。
+
+### ⚠️ 29 個符號的腳位移動了（部署站與上游一致）
+
+| 符號 | 變化 |
+|---|---|
+| `npn` / `pnp` | B −40→−30；C/E ±30→±20 |
+| `port` / `port-filled` | P (10,0)→(0,0)，圈圈不動 |
+| opamp／comparator／voltage-amplifier 全系列 | IN 的 x −30→−40；差動 opamp 的 OUT 也動了 |
+| `and` / `or` / `inverter` / `buffer` / `xor` | Y 往內收 10 |
+| `nand` | A/B −40→−30 |
+| `xfmr`、`tcoil` | 往內收 10 |
+
+**修法鐵則：使用者核可過的樣子不准變——元件本體一律留在原位。**
+
+1. 以前腳位重合（pin-on-pin、沒有走線）、現在分開了 → 補一條兩腳位之間的短走線
+   （例：BJT 的 E 到 ground、NAND/NOR 的埠到閘極、Fig 8.69 的 `OA.OUT`→`Q_1.B`、
+   HW2 比較器的反相器 A/Y 到埠）。
+2. 以前分開、現在重合 → 刪掉那條零長度 route（Fig 5.170 的 `r-in`、19T 比較器的 `r-inn`／`r-inp`）。
+3. 某段腿從 40 變 50 → 把 route id 加進 `long_haul`，註解寫
+   `50: v58 symbols drew 10 less of this run`。
+
+`autoplace.py` 不必改：它本來就把埠本體放在節點 ±30。
 
 ## 3A. 絕對排版規則（**優先用這個，不需要原圖**）
 
@@ -1606,14 +1657,13 @@ strokes: { wire:1.6, symbol:1.6, normal:1.6, emphasis:2.4,
 
 ```python
 Rs(t)  = italic(bold(t))                                  # 主字母
-Vs(t)  = subscript(italic(bold(t)))  if t.lower() in {dd,ss,cc,ee,bb}
-         subscript(bold(t))          otherwise
+Vs(t)  = subscript(bold(t))          # v58：一律正體（v48 以前 dd/ss/cc/ee/bb 是斜體）
 name(base, sub) = {"runs": [Rs(base)] + [Vs(sub)]}
 ```
 
 **為什麼**：SVG 渲染器進到 subscript 時硬寫 `{italic:false, bold:繼承}`，只吃**下標內部**的 italic span。
 所以 `italic(bold([V, subscript(DD)]))`（italic 在外）會讓 DD 變正體 —— 這是實際踩過的坑。
-`V_DD` 在特例清單內 → 整個斜體；`M_REF`／`V_out`／`V_b`／`M_1` 不在 → 下標正體粗（與課本一致）。
+v48 以前 `V_DD` 在特例清單內 → 下標斜體；v58 的產生器已拿掉這個特例，`ITALIC_SUBSCRIPTS` 現在是空集合，所有下標正體粗。
 
 ### 🚫 顏色：**文字上不了色，所以整張圖不要用顏色**（2026-08-30 實測到底）
 

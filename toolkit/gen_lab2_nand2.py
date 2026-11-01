@@ -2,8 +2,8 @@
 """Lab 2 NAND2, transistor level: M_P1 || M_P2 pull-up, M_N1 + M_N2 pull-down.
 
 House style for logic gates (user's correction, 2026-08-30): a signal driving
-several gates gets ITS OWN PORT AT EACH GATE, pin-on-pin with the gate pin so
-there is no wire at all -- not one port with long risers.  That is how the
+several gates gets ITS OWN PORT AT EACH GATE, right at the gate pin (a
+10-unit stub since the v58 port symbol) -- not one port with long risers.  That is how the
 source figure prints it, and it keeps the drawing narrow.
 """
 import os
@@ -23,7 +23,7 @@ for iid, kind, cx, cy, lab in (("MP1", "pmos", 170, 140, "M_P1"),
 f.gnd("GND", 240, 320)
 for iid, x, y in (("A1", 140, 140), ("A2", 200, 210),
                   ("B1", 260, 140), ("B2", 200, 270)):
-    f.port(iid, x, y)               # pin lands exactly on the gate pin
+    f.port(iid, x, y)               # circle 10 left of the gate pin
 f.port("OUT", 330, 170, mirror="x")
 
 RAIL = [160, 180, 300, 320]
@@ -55,7 +55,11 @@ f.route("r-o4", "net-out", Jn("JMP2"), [("to", T("MP2", "D"))])
 f.route("r-o5", "net-out", Jn("JMP2"), [("to", T("OUT", "P"))])
 f.route("r-mid", "net-mid", T("MN1", "S"), [("to", T("MN2", "D"))])
 f.route("r-g", "net-gnd-1", T("MN2", "S"), [("to", T("GND", "0"))])
-# A1/A2 and B1/B2 sit pin-on-pin on their gates: no routes needed.
+# v58 moved the port pin from (10,0) to the circle's centre line (0,0), so
+# each port body stays where it was and draws a 10-unit run to its gate.
+for port, mos, net in (("A1", "MP1", "net-a"), ("A2", "MN1", "net-a"),
+                       ("B1", "MP2", "net-b"), ("B2", "MN2", "net-b")):
+    f.route("r-%s" % port.lower(), net, T(port, "P"), [("to", T(mos, "G"))])
 
 for tid, nm, net, ports in (("t-a1", "A", "net-a", ["A1"]),
                             ("t-a2", "A", "net-a", ["A2"]),

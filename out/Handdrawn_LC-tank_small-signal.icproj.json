@@ -703,7 +703,7 @@
           "id": "PV1",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 270,
               "y": 210
@@ -715,7 +715,7 @@
           "id": "VOUT",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 420,
               "y": 300
@@ -1320,8 +1320,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-handdrawn-lc-tank-ss",
   "name": "LC tank small-signal model with g_m1 V_1 output stage",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

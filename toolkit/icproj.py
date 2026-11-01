@@ -77,7 +77,9 @@ def hid(*p):
 
 
 # --- the editor's own RichText builders (packages/model), verbatim ----------
-ITALIC_SUBSCRIPTS = {"dd", "ss", "cc", "ee", "bb"}
+# v58: the builder no longer slants any subscript (it used to wrap DD/SS/CC/
+# EE/BB in italic); every subscript is upright bold now.
+ITALIC_SUBSCRIPTS = set()
 _SUB_RE = re.compile(r"^(.+?)_(?:\{(.+)\}|(.+))$", re.U)
 
 
@@ -175,14 +177,52 @@ def prims(sym_id, variant):
 _NUM_RE = re.compile(r"-?\d+(?:\.\d+)?")
 
 
+# --- placement.mirror ------------------------------------------------------
+# The toolkit keeps the pre-v58 meaning internally: "x" negates the LOCAL x
+# before rotation ("y" negates local y).  Schema v58 changed the enum to
+# none/horizontal/vertical/both, applied AFTER rotation in placed space.
+# "x" before a 0/180 rotation is the same picture as "horizontal" after it;
+# before 90/270 it is "vertical".  "both" is a 180-degree turn.
+def mirror_out(m, rot):
+    """Internal mirror -> the v58 schema value (what the file stores)."""
+    if m in (None, "none"):
+        return "none"
+    if m in ("horizontal", "vertical", "both"):
+        return m
+    side = rot % 180 == 0
+    if m == "x":
+        return "horizontal" if side else "vertical"
+    if m == "y":
+        return "vertical" if side else "horizontal"
+    raise ValueError("unknown mirror %r" % (m,))
+
+
+def mirror_in(m, rot):
+    """v58 (or internal) mirror -> (internal mirror, rotation)."""
+    if m in (None, "none", "x", "y"):
+        return (m or "none"), rot
+    if m == "both":
+        return "none", (rot + 180) % 360
+    side = rot % 180 == 0
+    if m == "horizontal":
+        return ("x" if side else "y"), rot
+    if m == "vertical":
+        return ("y" if side else "x"), rot
+    raise ValueError("unknown mirror %r" % (m,))
+
+
 def xf(px, py, mirror, rotation):
     """Local symbol point -> placed point: mirror first, then rotation.
+
+    ``mirror`` is the internal value ("x"/"y", before rotation); a v58 value
+    (horizontal/vertical/both, after rotation) is converted by mirror_in().
 
     Rotation follows the repo's own rotatePointByDegrees (canvas-geometry.ts):
     x' = x*cos - y*sin, y' = x*sin + y*cos.  At 90 degrees that sends pin "1"
     of a passive (0,-20) to the RIGHT and pin "2" to the LEFT, which is how a
     horizontal capacitor comes out.
     """
+    mirror, rotation = mirror_in(mirror, rotation)
     if mirror == "x":
         px = -px
     elif mirror == "y":
@@ -365,14 +405,15 @@ class Schematic(object):
     # Instance reference" -- these must NOT carry `reference`.
     POWER_MARKERS = {"ground", "vdd-port"}
 
-    UNPLACEABLE = {"vdd": "use `vdd-port` (same pin at (0,+20))",
-                   "ndmos": "no geometry anywhere; needs a PDK",
-                   "pdmos": "no geometry anywhere; needs a PDK"}
+    # v58: ndmos/pdmos became real symbols (Extended Devices), so only the
+    # unregistered `vdd` remains.
+    UNPLACEABLE = {"vdd": "use `vdd-port` (same pin at (0,+20))"}
 
     def place(self, iid, symbol_id, x, y, mirror="none", extra=None,
               rotation=0):
         assert x % 10 == 0 and y % 10 == 0, (iid, x, y)
         assert rotation in (0, 90, 180, 270), rotation
+        mirror, rotation = mirror_in(mirror, rotation)
         if symbol_id in self.UNPLACEABLE:
             raise ValueError(
                 "symbol %r is not placeable -- the site's catalog has no entry "
@@ -414,6 +455,14 @@ class Schematic(object):
         self.instances.append(inst)
         self.placed[iid] = (symbol_id, x, y, mirror, rotation)
         return iid
+
+    @staticmethod
+    def _instance_out(inst):
+        pl = inst["placement"]
+        out = dict(inst)
+        out["placement"] = dict(pl, mirror=mirror_out(pl.get("mirror", "none"),
+                                                     pl.get("rotation", 0)))
+        return out
 
     def passive(self, iid, kind, x, y, label, rotation=0, extra_style=None):
         """kind: 'resistor' | 'capacitor' | 'inductor'.
@@ -776,7 +825,9 @@ class Schematic(object):
             "constraints": [],
             "drafting": {"objects": self.drafting},
             "id": "document-main",
-            "instances": self.instances,
+            # serialize a COPY: self.instances keeps the internal "x" that
+            # the audits and autoplace read; the file gets the v58 enum
+            "instances": [self._instance_out(i) for i in self.instances],
             "junctions": self.junctions,
             "layoutGroups": [],
             "mosBulkDefaults": {"nmosNetId": self.nmos_bulk_net},
@@ -810,9 +861,9 @@ class Schematic(object):
             "id": self.pid,
             "name": self.pname,
             "schemaVersion": SCHEMA_VERSION,
-            # schema 48 (2026-09-11) made simulationSetups a required array;
-            # the toolkit never defines a setup, so an empty list is correct.
-            "simulationSetups": [],
+            # schema 58 replaced the top-level simulationSetups with
+            # simulationFolders; the toolkit never defines one -> [].
+            "simulationFolders": [],
             "source": {"dialect": "none", "entry": None, "files": [],
                        "sourcePolicy": "copy"},
             "structureRevision": 0,
@@ -1779,8 +1830,9 @@ class Schematic(object):
         for iid, (sid, x, y, mirror, rot) in self.placed.items():
             # honour the instance colour, or the preview lies about what the
             # site will draw (SOP 8 rule 3)
-            P.append('<g transform="translate(%g,%g) rotate(%g) scale(%g,1)"%s>'
+            P.append('<g transform="translate(%g,%g) rotate(%g) scale(%g,%g)"%s>'
                      % (x, y, rot, -1 if mirror == "x" else 1,
+                        -1 if mirror == "y" else 1,
                         ' stroke="%s"' % fg[iid] if fg.get(iid) else ""))
             for pr in prims(sid, variant.get(iid)):
                 w = (2.4 if pr.get("style", {}).get("strokeRole") == "emphasis"

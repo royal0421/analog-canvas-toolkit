@@ -925,7 +925,7 @@
           "id": "VOUT",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 320,
               "y": 140
@@ -1982,8 +1982,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-14-36b",
   "name": "Razavi Fig. 14.36(b) — biquad from a difference amp and two integrators",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

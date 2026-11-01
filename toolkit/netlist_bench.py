@@ -24,6 +24,7 @@ import contextlib
 
 import netlist_io as N
 import autoplace as A
+import icproj
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, os.pardir, "out")
@@ -41,12 +42,12 @@ def wire_len(doc, placed=None):
     pos = {}
     for i in doc["instances"]:
         pl = i["placement"]
-        pos[i["id"]] = (pl["position"]["x"], pl["position"]["y"],
-                        pl.get("mirror", "none"), pl.get("rotation", 0),
-                        i["symbolId"], i.get("symbolVariantId"))
+        pos[i["id"]] = (pl["position"]["x"], pl["position"]["y"])
+        pos[i["id"]] += icproj.mirror_in(pl.get("mirror", "none"),
+                                         pl.get("rotation", 0))
+        pos[i["id"]] += (i["symbolId"], i.get("symbolVariantId"))
     jn = {j["id"]: (j["position"]["x"], j["position"]["y"])
           for j in doc["junctions"]}
-    import icproj
 
     def xy(ep):
         if ep["kind"] == "junction":
@@ -91,13 +92,13 @@ def bend_count(doc):
     pos = {}
     for i in doc["instances"]:
         pl = i["placement"]
-        pos[i["id"]] = (pl["position"]["x"], pl["position"]["y"],
-                        pl.get("mirror", "none"), pl.get("rotation", 0),
-                        i["symbolId"])
+        pos[i["id"]] = (pl["position"]["x"], pl["position"]["y"])
+        pos[i["id"]] += icproj.mirror_in(pl.get("mirror", "none"),
+                                         pl.get("rotation", 0))
+        pos[i["id"]] += (i["symbolId"],)
     variant = {i["id"]: i.get("symbolVariantId") for i in doc["instances"]}
     jn = {j["id"]: (j["position"]["x"], j["position"]["y"])
           for j in doc["junctions"]}
-    import icproj
 
     def pin_xy(iid, name):
         if iid not in pos:
@@ -256,8 +257,11 @@ def ref_placement(stem):
         if i["symbolId"] in N.MARKERS:
             continue
         pl = i["placement"]
+        # the file stores the v58 enum, `got` the internal one: compare both
+        # in the internal form (mirror_in) or every mirrored part "differs"
         out[i["id"]] = (pl["position"]["x"], pl["position"]["y"],
-                        pl.get("mirror", "none"))
+                        icproj.mirror_in(pl.get("mirror", "none"),
+                                         pl.get("rotation", 0))[0])
     return out
 
 
@@ -319,8 +323,9 @@ def extent(pos):
 def run_one(stem, full=False, verbose=False):
     deck = os.path.join(HERE, "decks", stem + ".cir")
     buf = io.StringIO()
-    if not os.path.isdir(AUTO):
-        os.makedirs(AUTO)
+    # exist_ok: bench_par.py runs this in parallel workers, and on a fresh
+    # checkout two of them race to create the directory
+    os.makedirs(AUTO, exist_ok=True)
     if full:
         os.environ.pop("AC_FAST", None)
     else:
@@ -342,7 +347,8 @@ def run_one(stem, full=False, verbose=False):
             continue
         pl = i["placement"]
         got[i["id"]] = (pl["position"]["x"], pl["position"]["y"],
-                        pl.get("mirror", "none"))
+                        icproj.mirror_in(pl.get("mirror", "none"),
+                                         pl.get("rotation", 0))[0])
     ref = ref_placement(stem)
     pl_s, mi_s = score(ref, got)
     refdoc = json.load(open(os.path.join(ROOT, stem + ".icproj.json"),

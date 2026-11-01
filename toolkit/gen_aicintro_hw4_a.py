@@ -88,6 +88,7 @@ for tid, x, y, align, label, owner in (
     f.text(tid, x, y, align, label, owner)
 
 f.build(long_haul={
+            "r-o-port",  # 50: v58 symbols drew 10 less of this run
             "r-o-jc",      # 60: room for the M_1 label between drain and C_L
         },
         rail_ends={"jvdd-start", "jvdd-end"},

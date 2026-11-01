@@ -69,7 +69,9 @@ T, J = f.term, f.jn
 f.route("r-out-rc", "net-out", T("R500", "2"), [("to", J("JOUT"))])
 f.route("r-out-c", "net-out", J("JOUT"), [("to", T("Q1", "C"))])
 f.route("r-out-port", "net-out", J("JOUT"), [("to", T("VOUT", "P"))])
-# OA.OUT and Q_1.B are coincident at (380,220) -- no wire needed.
+# OA.OUT and Q_1.B were coincident until v58 moved the base pin from -40 to
+# -30: the body stays put and the 10 units the old symbol drew become a wire.
+f.route("r-base", "net-base", T("OA", "OUT"), [("to", T("Q1", "B"))])
 f.route("r-x-e", "net-x", T("Q1", "E"), [("to", J("JX"))])
 f.route("r-x-re", "net-x", J("JX"), [("to", T("R100", "1"))])
 # Feedback X -> IN-: left along the emitter row, then straight up.
@@ -100,6 +102,7 @@ for tid, x, y, align, label, owner in (
 f.build(long_haul={
             "r-x-fb",      # node X back to the inverting input, as in the book
             "r-in",        # the source's + terminal across to the + input
+            "r-out-port",  # 50: v58 symbols drew 10 less of this run
         },
         extra_evidence=[],
         density_ref=("Q1", 35.6),

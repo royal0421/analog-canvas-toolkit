@@ -1006,17 +1006,11 @@
                 "children": [
                   {
                     "kind": "span",
-                    "style": "italic",
+                    "style": "bold",
                     "children": [
                       {
-                        "kind": "span",
-                        "style": "bold",
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "DD"
-                          }
-                        ]
+                        "kind": "text",
+                        "value": "DD"
                       }
                     ]
                   }
@@ -1161,7 +1155,7 @@
           "id": "M7",
           "symbolId": "pmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 430,
               "y": 140
@@ -1197,7 +1191,7 @@
           "id": "M5",
           "symbolId": "pmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 430,
               "y": 250
@@ -1233,7 +1227,7 @@
           "id": "M3",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 430,
               "y": 340
@@ -1269,7 +1263,7 @@
           "id": "M9",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 430,
               "y": 400
@@ -1323,7 +1317,7 @@
           "id": "M2",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 310,
               "y": 340
@@ -1479,7 +1473,7 @@
           "id": "VOUTL",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 440,
               "y": 290
@@ -2940,8 +2934,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-aicintro-midterm-fc",
   "name": "AIC intro 115-1 midterm Fig. 1 - folded-cascode op amp",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

@@ -406,17 +406,11 @@
                 "children": [
                   {
                     "kind": "span",
-                    "style": "italic",
+                    "style": "bold",
                     "children": [
                       {
-                        "kind": "span",
-                        "style": "bold",
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "DD"
-                          }
-                        ]
+                        "kind": "text",
+                        "value": "DD"
                       }
                     ]
                   }
@@ -642,7 +636,7 @@
           "id": "M2",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 420,
               "y": 230
@@ -660,7 +654,7 @@
           "id": "M3",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 260,
               "y": 230
@@ -772,7 +766,7 @@
           "id": "VIN2",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 470,
               "y": 230
@@ -784,7 +778,7 @@
           "id": "VOUTL",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 260,
               "y": 180
@@ -1873,8 +1867,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-10-35a",
   "name": "Razavi Fig. 10.35(a) — differential pair with diode-connected load",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

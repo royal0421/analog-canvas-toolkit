@@ -710,8 +710,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-8-57",
   "name": "Razavi Fig. 8.57 — op amp with a diode in the feedback path",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

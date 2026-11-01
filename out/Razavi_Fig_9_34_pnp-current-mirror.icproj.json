@@ -526,17 +526,11 @@
                 "children": [
                   {
                     "kind": "span",
-                    "style": "italic",
+                    "style": "bold",
                     "children": [
                       {
-                        "kind": "span",
-                        "style": "bold",
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "CC"
-                          }
-                        ]
+                        "kind": "text",
+                        "value": "CC"
                       }
                     ]
                   }
@@ -787,7 +781,7 @@
           "id": "QREF1",
           "symbolId": "npn",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 170,
               "y": 250
@@ -837,7 +831,7 @@
           "id": "QREF2",
           "symbolId": "pnp",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 370,
               "y": 150
@@ -888,7 +882,7 @@
           "id": "VOUT",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 540,
               "y": 200
@@ -1745,8 +1739,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-9-34",
   "name": "Razavi Fig. 9.34 — pnp current mirror driven by an npn mirror",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

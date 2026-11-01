@@ -3,6 +3,12 @@
 // Usage: node check_labels.mjs <project.icproj.json>
 import { readFileSync } from "node:fs";
 import * as m from "./model.mjs";
+import vm from "node:vm";
+
+// Exports are called blindly while searching; one of them loops forever on
+// a string argument since v58, so each probe call gets 1 s.
+const call = (fn, ...a) =>
+  vm.runInNewContext("f(...a)", { f: fn, a }, { timeout: 1000 });
 
 // The bundle is minified: the export NAME of the builder changes on every
 // redeploy, so find it by running it (2026-09-01: `f` was gone).
@@ -21,7 +27,7 @@ function findBuilder() {
       // (2026-09-04: it had been failing since the v36 redeploy).  Test the
       // SHAPE plus "the runs flatten back to what I passed in", which is true
       // of any version.
-      const r = m[k]("M_1");
+      const r = call(m[k], "M_1");
       if (r && Array.isArray(r.runs) && r.runs.length === 2
           && r.runs[0].style === "italic" && r.runs[1].style === "subscript"
           && toName(r) === "M_1")

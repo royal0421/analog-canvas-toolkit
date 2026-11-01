@@ -697,17 +697,11 @@
                   "children": [
                     {
                       "kind": "span",
-                      "style": "italic",
+                      "style": "bold",
                       "children": [
                         {
-                          "kind": "span",
-                          "style": "bold",
-                          "children": [
-                            {
-                              "kind": "text",
-                              "value": "CC"
-                            }
-                          ]
+                          "kind": "text",
+                          "value": "CC"
                         }
                       ]
                     }
@@ -1039,7 +1033,7 @@
           "id": "VOUT",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 620,
               "y": 210
@@ -1465,29 +1459,6 @@
           ]
         },
         {
-          "id": "r-in",
-          "netId": "net-in",
-          "start": {
-            "kind": "terminal",
-            "instanceId": "VIN",
-            "pinName": "P"
-          },
-          "legs": [
-            {
-              "id": "route-leg-523634e7b45076b5",
-              "mode": "manual",
-              "to": {
-                "kind": "endpoint",
-                "endpoint": {
-                  "kind": "terminal",
-                  "instanceId": "C1",
-                  "pinName": "2"
-                }
-              }
-            }
-          ]
-        },
-        {
           "id": "r-c1r",
           "netId": "net-c1r",
           "start": {
@@ -1893,8 +1864,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-5-170",
   "name": "Razavi Fig. 5.170 — two-stage BJT amplifier",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

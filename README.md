@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/royal0421/analog-canvas-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/royal0421/analog-canvas-toolkit/actions/workflows/ci.yml)
 ![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)
-![Analog Canvas schema](https://img.shields.io/badge/Analog%20Canvas%20schema-v32-6C5CE7)
+![Analog Canvas schema](https://img.shields.io/badge/Analog%20Canvas%20schema-v58-6C5CE7)
 
 在本機用 Python **生成、稽核、驗證與預覽** [Analog Canvas](https://analog-canvas.tokenzhang.com/editor)
 的 `.icproj.json` 專案檔。它把元件位置、net、走線與標籤寫成可重現的產生器，適合繪製課本級的類比、混合訊號與電晶體級電路圖。
@@ -68,7 +68,7 @@ source .venv/bin/activate
 ```text
 self-check errors: 0
 audits: legs 0 | labels 0 | on-wire 0 | tees 0   (all must be 0)
-  schema: VALID (v32)
+  schema: VALID (v58)
   labels: OK (0 declared plain)
   png: preview_fig848.png (1770x895)
 wrote 25151 bytes -> Razavi_Fig_8_48_noninverting-T-feedback.icproj.json
@@ -104,7 +104,7 @@ python -m toolkit regress
 | 指令 | 用途 |
 |---|---|
 | `doctor` | 檢查 Python、Node、NumPy、Pillow、符號、schema adapter 與 Chrome |
-| `setup` | 同步上游符號（2026-09-04 為 59 個）、正式站 schema、穩定 model adapter 與 schema 版本 |
+| `setup` | 同步上游符號（schema v58 為 110 個）、正式站 schema、穩定 model adapter 與 schema 版本 |
 | `list` | 列出 generator 與對應輸出 |
 | `generate` | 生成單張或全部專案；名稱可用 generator 或輸出檔名 |
 | `validate` | 以正式站 schema 驗證指定檔案，未指定時驗證全部 `out/` |
@@ -251,7 +251,9 @@ analog-canvas-toolkit/
 python -m toolkit setup
 ```
 
-`refresh_model.py` 會下載正式站的 JavaScript chunks，並在暫存目錄用 Node 執行探針，以找出可用的 project factory、schema 與 RichText builder；之後生成穩定的 `model-adapter.mjs`，所以工具不再依賴容易變動的 minified export 名稱。這仍屬於執行上游程式碼的供應鏈風險；在高安全環境中，請先檢查上游內容，或在隔離環境執行同步。
+`fetch_symbols.py` 從 schema v58 起不再下載逐檔的 `*.symbol.json`（上游已移除 `packages/symbols/assets/razavi-v1/`）。它改抓 `packages/symbols/src/razavi-catalog.generated.ts` 與 `expanded-components.generated.ts` 兩個 TypeScript 原始檔，用一個只認字面值的小型 tokenizer 讀出陣列（遇到任何非字面值就中止，**絕不執行下載的程式碼**），再照 `builtins.ts` 的組法（`razaviLibrarySymbols` + `expandedDeviceSymbols`）寫成 `sym/<id>.json`。預設只補缺檔並列出內容已變的符號；`--force` 全部覆寫；`--check` 只列差異不寫檔。
+
+`refresh_model.py` 會下載正式站的 JavaScript chunks，並在暫存目錄用 Node 執行探針，以找出可用的 project factory、schema 與 RichText builder；之後生成穩定的 `model-adapter.mjs`，所以工具不再依賴容易變動的 minified export 名稱。探針會盲呼叫每一個 export，v58 起其中一個會無限迴圈，所以每次呼叫都包在 `node:vm` 的 1 秒逾時內（`validate.mjs`、`check_labels.mjs` 的搜尋也一樣），單一 chunk 的探針另有 120 秒上限、逾時就跳過。這仍屬於執行上游程式碼的供應鏈風險；在高安全環境中，請先檢查上游內容，或在隔離環境執行同步。
 
 上游 schema 改版時，CI 會因 `schema_version.py`／tracked outputs 不一致而失敗。重新執行：
 
@@ -268,6 +270,7 @@ python -m toolkit regress
 | `No module named numpy/PIL` | `python -m pip install -r requirements.txt` |
 | 找不到 `sym/`、`model.mjs` 或 adapter | `python -m toolkit setup` |
 | `schema: FAILED` | 先重跑 setup；若版本更新，再重產全部 outputs |
+| `setup` 抓不到正式站（403／連線被拒） | 正式站主機被網路政策擋下時 `model.mjs` 無法下載，schema 與標籤驗證都無法執行；放行 `analog-canvas.tokenzhang.com` 後重跑 |
 | 找不到 Chrome | 設定 `CHROME_PATH`，或使用 `--no-render`；SVG 仍會產生 |
 | GitHub API rate limit | 稍後重試；符號已下載的檔案會留在本機 cache |
 | 回歸顯示 `DIFF` | 執行 `generate all --no-render`，檢查差異後提交新的 tracked outputs |

@@ -675,7 +675,7 @@
           "id": "VOUT",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 320,
               "y": 170
@@ -1210,8 +1210,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-razavi-fig-8-55",
   "name": "Razavi Fig. 8.55 — summing amplifier",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

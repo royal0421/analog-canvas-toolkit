@@ -311,7 +311,7 @@
           "id": "Q",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 320,
               "y": 180
@@ -323,7 +323,7 @@
           "id": "QB",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 320,
               "y": 260
@@ -770,8 +770,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-lab2-srlatch",
   "name": "Lab 2 SR latch (cross-coupled NOR)",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

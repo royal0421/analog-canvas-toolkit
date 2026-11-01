@@ -1086,7 +1086,7 @@
           "id": "M2",
           "symbolId": "nmos",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 490,
               "y": 270
@@ -1196,7 +1196,7 @@
           "id": "VINN",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 550,
               "y": 270
@@ -1220,7 +1220,7 @@
           "id": "VOUTP",
           "symbolId": "port",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 690,
               "y": 210
@@ -2197,8 +2197,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-diff-lc-amp",
   "name": "Differential amplifier with LC load",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

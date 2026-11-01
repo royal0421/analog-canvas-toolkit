@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Lab 2 NOR2, transistor level: M_P1 + M_P2 in series pull-up, M_N1 || M_N2
-pull-down.  Same house style as the NAND2: one port per gate, pin-on-pin."""
+pull-down.  Same house style as the NAND2: one port per gate, a 10-unit
+stub from each port to its gate (v58 port symbol)."""
 import os
 from icproj import Schematic, LABEL_PORT
 
@@ -52,6 +53,11 @@ f.route("r-g1", "net-gnd-1", T("MN1", "S"), [("bend", 190, 340),
                                              ("to", T("GND", "0"))])
 f.route("r-g2", "net-gnd-1", T("MN2", "S"), [("bend", 310, 340),
                                              ("to", T("GND", "0"))])
+# v58 moved the port pin from (10,0) to the circle's centre line (0,0), so
+# each port body stays where it was and draws a 10-unit run to its gate.
+for port, mos, net in (("A1", "MP1", "net-a"), ("A2", "MN1", "net-a"),
+                       ("B1", "MP2", "net-b"), ("B2", "MN2", "net-b")):
+    f.route("r-%s" % port.lower(), net, T(port, "P"), [("to", T(mos, "G"))])
 
 for tid, nm, net, ports in (("t-a1", "A", "net-a", ["A1"]),
                             ("t-a2", "A", "net-a", ["A2"]),

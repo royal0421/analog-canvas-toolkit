@@ -51,7 +51,7 @@ python -m toolkit regress
 
 ## 上游同步
 
-`python -m toolkit setup` 會下載並執行 Analog Canvas 正式站的 JavaScript 以辨識 schema。請勿把 `toolkit/model*.mjs` 或 `toolkit/sym/` 加入 Git；它們是可重建的第三方 cache。
+`python -m toolkit setup` 會下載並執行 Analog Canvas 正式站的 JavaScript 以辨識 schema（符號則是從上游 TypeScript 原始碼以 tokenizer 解析，不執行）。請勿把 `toolkit/model*.mjs` 或 `toolkit/sym/` 加入 Git；它們是可重建的第三方 cache。
 
 schema 版本變更時，應一起提交：
 

@@ -59,11 +59,11 @@ f.passive("C0", "capacitor", 700, 290, "C_0")   # pin1 (620,270), ground below
 f.place("GC1", "ground", 700, 140, rotation=180,
         extra={"schematicReference": "GC1"})    # pin (620,150) = C1 '1'
 f.gnd("GC0", 700, 320)                          # pin (620,310) = C0 '2'
-f.port("PVON", 750, Y_VON, mirror="x")          # pin (740,200)
-f.port("PVOP", 750, Y_VOP, mirror="x")          # pin (740,260)
+f.port("PVON", 750, Y_VON, mirror="x")          # pin (750,200) since v58
+f.port("PVOP", 750, Y_VOP, mirror="x")          # pin (750,260) since v58
 for iid, pin, xy in (("V3", "+", (240, 190)), ("V2", "+", (320, 270)),
                      ("V0", "+", (280, 350)), ("V4", "+", (500, 50)),
-                     ("V1", "+", (X_CLK, 370)), ("PVON", "P", (740, Y_VON))):
+                     ("V1", "+", (X_CLK, 370)), ("PVON", "P", (750, Y_VON))):
     assert f.pin(iid, pin) == xy, (iid, pin, f.pin(iid, pin))
 
 f.rect("box-cmp", BCX, (BT + BB) // 2, BR - BL, BB - BT)
@@ -148,7 +148,8 @@ for tid, x, y, al, s, owner in txt:
     if tid == "t-cmp":                       # title one size up (user)
         f.drafting[-1]["styleOverride"]["sizeScale"] *= 1.4
 
-f.build(long_haul={"r-vin", "r-vip", "r-cm3", "r-cm2", "r-vdd", "r-on1",
+f.build(long_haul={"r-on3", "r-op3",  # 50: v58 symbols drew 10 less of this run
+                   "r-vin", "r-vip", "r-cm3", "r-cm2", "r-vdd", "r-on1",
                    "r-op1"},
         extra_evidence=[],
         rail_ends={"JE-VIN", "JE-VIP", "JE-VDD", "JE-CLK", "JE-VSS",

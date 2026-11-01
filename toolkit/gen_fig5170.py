@@ -85,7 +85,7 @@ f.rail("net-vcc", 100, [310, 330, 470, 490])
 f.route("r-vcc-rc", "net-vcc", J("JV1"), [("to", T("R600", "1"))])
 f.route("r-vcc-q2", "net-vcc", J("JV2"), [("to", T("Q2", "C"))])
 
-f.route("r-in", "net-in", T("VIN", "P"), [("to", T("C1", "2"))])
+# VIN's pin moved to (0,0) in v58 and now sits on C_1's pin: no wire.
 f.route("r-c1r", "net-c1r", T("C1", "1"), [("to", T("RIN", "2"))])
 f.route("r-a-rin", "net-a", T("RIN", "1"), [("to", J("JA"))])
 f.route("r-a-b", "net-a", J("JA"), [("to", T("Q1", "B"))])
@@ -139,6 +139,7 @@ for tid, x, y, align, label, owner in (
     f.text(tid, x, y, align, label, owner)
 
 f.build(long_haul={"r-vdd-rail-1",   # the V_CC rail itself
+                   "r-vcc-q2",       # 50: v58 symbols drew 10 less of this run
                    "r-e-c2",         # 50: emitter node out to C_2
                    "r-a-b",          # 60: node A across to Q_1's base
                    "r-c-q2",         # 100: collector node to Q_2's base,

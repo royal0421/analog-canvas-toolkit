@@ -226,17 +226,11 @@
                 "children": [
                   {
                     "kind": "span",
-                    "style": "italic",
+                    "style": "bold",
                     "children": [
                       {
-                        "kind": "span",
-                        "style": "bold",
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "CC"
-                          }
-                        ]
+                        "kind": "text",
+                        "value": "CC"
                       }
                     ]
                   }
@@ -441,7 +435,7 @@
           "id": "QREF",
           "symbolId": "npn",
           "placement": {
-            "mirror": "x",
+            "mirror": "horizontal",
             "position": {
               "x": 180,
               "y": 230
@@ -902,6 +896,52 @@
               }
             }
           ]
+        },
+        {
+          "id": "r-e-ref",
+          "netId": "net-gnd-1",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "QREF",
+            "pinName": "E"
+          },
+          "legs": [
+            {
+              "id": "route-leg-ff1c4b376a760d97",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "GNDR",
+                  "pinName": "0"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-e-q1",
+          "netId": "net-gnd-2",
+          "start": {
+            "kind": "terminal",
+            "instanceId": "Q1",
+            "pinName": "E"
+          },
+          "legs": [
+            {
+              "id": "route-leg-8555cb84306e6af7",
+              "mode": "manual",
+              "to": {
+                "kind": "endpoint",
+                "endpoint": {
+                  "kind": "terminal",
+                  "instanceId": "GND1",
+                  "pinName": "0"
+                }
+              }
+            }
+          ]
         }
       ],
       "sourceStatus": "in-sync"
@@ -910,8 +950,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-bjt-mirror-block",
   "name": "BJT current mirror driving a circuit block",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

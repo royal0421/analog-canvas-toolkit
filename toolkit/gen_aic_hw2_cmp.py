@@ -55,7 +55,9 @@ f.gnd("GL", X(370), 480)                           # pin (370,470)
 f.place("INV1", "inverter", X(30), 390, extra={"schematicReference": "INV1"})
 f.place("INV2", "inverter", X(30), 450, extra={"schematicReference": "INV2"})
 
-# ports on every named lead: (id, pin x, pin y, circle side)
+# ports on every named lead: (id, x, y, circle side).  The bodies stay where
+# they were drawn (circle 10 out from x); since v58 the port pin is at the
+# circle's centre line, so it lands at x-10 (left) / x+10 (right).
 PORTS = (("P-VIP", X(50), 180, "left"), ("P-VIN", X(250), 180, "right"),
          ("P-CLK", X(110), 260, "left"),
          ("P-VAP2", X(190), 420, "left"), ("P-VAN2", X(550), 420, "right"),
@@ -66,7 +68,7 @@ for pid, x, y, side in PORTS:
         f.port(pid, x - 10, y)
     else:
         f.port(pid, x + 10, y, mirror="x")
-    assert f.pin(pid, "P") == (x, y), pid
+    assert f.pin(pid, "P") == (x - 10 if side == "left" else x + 10, y), pid
 
 # --------------------------------------------------------------- junctions
 for jid, net, x, y in (
@@ -168,7 +170,14 @@ f.route("r-g4", "net-gnd-2", J("JG2"), [("to", J("JG3"))])
 f.route("r-g5", "net-gnd-2", J("JG3"), [("to", T("M12", "S"))])
 f.route("r-g6", "net-gnd-2", J("JG3"), [("bend", X(510), 460), ("to", T("M13", "S"))])
 
-# inverter ports sit pin-on-pin on the gate's own leads: no extra wire (user)
+# inverter ports sat pin-on-pin on the gate's own leads (user); v58 moved the
+# port pin 10 into the circle and pulled the inverter's Y in 10, so each now
+# needs the short run the old symbols drew themselves.
+for rid, net, a, b in (("r-inv1-a", "net-inv1-in", ("P-VSN", "P"), ("INV1", "A")),
+                       ("r-inv1-y", "net-inv1-out", ("INV1", "Y"), ("P-VOP", "P")),
+                       ("r-inv2-a", "net-inv2-in", ("P-VSP", "P"), ("INV2", "A")),
+                       ("r-inv2-y", "net-inv2-out", ("INV2", "Y"), ("P-VON", "P"))):
+    f.route(rid, net, T(*a), [("to", T(*b))])
 
 # ------------------------------------------------------------- annotations
 TERMS = (("P-VIP", "V_ip", "net-vip", "input", -1),

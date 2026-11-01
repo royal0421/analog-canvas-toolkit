@@ -1272,8 +1272,8 @@
   "externalSubcircuitDefinitions": [],
   "id": "project-handdrawn-bridge-rect",
   "name": "Transformer-fed bridge rectifier",
-  "schemaVersion": 48,
-  "simulationSetups": [],
+  "schemaVersion": 58,
+  "simulationFolders": [],
   "source": {
     "dialect": "none",
     "entry": null,

@@ -222,8 +222,8 @@ f.route("r-o3-c", "net-vout", Jn("JO4"), [("to", T("CL", "1"))])
 f.route("r-o3-p2", "net-vout", Jn("JO4"), [("to", T("VOUT", "P"))])
 f.route("r-cl-gnd", "net-gnd-1", T("CL", "2"), [("to", T("GC", "0"))])
 
-f.route("r-inn", "net-inn", T("VINN", "P"), [("to", T("M7", "G"))])
-f.route("r-inp", "net-inp", T("VINP", "P"), [("to", T("M11", "G"))])
+# VINN/VINP: since v58 the port pin is at the circle's centre line (0,0), so
+# it lands exactly on the gate pin -- pin-on-pin, the old 10-unit runs went.
 # Every source but M6/M14/M16/M18 sits pin-on-pin on its ground symbol.
 for iid, g in (("M6", "G6"), ("M14", "G14"), ("M16", "G16"), ("M18", "G18")):
     f.route("r-gnd-%s" % iid, "net-gnd-1", T(iid, "S"), [("to", T(g, "0"))])
