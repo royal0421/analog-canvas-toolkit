@@ -263,6 +263,22 @@ class Placer(object):
                 signal.add(d.pins[CTRL[d.sym]])
         for up, dn in chain.values():
             signal.update((up, dn))
+        # A grounded independent voltage source IS the input when the deck
+        # has no input port: its live node is where the signal enters, so a
+        # part strung from it to a gate is the series element the textbook
+        # lays down.  Without this, AIC HW4 Fig. (a) stacked R_S on top of
+        # V_in in one column and the two bodies overlapped (2026-11-01).
+        if str(self.opt("srcsig", "1")) == "1" and not any(
+                di == "input" for _nd, _nm, di in self.c.ports):
+            for d in self.c.devices:
+                if d.sym in ("voltage-source", "pulse-voltage-source"):
+                    pr = self.vpins(d)
+                    if pr:
+                        na, nb = d.pins[pr[0]], d.pins[pr[1]]
+                        if self.c.is_ground(nb) and not self.c.is_ground(na):
+                            signal.add(na)
+                        elif self.c.is_ground(na) and not self.c.is_ground(nb):
+                            signal.add(nb)
         for d in self.c.devices:
             p = self.vpins(d)
             if p is None:
