@@ -323,8 +323,29 @@ def xf(px, py, mirror, rotation):
     return px, py
 
 
+_INK_CACHE = {}
+
+
 def ink_box(sym_id, variant, x, y, mirror, rotation=0):
-    """Bounding box of the DRAWN primitives (SOP: never use the viewBox)."""
+    """Bounding box of the DRAWN primitives (SOP: never use the viewBox).
+
+    The box relative to the placement point depends only on the symbol,
+    variant, mirror and rotation, so it is computed once per combination
+    (autoplace asks for it millions of times per figure).  The entry keeps
+    the symbol dict it was computed from, so reloading a symbol invalidates
+    it.
+    """
+    s = sym(sym_id)
+    key = (sym_id, variant, mirror, rotation)
+    hit = _INK_CACHE.get(key)
+    if hit is None or hit[0] is not s:
+        hit = _INK_CACHE[key] = (s, _ink_rel(sym_id, variant, mirror,
+                                             rotation))
+    rel = hit[1]
+    return (x + rel[0], y + rel[1], x + rel[2], y + rel[3])
+
+
+def _ink_rel(sym_id, variant, mirror, rotation):
     xs, ys = [], []
 
     def add(px, py):
@@ -347,7 +368,7 @@ def ink_box(sym_id, variant, x, y, mirror, rotation=0):
             n = [float(v) for v in _NUM_RE.findall(pr["data"])]
             for i in range(0, len(n) - 1, 2):
                 add(n[i], n[i + 1])
-    return (x + min(xs), y + min(ys), x + max(xs), y + max(ys))
+    return (min(xs), min(ys), max(xs), max(ys))
 
 
 # DejaVu Sans Bold advance widths, em units -- the face razavi-textbook-v1
