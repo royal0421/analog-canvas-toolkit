@@ -31,11 +31,31 @@ function findSchema(probe) {
   return null;
 }
 
-const fk = findFactory();
-if (!fk) { console.log("sanity FAILED: no project factory in model.mjs"); process.exit(2); }
-const probe = m[fk]("probe-id", "Probe");
-const sk = findSchema(probe);
-if (!sk) { console.log("sanity FAILED: no schema accepts the factory output"); process.exit(2); }
+// refresh_model.py already found and verified the factory and schema and
+// recorded them in model-adapter.mjs.  Use those (one call each, no blind
+// probing: the probe loop costs ~2 s per figure, 1 s of it the v58 export
+// that never returns) and fall back to the search only when the adapter is
+// missing or no longer agrees with the bundle.
+async function fromAdapter() {
+  try {
+    const a = await import("./model-adapter.mjs");
+    const k = name => Object.keys(m).find(key => m[key] === a[name]);
+    const p = a.createProject("probe-id", "Probe");
+    if (p && Array.isArray(p.documents) && a.projectSchema?.safeParse(p).success)
+      return [k("createProject"), k("projectSchema"), p];
+  } catch { /* no adapter */ }
+  return null;
+}
+let found = await fromAdapter();
+if (!found) {
+  const fk = findFactory();
+  if (!fk) { console.log("sanity FAILED: no project factory in model.mjs"); process.exit(2); }
+  const p = m[fk]("probe-id", "Probe");
+  const sk = findSchema(p);
+  if (!sk) { console.log("sanity FAILED: no schema accepts the factory output"); process.exit(2); }
+  found = [fk, sk, p];
+}
+const [fk, sk, probe] = found;
 const schema = m[sk];
 console.log("sanity: factory %s validates against schema %s  (v%d)", fk, sk, probe.schemaVersion);
 
