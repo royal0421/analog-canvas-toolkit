@@ -1898,21 +1898,25 @@ class Placer(object):
         trunks = [s for s in segs if s[0] == "t"]
         rsegs = [s for s in segs if s[0] == "r"]
 
-        def _band(seg, bb):
-            _k, ax, cc, s0, s1 = seg
-            lo, hi = (bb[1], bb[3]) if ax == "h" else (bb[0], bb[2])
-            alo, ahi = (bb[0], bb[2]) if ax == "h" else (bb[1], bb[3])
-            return cc, s0, s1, lo, hi, alo, ahi
-
+        # A segment against a box: `cc` is checked against the box's band
+        # across the segment, [s0, s1] against its extent along it.  Written
+        # out per axis (no intermediate tuples) because this is the inner
+        # loop of the whole search -- tens of millions of calls per figure.
         def inside(seg, bb):
-            cc, s0, s1, lo, hi, alo, ahi = _band(seg, bb)
-            return (lo + 1 < cc < hi - 1
-                    and not (s1 <= alo + 1 or s0 >= ahi - 1))
+            _k, ax, cc, s0, s1 = seg
+            if ax == "h":
+                return (bb[1] + 1 < cc < bb[3] - 1
+                        and not (s1 <= bb[0] + 1 or s0 >= bb[2] - 1))
+            return (bb[0] + 1 < cc < bb[2] - 1
+                    and not (s1 <= bb[1] + 1 or s0 >= bb[3] - 1))
 
         def near_by(seg, bb, m):
-            cc, s0, s1, lo, hi, alo, ahi = _band(seg, bb)
-            return (lo - m <= cc <= hi + m
-                    and not (s1 < alo - m or s0 > ahi + m))
+            _k, ax, cc, s0, s1 = seg
+            if ax == "h":
+                return (bb[1] - m <= cc <= bb[3] + m
+                        and not (s1 < bb[0] - m or s0 > bb[2] + m))
+            return (bb[0] - m <= cc <= bb[2] + m
+                    and not (s1 < bb[1] - m or s0 > bb[3] + m))
 
         def near(seg, bb):
             return near_by(seg, bb, M)
@@ -1938,8 +1942,17 @@ class Placer(object):
             return near_by(seg, bb, TIGHT)
 
         bodies = risers = 0
+        # this net's pins grouped by the parts that own them (the gate-lead
+        # exemption below asks "does a trunk run along one of MY pins")
+        owned = {}
+        for p in pts:
+            for own in self._pinowner.get(p, ()):
+                owned.setdefault(own, []).append(p)
+        mode = str(self.opt("shave", "off"))
+        bodycost_hard = str(self.opt("bodycost", "soft")) == "hard"
+        mine_parts = member.get(nd, ())
         for iid, bb in inks:
-            if iid in member.get(nd, ()):
+            if iid in mine_parts:
                 # A wire may touch its own component's pin -- it may not go
                 # INSIDE the body to get there.  This one exemption is what
                 # let a bus ride over a gate lead, cut across an op-amp
@@ -1951,11 +1964,10 @@ class Placer(object):
                 # base (user, 2026-09-03).  `_body_audit` allows the same.
                 # Never for an op-amp: the owner map only holds CTRL gates.
                 onpin = False
-                for _k, ax, cc, _s0, _s1 in trunks:
+                mypins = owned.get(iid, ())
+                for _k, ax, cc, _s0, _s1 in trunks if mypins else ():
                     ci_ = 1 if ax == "h" else 0
-                    if any(abs(p[ci_] - cc) <= 10
-                           and iid in self._pinowner.get(p, ())
-                           for p in pts):
+                    if any(abs(p[ci_] - cc) <= 10 for p in mypins):
                         onpin = True
                         break
                 if onpin:
@@ -1979,7 +1991,6 @@ class Placer(object):
                 # 0 crossings against 22.0 / 2 at one fixed style.  A block
                 # takes its pins on the left and right edges, so a bus has
                 # no business grazing the sloping face.
-                mode = str(self.opt("shave", "off"))
                 if (mode != "off"
                         and self.f.placed.get(iid, ("",))[0] in N.BLOCKS
                         and any(shaving(s, bb) for s in trunks)):
@@ -2026,7 +2037,7 @@ class Placer(object):
                 # figures the soft price is too cheap (14.36(b) parked three
                 # wires 5 units off OA2).  Which price is right depends on
                 # how much room the figure has, so it is an axis.
-                if str(self.opt("bodycost", "soft")) == "hard" and not soft:
+                if bodycost_hard and not soft:
                     hard += 1
                 else:
                     bodies += 1
