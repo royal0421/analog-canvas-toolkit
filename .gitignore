@@ -14,3 +14,8 @@ toolkit/preview_*.png
 # Python
 __pycache__/
 *.pyc
+
+# Route 2 working files: netlist_io.py exports decks from out/, the bench
+# and autoplace write auto/.  Hand-written decks live in decks/razavi|new.
+toolkit/decks/*.cir
+toolkit/auto/
