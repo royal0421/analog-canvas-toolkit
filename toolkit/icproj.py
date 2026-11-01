@@ -77,10 +77,18 @@ def hid(*p):
 
 
 # --- the editor's own RichText builders (packages/model), verbatim ----------
+# Ported 1:1 from the v58 bundle (model.mjs): G / Fd / Id / Kd / Ld / Bd / Vd.
+# `buildName` in model-adapter.mjs is Kd, and check_labels.mjs compares every
+# label byte-for-byte against it.
+#
 # v58: the builder no longer slants any subscript (it used to wrap DD/SS/CC/
-# EE/BB in italic); every subscript is upright bold now.
-ITALIC_SUBSCRIPTS = set()
+# EE/BB in italic); every subscript is upright bold now.  Kd splits after the
+# FIRST character (code point) and puts every remaining character, verbatim,
+# in the subscript -- "FF1" -> F + subscript "F1", "CK" -> C + subscript "K".
+ITALIC_SUBSCRIPTS = set()          # kept for callers; v58 has no exceptions
 _SUB_RE = re.compile(r"^(.+?)_(?:\{(.+)\}|(.+))$", re.U)
+_KD_DEFAULT = {"suffixCase": "preserve", "suffixPlacement": "subscript"}
+_LINE_BREAK = {"runs": [{"kind": "line-break"}]}
 
 
 def _txt(v):
@@ -92,41 +100,122 @@ def _span(style, children):
 
 
 def Rs(t):
+    """model.mjs G(): italic(bold(t)) -- the leading letter."""
     return _span("italic", [_span("bold", [_txt(t)])])
 
 
 def Vs(t):
-    inner = _span("bold", [_txt(t)])
-    if t.strip().lower() in ITALIC_SUBSCRIPTS:
-        inner = _span("italic", [inner])
-    return _span("subscript", [inner])
+    """model.mjs Fd(): subscript(bold(t)) -- upright since v58."""
+    return _span("subscript", [_span("bold", [_txt(t)])])
+
+
+def _Id(t, placement, case):
+    """model.mjs Id(): the Kd suffix with its placement/case options."""
+    r = _span("bold", [_txt(t)])
+    i = r if case == "preserve" else _span(case, [r])
+    return _span("subscript", [i]) if placement == "subscript" else i
+
+
+def Kd(text, options=None):
+    """model.mjs Kd() -- the editor's buildName, verbatim.
+
+    First code point italic-bold, everything after it bold in a subscript;
+    the empty string is a line break.  Array.from() splits by code point, so
+    Python's str indexing is the same thing.
+    """
+    if len(text) == 0:
+        return {"runs": [dict(_LINE_BREAK["runs"][0])]}
+    o = dict(_KD_DEFAULT, **(options or {}))
+    head, rest = text[0], text[1:]
+    return {"runs": [Rs(head)] + (
+        [_Id(rest, o["suffixPlacement"], o["suffixCase"])] if rest else [])}
+
+
+def _js_slice1(e):
+    """JS e.slice(0,1)/e.slice(1) work in UTF-16 code units."""
+    u = e.encode("utf-16-le")
+    return (u[:2].decode("utf-16-le", "surrogatepass"),
+            u[2:].decode("utf-16-le", "surrogatepass"))
+
+
+def Ld(text):
+    """model.mjs Ld() (route markers): runs, not a RichText."""
+    if re.search(r"\s", text):
+        return [Rs(text)]
+    t, n = _js_slice1(text)
+    return [Rs(t), Vs(n)] if n else [Rs(t)]
+
+
+def Bd(text):
+    """model.mjs Bd(): voltage names -- only a leading v/V is a symbol."""
+    if len(text) == 0:
+        return {"runs": [dict(_LINE_BREAK["runs"][0])]}
+    t, n = _js_slice1(text)
+    if t.lower() != "v" or re.search(r"\s", text):
+        return {"runs": [_txt(text)]}
+    return {"runs": [Rs(t)] + ([Vs(n)] if n else [])}
+
+
+def Vd(text):
+    """model.mjs Vd(): current names -- only a leading i/I is a symbol."""
+    t, n = _js_slice1(text)
+    if t.lower() != "i" or not n or re.search(r"\s", text):
+        return {"runs": [_txt(text)]}
+    return {"runs": [Rs(t), Vs(n)]}
+
+
+def semantic(label):
+    """'V_in1' -> 'Vin1': the first underscore only marks where WE meant the
+    subscript to start; it never reaches the file (references, terminal
+    names) and the editor's builder never sees it."""
+    m = _SUB_RE.match(label)
+    return (m.group(1) + (m.group(2) or m.group(3))) if m else label
 
 
 def name(label):
-    """Port of the editor's Ws(): 'V_in1' -> Rs('V') + Vs('in1').
+    """The editor's buildName (Kd) applied to the semantic text.
 
-    The underscore form preserves case (Hs() only upper-cases the first letter
-    when there is NO underscore), which is what keeps v_out lowercase when the
-    textbook writes it that way.
+    'V_in1' -> Kd('Vin1') = Rs('V') + Vs('in1').  Case is preserved, so
+    v_out stays lowercase.  A multi-letter base no longer survives:
+    'FF_1' -> F + subscript 'F1', exactly what the editor prints.  For the
+    SOP-documented exceptions use word() / plain() / name_suffix() and list
+    the label in build(expect_differ=...).
+    """
+    return Kd(semantic(label))
+
+
+def split_name(label):
+    """'FF_1' -> italic FF + subscript 1, split at the underscore the way the
+    page prints it (the pre-v58 rule).  Kd would print F + subscript F1, so
+    this is only for a block title (SOP §5, `FF_1` in a box) or a
+    coefficient composite (SOP §4, `2L_1`) -- declare it in expect_differ.
     """
     m = _SUB_RE.match(label)
-    if m:
-        return {"runs": [Rs(m.group(1)), Vs(m.group(2) or m.group(3))]}
-    return {"runs": [Rs(label)]}
+    if not m:
+        return {"runs": [Rs(label)]}
+    return {"runs": [Rs(m.group(1)), Vs(m.group(2) or m.group(3))]}
+
+
+def word(text):
+    """A whole word in math italic, no subscript: a port name such as IN,
+    OUT or CK.  SOP §2A: the editor would print I + subscript N, so port
+    labels keep a formatOverride -- a declared expect_differ."""
+    return {"runs": [Rs(text)]}
 
 
 def name_suffix(label, suffix):
     """'V_DD' + ' = 1.8 V' -> the composite Razavi prints on a supply rail.
 
-    NOTE: check_labels.mjs reports DIFFER for these -- it rebuilds the name as
-    'V = 1.8 V_DD'.  Known false positive, not a defect; Fig 9.83 shipped so.
+    check_labels.mjs reports DIFFER for these (it rebuilds the whole string
+    as one Kd name) -- SOP §4, declare it in expect_differ.
     """
     return {"runs": name(label)["runs"] + [_span("bold", [_txt(suffix)])]}
 
 
 def plain(text):
-    """Upright bold, for a VALUE such as "50 Ω" -- Razavi does
-    not italicise numeric values, only symbol names."""
+    """Upright bold, for a VALUE such as "50 Ω" or a block title -- Razavi
+    does not italicise numeric values, only symbol names.  SOP §4/§5:
+    declare it in expect_differ."""
     return {"runs": [_span("bold", [_txt(text)])]}
 
 
@@ -644,8 +733,10 @@ class Schematic(object):
         Left to itself the editor runs the terminal name through its own
         builder, which subscripts a trailing capital run: `IN` renders as
         I with a subscript N, `CK` as C_K, `Out` as O_ut (user, 2026-08-30).
-        Our `name()` only subscripts after an underscore, which is what the
-        textbook does -- so hand the editor the finished RichText.
+        A terminal written WITH an underscore (`V_out`) gets `name()` -- the
+        builder's own output.  One written WITHOUT one (`IN`, `CK`, `OUT`)
+        is a whole word: `word()`, an SOP §2A difference that the generator
+        must list in build(expect_differ=...).
         (Fig 9.83's hand-written generator always did this; the shared engine
         lost it, and five labels across four figures were rendering wrong.)
         """
@@ -657,7 +748,14 @@ class Schematic(object):
             "alignment": alignment, "locked": False, "rotation": 0,
             "sizeScale": LABEL_SIZE, "anchor": self._anchor(iid, dx, dy),
             "binding": {"kind": "cell-terminal-name", "terminalId": tid},
-            "formatOverride": name(self.term_names.get(tid, term["name"]))})
+            "formatOverride": self._port_text(
+                self.term_names.get(tid, term["name"]))})
+
+    @staticmethod
+    def _port_text(tname):
+        if "_" in tname or len(tname) <= 1:
+            return name(tname)
+        return word(tname)
 
     def power_label(self, lid, net_id, obj_id, dx, dy, label,
                     alignment="start"):

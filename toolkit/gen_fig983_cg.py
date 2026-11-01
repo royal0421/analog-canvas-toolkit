@@ -141,4 +141,5 @@ f.build(long_haul={"r-vdd-rail-0", "r-vdd-rail-1", "r-vdd-rail-2",
                    "r-pb-2",         # 110: the pmos drain node down to M_5
                    "r-pb-4"},        # 50: the pmos gate bus across to M_3
         rail_ends={"jvdd-start", "jvdd-end"},
-        viewbox=(120, 75, 440, 310))
+        viewbox=(120, 75, 440, 310),
+        expect_differ={"label-vdd"})   # rail name + value (SOP §4)

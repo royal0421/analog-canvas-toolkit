@@ -17,29 +17,47 @@ from pathlib import Path
 TOOLKIT = Path(__file__).resolve().parent
 ROOT = TOOLKIT.parent
 OUT = ROOT / "out"
+EXAMPLES = ROOT / "examples"
+MANIFEST = EXAMPLES / ".render-manifest.json"
+PNG_RE = re.compile(r"^\s*png: (preview_[^\s()]+\.png) \(", re.M)
 OUTPUT_RE = re.compile(
-    r'(?:out_proj\s*=\s*os\.path\.join\(OUT,\s*|'
-    r'OUT_PROJ\s*=\s*os\.path\.join\(OUT,\s*)'
+    r'(?:out_proj|OUT_PROJ|OUT)\s*=\s*os\.path\.join\(\s*(?:OUT|ROOT),\s*'
     r'["\']([^"\']+\.icproj\.json)["\']',
     re.S,
 )
+# A generator that writes more than one project (one per command-line mode)
+# lists them explicitly, one line each:  `# output: <file> [arg ...]`
+DECLARED_RE = re.compile(r'(?m)^#\s*output:\s*(\S+\.icproj\.json)((?:[ \t]+\S+)*)'
+                         r'[ \t]*$')
 
 
 @dataclass(frozen=True)
 class Project:
     generator: Path
     output: Path
+    args: tuple = ()
 
     @property
     def name(self):
-        return self.generator.stem
+        return self.generator.stem + "".join(":" + a for a in self.args)
+
+    @property
+    def command(self):
+        return [self.generator] + list(self.args)
 
 
 def discover_projects(toolkit=TOOLKIT, out=OUT):
     """Discover generator/output pairs without importing side-effect scripts."""
     projects = []
     for generator in sorted(Path(toolkit).glob("gen_*.py")):
-        matches = OUTPUT_RE.findall(generator.read_text(encoding="utf-8"))
+        text = generator.read_text(encoding="utf-8")
+        declared = DECLARED_RE.findall(text)
+        if declared:
+            for output, args in declared:
+                projects.append(Project(generator, Path(out) / output,
+                                        tuple(args.split())))
+            continue
+        matches = OUTPUT_RE.findall(text)
         if len(matches) != 1:
             raise RuntimeError("%s declares %d outputs; expected exactly one"
                                % (generator.name, len(matches)))
@@ -52,16 +70,20 @@ def resolve_projects(selectors, projects):
         return projects
     by_key = {}
     for project in projects:
-        for key in (project.name, project.output.name, project.output.stem):
-            by_key[key.lower()] = project
+        for key in (project.name, project.generator.stem,
+                    project.output.name, project.output.stem):
+            by_key.setdefault(key.lower(), [])
+            if project not in by_key[key.lower()]:
+                by_key[key.lower()].append(project)
     selected = []
     for selector in selectors:
-        project = by_key.get(selector.lower())
-        if not project:
+        matched = by_key.get(selector.lower())
+        if not matched:
             raise SystemExit("unknown generator/output %r; run `python -m "
                              "toolkit list`" % selector)
-        if project not in selected:
-            selected.append(project)
+        for project in matched:
+            if project not in selected:
+                selected.append(project)
     return selected
 
 
@@ -131,8 +153,9 @@ def command_list(_args):
     width = max(len(project.name) for project in projects)
     for project in projects:
         print("%-*s  %s" % (width, project.name, project.output.name))
-    print("\n%d generators, %d tracked project outputs" %
-          (len(projects), len(list(OUT.glob("*.icproj.json")))))
+    print("\n%d generators -> %d projects, %d tracked project outputs" %
+          (len({project.generator for project in projects}), len(projects),
+           len(list(OUT.glob("*.icproj.json")))))
     return 0
 
 
@@ -148,18 +171,56 @@ def required_assets():
                          % ", ".join(missing))
 
 
+def publish_example(project, stdout, manifest):
+    """Refresh examples/<output stem>.png from the preview build() rendered.
+
+    Only gallery images that already exist are refreshed.  Chrome's PNG is
+    not byte-stable, so the manifest keeps the SHA-256 of the SOURCE SVG and
+    the PNG is copied only when that SVG really changed.
+    """
+    import hashlib
+    target = EXAMPLES / (project.output.name[:-len(".icproj.json")] + ".png")
+    match = PNG_RE.search(stdout or "")
+    if not target.is_file() or not match:
+        return None
+    png = TOOLKIT / match.group(1)
+    svg = png.with_suffix(".svg")
+    if not png.is_file() or not svg.is_file():
+        return None
+    digest = hashlib.sha256(svg.read_bytes()).hexdigest()
+    if manifest.get(target.name) == digest:
+        return False
+    shutil.copyfile(str(png), str(target))
+    manifest[target.name] = digest
+    return True
+
+
 def command_generate(args):
+    import json
     required_assets()
     projects = resolve_projects(args.projects, discover_projects())
     env = os.environ.copy()
     if args.no_render:
         env["AC_NO_RENDER"] = "1"
+    if args.examples and args.no_render:
+        raise SystemExit("--examples needs the Chrome render; drop --no-render")
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8")) \
+        if args.examples and MANIFEST.is_file() else {}
+    published = []
     failures = []
     for index, project in enumerate(projects, 1):
         print("\n[%d/%d] %s" % (index, len(projects), project.name),
               flush=True)
         previous = project.output.read_bytes() if project.output.is_file() else None
-        result = run([sys.executable, project.generator], env=env)
+        if args.examples:
+            result = subprocess.run(
+                [str(a) for a in [sys.executable] + project.command],
+                cwd=str(ROOT), env=env, stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT, text=True, encoding="utf-8",
+                errors="replace")
+            print(result.stdout, end="", flush=True)
+        else:
+            result = run([sys.executable] + project.command, env=env)
         validation = None
         if result.returncode == 0 and project.output.is_file():
             validation = validate_file(project.output)
@@ -176,6 +237,14 @@ def command_generate(args):
             if validation is not None and validation.returncode:
                 print((validation.stdout + validation.stderr).strip())
             failures.append(project.name)
+        elif args.examples and publish_example(project, result.stdout,
+                                               manifest):
+            published.append(project.name)
+    if args.examples:
+        with open(str(MANIFEST), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(json.dumps(manifest, indent=1, sort_keys=True,
+                                ensure_ascii=False) + "\n")
+        print("\nexamples: %d PNG(s) refreshed" % len(published))
     if failures:
         print("\nFAILED: " + ", ".join(failures))
         return 1
@@ -224,8 +293,8 @@ def command_regress(args):
             generated = temp_out / project.output.name
             if generated.exists():
                 generated.unlink()
-            result = captured([sys.executable, temp_toolkit / project.generator.name],
-                              cwd=temp_root, env=env)
+            result = captured([sys.executable, temp_toolkit / project.generator.name]
+                              + list(project.args), cwd=temp_root, env=env)
             return project, generated, result
 
         results = []
@@ -285,6 +354,9 @@ def build_parser():
                           help="generator name, output name, or `all`")
     generate.add_argument("--no-render", action="store_true",
                           help="skip the optional Chrome PNG render")
+    generate.add_argument("--examples", action="store_true",
+                          help="also refresh the gallery PNGs in examples/ "
+                               "whose source SVG changed")
 
     validate = commands.add_parser("validate", help="validate output files")
     validate.add_argument("files", nargs="*", help="defaults to every out/*.json")

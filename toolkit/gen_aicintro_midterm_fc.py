@@ -18,12 +18,12 @@ from icproj import Schematic
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, os.pardir, "out")
-NAME = "AIC-intro_Midterm-2026_Fig1_folded-cascode.icproj.json"
+OUT = os.path.join(ROOT, "AIC-intro_Midterm-2026_Fig1_folded-cascode.icproj.json")
 f = Schematic(
     "project-aicintro-midterm-fc",
     "AIC intro 115-1 midterm Fig. 1 - folded-cascode op amp",
     "Midterm_Fig1",
-    out_proj=os.path.join(ROOT, NAME),
+    out_proj=OUT,
     out_svg=os.path.join(HERE, "preview_aicintro_midterm_fc.svg"))
 
 XL, XR, XC = 420, 560, 490          # stack D/S columns and their midline

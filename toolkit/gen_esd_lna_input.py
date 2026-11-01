@@ -173,4 +173,6 @@ f.build(long_haul={"r-d-ct",        # 60: C_tune is pinned by both nodes
         viewbox=(10, 60, 710, 390),
         # plain text on purpose: block titles and the resistor value follow
         # the page, not the editor's italics -- SOP 4
-        expect_differ=set())
+        # port words (SOP §2A), block titles (SOP §5), value (SOP §4)
+        expect_differ={"instance-label-IN", "instance-label-OUT",
+                       "t-esd1", "t-esd2", "v-r20", "t-cdm"})

@@ -15,6 +15,8 @@ Same topology for both; only the two PWL sources differ:
   end on ports.  The comparator is a drafting box with its pin names inside.
 """
 # publish: AIC-HW2_CMP_TB preview_aic_hw2_cmp_tb.svg
+# output: AIC-HW2_CMP_TB.icproj.json pattern
+# output: AIC-HW2_CMP_OFFSET_TB.icproj.json offset
 import os
 import shutil
 import sys

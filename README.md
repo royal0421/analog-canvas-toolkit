@@ -18,9 +18,9 @@
 - 使用 Analog Canvas 正式站目前的 Zod schema 驗證輸出。
 - 使用編輯器自己的 RichText builder 比對標籤格式。
 - 產生 SVG 預覽；找到 Chrome／Chromium 時再產生 PNG。
-- 在隔離的暫存目錄重建全部 29 個專案，確認結果有效且可重現。
+- 在隔離的暫存目錄重建全部 36 個專案，確認結果有效且可重現。
 
-目前 repo 有 **29 支 generator、29 份可匯入專案、30 張 gallery PNG**。多出的一張是歷史展示圖，沒有對應 generator；回歸基準以 29 份 `out/*.icproj.json` 為準。
+目前 repo 有 **35 支 generator（`gen_aic_hw2_tb.py` 有 pattern／offset 兩種模式，共 36 個專案）、38 份可匯入專案、36 張 gallery PNG**。`out/` 多出的兩份（`AIC-HW1_*`）與 gallery 多出的一張（Fig 9.24）沒有對應 generator；回歸基準以 36 個 generator 輸出為準。
 
 ## 五分鐘快速開始
 
@@ -106,7 +106,7 @@ python -m toolkit regress
 | `doctor` | 檢查 Python、Node、NumPy、Pillow、符號、schema adapter 與 Chrome |
 | `setup` | 同步上游符號（schema v58 為 110 個）、正式站 schema、穩定 model adapter 與 schema 版本 |
 | `list` | 列出 generator 與對應輸出 |
-| `generate` | 生成單張或全部專案；名稱可用 generator 或輸出檔名 |
+| `generate` | 生成單張或全部專案；名稱可用 generator 或輸出檔名；`--examples` 另把來源 SVG 有變的 gallery PNG 更新到 `examples/` |
 | `validate` | 以正式站 schema 驗證指定檔案，未指定時驗證全部 `out/` |
 | `regress` | 在暫存目錄平行重建全部專案、驗證並逐位元比對 tracked outputs |
 
@@ -232,8 +232,8 @@ python toolkit\gen_my_circuit.py
 
 ```text
 analog-canvas-toolkit/
-├─ toolkit/       共用引擎、CLI、scanner、同步器與 29 支 generators
-├─ out/           已追蹤、可直接匯入的 29 份 .icproj.json 成品
+├─ toolkit/       共用引擎、CLI、scanner、同步器與 35 支 generators
+├─ out/           已追蹤、可直接匯入的 38 份 .icproj.json 成品
 ├─ examples/      README gallery 與手繪參考圖
 ├─ tests/         核心正確性與 workflow 單元測試
 ├─ .github/       GitHub Actions CI

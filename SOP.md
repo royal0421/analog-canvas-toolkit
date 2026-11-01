@@ -193,7 +193,7 @@ v36 的 `Ws()` **一律在第一個字元後面斷開，其餘原封不動當下
 ```
 "M1"   -> M + 下標 "1"        ✓ 我們要的
 "M_1"  -> M + 下標 "_1"       ✗ 底線會印出來
-"VDD"  -> V + 斜體下標 "DD"    ✓（dd/ss/cc/ee/bb 仍是斜體）
+"VDD"  -> V + 下標 "DD"        ✓（v58 起下標一律正體；v36～v48 的 dd/ss/cc/ee/bb 是斜體）
 "Vout" -> V + 下標 "out"      ✓
 "IN"   -> I + 下標 "N"        ✗ 所以埠標籤還是要 formatOverride
 ```
@@ -255,8 +255,35 @@ f.route("r-x-in", "net-x", T("OA", "IN-"), [("bend", 250, 160),
 | `placement.mirror` 的 enum 變成 `none` / `horizontal` / `vertical` / `both`，而且是**旋轉之後**才鏡射 | generator 照舊寫 `"x"`（內部語意＝先把本地 x 取負再旋轉）。`icproj.mirror_out(m, rot)` 寫檔時轉換：`x` 在 0/180 度＝`horizontal`、在 90/270 度＝`vertical`。讀檔一律過 `icproj.mirror_in(m, rot)`（`both`＝旋轉 +180）；`place()`、`xf()`、`netlist_bench.py`（參考圖 vs 自動排版的 mirror 比對）、`render_project.py` 都已改用它。序列化是對**副本**轉換，`self.instances` 仍是 `"x"`，稽核與 autoplace 不受影響。 |
 | 頂層 `simulationSetups` 拿掉 | 改寫 `simulationFolders: []` |
 | 標籤產生器不再把 DD/SS/CC/EE/BB 的下標包斜體 | `icproj.ITALIC_SUBSCRIPTS = set()`，下標一律正體粗 |
+| `buildName`（adapter 的 `Hn`＝bundle 內的 `Kd`）只認**第一個字元**：其餘全部進下標 | `icproj.name()` 改成逐字移植 `Kd`（見下方「v58 的名字產生器」）；`check_labels.mjs` 直接用 adapter 的 `buildName` 當比對基準 |
 | `ndmos` / `pdmos` 變成真的符號（Extended Devices） | 從 `Schematic.UNPLACEABLE` 移除；`vdd` 仍禁用 |
 | bundle 裡有一個 export 拿 `("p","P")` 呼叫會**無限迴圈** | `refresh_model.py` 的探針、`validate.mjs`、`check_labels.mjs` 的搜尋都改成 `vm.runInNewContext(..., {timeout:1000})`；探針子程序另有 120 秒上限，逾時跳過該 chunk |
+
+### v58 的名字產生器（`Kd`）與 `icproj.name()`
+
+`model-adapter.mjs` 的 `buildName` 是 bundle 裡的 `Kd`（輔助函式 `G`／`Fd`／`Id`）：
+
+```
+Kd(s) = [ G(s 的第一個 code point) ] + [ Id(其餘, "subscript", "preserve") ]   # 空字串 → line-break
+G(t)  = italic(bold(t))          Fd(t) = Id(t) = subscript(bold(t))
+"VDD" -> V + 下標 DD      "FF1" -> F + 下標 F1      "CK" -> C + 下標 K
+```
+
+`icproj.name(label)` ＝ `Kd(semantic(label))`：底線只是**我們**標「下標從這裡開始」的記號，
+`semantic()` 先把第一個底線拿掉（`V_in1`→`Vin1`、`I_{SS}`→`ISS`）再交給 `Kd`。
+所以**單一字母開頭的名字與以前完全一樣**；多字母主體（`FF_1`）現在跟編輯器一樣印成
+F＋下標 F1。`Rs`＝`G`、`Vs`＝`Fd`，另外也移植了 `Ld`（route marker）、`Bd`（電壓名）、
+`Vd`（電流名），`tests/test_v58.py` 會拿 Python 版與下載的 `buildName` 逐位元比對。
+
+**`expect_differ` 只能放這三類（都是刻意不照 `Kd` 的）**，其餘一律要 MATCH：
+
+| 類別 | 寫法 | SOP 出處 |
+|---|---|---|
+| 埠名是整個英文字（`IN`、`OUT`、`CK`、`Out`） | `port_label()` 遇到沒有底線的多字元 terminal 名自動用 `icproj.word()` | §2A「`IN` → I＋下標 N ✗」 |
+| 數值與「名稱＋數值」合成字（`50 Ω`、`0.1 pF`、`V_DD = 1.8 V`、`C_1/2`、`2L_1`、`1/g_m5`、`g_m1 V_1`） | `plain()`／`name_suffix()`／`split_name()`／runs 串接 | §4「數值文字用正體」 |
+| 方塊標題、層名（`VCO`、`Latch`、`Circuit`、`P+`、`N-WELL`；方框裡的 `FF_1`） | `plain()`；有下標的方塊名用 `split_name()` | §5「數值、方塊標題這類正體字」 |
+
+極性記號 `+`／`−` **不屬於**這三類，一律用 `name("+")`（`Kd` 會把它包成斜體粗，字形幾乎不變）。
 
 ### 符號來源
 
@@ -1656,9 +1683,9 @@ strokes: { wire:1.6, symbol:1.6, normal:1.6, emphasis:2.4,
 ### 標籤一律用它自己的產生器，不要手寫 RichText
 
 ```python
-Rs(t)  = italic(bold(t))                                  # 主字母
-Vs(t)  = subscript(bold(t))          # v58：一律正體（v48 以前 dd/ss/cc/ee/bb 是斜體）
-name(base, sub) = {"runs": [Rs(base)] + [Vs(sub)]}
+Rs(t)  = italic(bold(t))             # bundle 的 G()：主字母
+Vs(t)  = subscript(bold(t))          # bundle 的 Fd()；v58：一律正體（v48 以前 dd/ss/cc/ee/bb 是斜體）
+name(label) = Kd(semantic(label))    # = [Rs(第一個字元)] + [Vs(其餘)]，見 §2C
 ```
 
 **為什麼**：SVG 渲染器進到 subscript 時硬寫 `{italic:false, bold:繼承}`，只吃**下標內部**的 italic span。
@@ -1690,8 +1717,8 @@ v48 以前 `V_DD` 在特例清單內 → 下標斜體；v58 的產生器已拿�
 電源軌那種「名稱＋數值」用 `icproj.name_suffix("V_DD", " = 1.8 V")`。
 
 **這兩種標籤會被 `check_labels.mjs` 報 `DIFFER`，那是預期的、不要去「修好」**——
-編輯器的 `Ws()` 一律把整串斜體化，而我們跟的是課本頁面。已知的固定兩筆：
-`V_DD = 1.8 V`（Fig 9.83、7.94）與 `50 Ω`（Fig 7.94）。
+編輯器的 `buildName`（v58 的 `Kd`）會把整串的第一個字元之後全部丟進下標，而我們跟的是課本頁面。
+例：`V_DD = 1.8 V`（Fig 9.83、7.94）與 `50 Ω`（Fig 7.94）。完整的允許清單見 §2C。
 `check_labels.mjs` 對**器件名稱**才是權威。
 
 ### 標籤放在元件「上方」時的 dy

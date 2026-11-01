@@ -11,7 +11,7 @@ from y 470 to 420.  The symmetry rule that came with it is SOP 3A:
 outer columns; if the grid will not allow it, move the two ends, not the
 middle.**  Here 320 and 460 -> midpoint 390, which is on the grid."""
 import os
-from icproj import Schematic, name, name_suffix
+from icproj import Schematic, name, split_name, name_suffix
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, os.pardir, "out")   # .icproj.json lands here
@@ -128,7 +128,7 @@ f.inst_label("CLL", 0, -16, "middle")
 f.inst_label("CLR", 0, -16, "middle")
 f.inst_label("I0L", -18, 5, "end")
 f.inst_label("I0R", 18, 5, "start")
-f.text("v-r1", 390, 332, "middle", name("2R_1"), owner="R1")
+f.text("v-r1", 390, 332, "middle", split_name("2R_1"), owner="R1")
 f.text("v-c1", 390, 420, "middle", name_suffix("C_1", "/2"), owner="C1")
 # the user's export has this at y=270; that is the editor snapping a drag
 # to the 10-unit grid -- the calibrated value is centre + 5 (SOP 4).
@@ -146,4 +146,5 @@ f.build(long_haul={"r-v1", "r-v2", "r-l3", "r-r3", "r-s2", "r-s4",
         # plain text on purpose (values / block titles): the
         # editor's generator italicises everything, we follow the
         # textbook page instead -- SOP 4
-        expect_differ=set())
+        # coefficient composites 2R_1 and C_1/2 (SOP §4)
+        expect_differ={"v-r1", "v-c1"})

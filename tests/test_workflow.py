@@ -15,8 +15,14 @@ import scan_figure  # noqa: E402
 class WorkflowTests(unittest.TestCase):
     def test_every_generator_declares_one_unique_output(self):
         projects = cli.discover_projects()
-        self.assertEqual(29, len(projects))
-        self.assertEqual(29, len({project.output.name for project in projects}))
+        generators = sorted((ROOT / "toolkit").glob("gen_*.py"))
+        self.assertEqual(35, len(generators))
+        self.assertEqual(set(generators),
+                         {project.generator for project in projects})
+        self.assertEqual(36, len(projects))
+        self.assertEqual(36, len({project.output.name for project in projects}))
+        modes = [p.args for p in projects if p.generator.stem == "gen_aic_hw2_tb"]
+        self.assertEqual([("pattern",), ("offset",)], modes)
 
     def test_schema_version_update_preserves_file_shape(self):
         with tempfile.TemporaryDirectory() as temp:

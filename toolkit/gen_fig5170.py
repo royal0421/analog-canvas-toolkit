@@ -151,4 +151,6 @@ f.build(long_haul={"r-vdd-rail-1",   # the V_CC rail itself
         # plain text on purpose (values / block titles): the
         # editor's generator italicises everything, we follow the
         # textbook page instead -- SOP 4
-        expect_differ=set())
+        # values and rail name + value (SOP §4)
+        expect_differ={"v-rin", "v-rfb", "v-rc", "v-r200", "v-r50",
+                       "v-vcc"})

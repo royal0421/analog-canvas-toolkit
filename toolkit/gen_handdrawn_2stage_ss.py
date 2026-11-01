@@ -12,7 +12,7 @@ sitting between the ground bus and a second ground symbol (user asked for a
 faithful copy, 2026-08-30).
 """
 import os
-from icproj import Schematic, name, plain
+from icproj import Schematic, name
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, os.pardir, "out")   # .icproj.json lands here
@@ -112,8 +112,8 @@ f.inst_label("RC", 13, 5, "start")
 f.inst_label("RP2", 13, 5, "start")
 # V_pi1 with its polarity marks, to the LEFT of r_pi1, as the page has it
 f.text("n-vpi1", 104, 145, "end", name("V_\u03c01"), owner="RP1")
-f.text("n-plus", 124, 128, "middle", plain("+"), owner="RP1")
-f.text("n-minus", 124, 166, "middle", plain("\u2212"), owner="RP1")
+f.text("n-plus", 124, 128, "middle", name("+"), owner="RP1")
+f.text("n-minus", 124, 166, "middle", name("\u2212"), owner="RP1")
 
 f.build(long_haul={"r-e-rp1",      # 60: r_pi1 across to the R_E node
                    "r-e-bus",      # 60: the emitter bus on to source 1
@@ -126,5 +126,4 @@ f.build(long_haul={"r-e-rp1",      # 60: r_pi1 across to the R_E node
         extra_evidence=[],
         rail_ends={"JG3"},
         viewbox=(60, 60, 600, 240),
-        # plain on purpose: the polarity marks are symbols, not device names
         expect_differ=set())

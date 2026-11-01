@@ -3,7 +3,7 @@
 bridges the two R's, L_2/C_2 take each drain out to V_out, and C_1 hangs from
 each drain to ground.  Tail current I_in."""
 import os
-from icproj import Schematic, name, name_suffix, LABEL_PORT
+from icproj import Schematic, name, split_name, name_suffix, LABEL_PORT
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, os.pardir, "out")   # .icproj.json lands here
@@ -13,7 +13,7 @@ f = Schematic("project-diff-lc-amp", "Differential amplifier with LC load",
               out_svg=os.path.join(HERE, "preview_difflc.svg"))
 
 f.place("L1", "inductor", 390, 100, rotation=90, extra={
-    "schematicReference": "L1", "schematicName": name("2L_1"),
+    "schematicReference": "L1", "schematicName": split_name("2L_1"),
     "netlist": {"binding": {"kind": "primitive", "deviceClass": "inductor"},
                 "parameters": {}, "reference": "L1"}})
 f.passive("CB", "capacitor", 390, 130, "C_B", rotation=90)
@@ -131,4 +131,5 @@ f.build(long_haul={"r-t3", "r-t4", "r-u3", "r-u4",
         # plain text on purpose (values / block titles): the
         # editor's generator italicises everything, we follow the
         # textbook page instead -- SOP 4
-        expect_differ=set())
+        # coefficient composites 2L_1 and C_B/2 (SOP §4)
+        expect_differ={"instance-label-L1", "v-cb"})

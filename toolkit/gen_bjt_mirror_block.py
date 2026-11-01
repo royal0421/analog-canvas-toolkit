@@ -94,4 +94,5 @@ f.build(long_haul={"r-vcc-rail-1",             # 140: the rail itself
         viewbox=(115, 85, 380, 215),
         # plain text on purpose: the rail's "= 2.5 V" and the block title
         # follow the textbook page, not the editor's italics -- SOP 4
-        expect_differ=set())
+        # rail name + value (SOP §4), block title (SOP §5)
+        expect_differ={"label-vcc", "t-circuit"})

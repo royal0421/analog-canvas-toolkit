@@ -135,4 +135,5 @@ f.build(long_haul={"r-vdd-rail-1", "r-vdd-rail-2", "r-vdd-rail-3",
         # plain text on purpose (values / block titles): the
         # editor's generator italicises everything, we follow the
         # textbook page instead -- SOP 4
-        expect_differ=set())
+        # layer-stack titles (SOP §5)
+        expect_differ={"t-pp", "t-nw", "t-pw", "t-np", "t-tap"})

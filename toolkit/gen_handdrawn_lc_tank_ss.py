@@ -13,7 +13,7 @@ Drawn as the page has it; nothing "fixed" (user's standing rule for lane 3b).
 Column pitch 70-80 throughout, which is the density he corrected me to.
 """
 import os
-from icproj import Schematic, name, plain, dy_above
+from icproj import Schematic, name, dy_above
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, os.pardir, "out")   # .icproj.json lands here
@@ -110,9 +110,9 @@ f.inst_label("IIN", -18, 5, "end")
 f.text("v-gm", 388, 245, "start",
        {"runs": name("g_m1")["runs"] + name("V_1")["runs"]}, owner="IGM")
 # V_1 sits between its two probe points, as the page draws it
-f.text("n-plus", 270, 240, "middle", plain("+"), owner="PV1")
+f.text("n-plus", 270, 240, "middle", name("+"), owner="PV1")
 f.text("n-v1", 270, 265, "middle", name("V_1"), owner="PV1")
-f.text("n-minus", 270, 288, "middle", plain("\u2212"), owner="PV1")
+f.text("n-minus", 270, 288, "middle", name("\u2212"), owner="PV1")
 
 f.build(long_haul={"r-rp-g",       # 80: R_P back to its own ground
                    "r-rp-a",       # 70+70: R_P over and down to the tank node
@@ -125,5 +125,4 @@ f.build(long_haul={"r-rp-g",       # 80: R_P back to its own ground
                    "r-o-out"},     # 60: and out to V_out
         extra_evidence=[],
         viewbox=(40, 110, 470, 320),
-        # plain on purpose: the polarity marks are symbols, not device names
-        expect_differ=set())
+        expect_differ={"v-gm"})   # composite g_m1 V_1 (SOP §4)

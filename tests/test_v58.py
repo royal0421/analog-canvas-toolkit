@@ -100,5 +100,66 @@ class MirrorTests(unittest.TestCase):
         self.assertEqual("x", inst["placement"]["mirror"])
 
 
+class LabelBuilderTests(unittest.TestCase):
+    """icproj.name() must be the editor's buildName (model.mjs Kd)."""
+
+    NAMES = ("M_1", "V_DD", "V_in1", "FF_1", "CK", "IN", "Out", "L1",
+             "I_{SS}", "x", "v_out", "Alexander PD", "+", "\u2212",
+             "r_\u03c01", "g_m1", "\U0001d6fdx")
+
+    @staticmethod
+    def kd_reference(text):
+        """Kd() written out by hand from the v58 bundle."""
+        def g(t):
+            return {"kind": "span", "style": "italic", "children": [
+                {"kind": "span", "style": "bold",
+                 "children": [{"kind": "text", "value": t}]}]}
+
+        def fd(t):
+            return {"kind": "span", "style": "subscript", "children": [
+                {"kind": "span", "style": "bold",
+                 "children": [{"kind": "text", "value": t}]}]}
+        if not text:
+            return {"runs": [{"kind": "line-break"}]}
+        return {"runs": [g(text[0])] + ([fd(text[1:])] if text[1:] else [])}
+
+    def test_name_is_kd_of_the_semantic_text(self):
+        for label in self.NAMES:
+            sem = icproj.semantic(label)
+            self.assertNotIn("_", sem)
+            self.assertEqual(self.kd_reference(sem), icproj.name(label),
+                             msg=label)
+            self.assertEqual(sem, icproj.flat_text(icproj.name(label)))
+
+    def test_v58_has_no_italic_subscripts(self):
+        self.assertEqual(set(), icproj.ITALIC_SUBSCRIPTS)
+        self.assertEqual(icproj.Vs("DD"), icproj.name("V_DD")["runs"][1])
+
+    def test_port_words_keep_the_whole_word(self):
+        self.assertEqual(icproj.word("IN"),
+                         icproj.Schematic._port_text("IN"))
+        self.assertEqual(icproj.name("V_out"),
+                         icproj.Schematic._port_text("V_out"))
+
+    def test_python_port_matches_the_downloaded_builder(self):
+        import shutil
+        import subprocess
+        toolkit = ROOT / "toolkit"
+        if not (toolkit / "model-adapter.mjs").is_file() \
+                or not shutil.which("node"):
+            self.skipTest("run `python -m toolkit setup` first")
+        script = ('import {buildName} from "./model-adapter.mjs";'
+                  'const n = JSON.parse(process.argv[1]);'
+                  'console.log(JSON.stringify(n.map(s => buildName(s))));')
+        sems = [icproj.semantic(n) for n in self.NAMES]
+        out = subprocess.run(
+            ["node", "--input-type=module", "-e", script, json.dumps(sems)],
+            cwd=str(toolkit), capture_output=True, text=True,
+            encoding="utf-8", timeout=120)
+        self.assertEqual(0, out.returncode, out.stderr)
+        self.assertEqual(json.loads(out.stdout),
+                         [icproj.name(n) for n in self.NAMES])
+
+
 if __name__ == "__main__":
     unittest.main()

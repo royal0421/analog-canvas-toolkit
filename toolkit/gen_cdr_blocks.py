@@ -20,7 +20,7 @@ with text; every box-edge junction is touched by exactly one route, hence the
 long `rail_ends` exemption list.
 """
 import os
-from icproj import Schematic, name, plain, LABEL_PORT
+from icproj import Schematic, name, split_name, plain, LABEL_PORT
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, os.pardir, "out")   # .icproj.json lands here
@@ -55,7 +55,8 @@ BOX = (("FF1", 170, 160, "FF_1"), ("FF2", 330, 160, "FF_2"),
 for rid, cx, cy, lab in BOX:
     f.rect("box-" + rid, cx, cy, 100, 50)
     f.text("t-" + rid, cx, cy + 5, "middle",
-           name(lab) if lab else plain("Latch" if rid == "LAT" else "VCO"))
+           split_name(lab) if lab
+           else plain("Latch" if rid == "LAT" else "VCO"))
 f.rect("box-pd", 290, 190, 460, 220, style="dashed")
 f.text("t-pd", 90, 110, "start", plain("Alexander PD"))
 
@@ -157,4 +158,6 @@ f.build(long_haul={"r-in0", "r-a3", "r-c1", "r-b2", "r-b3", "r-d1", "r-d3",
         # plain text on purpose (values / block titles): the
         # editor's generator italicises everything, we follow the
         # textbook page instead -- SOP 4
-        expect_differ=set())
+        # port word CK (SOP §2A), block titles (SOP §5)
+        expect_differ={"instance-label-CK", "t-LAT", "t-VCO", "t-pd",
+                       "t-vi", "t-FF1", "t-FF2", "t-FF3"})

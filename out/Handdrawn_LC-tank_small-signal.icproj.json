@@ -476,11 +476,17 @@
               "runs": [
                 {
                   "kind": "span",
-                  "style": "bold",
+                  "style": "italic",
                   "children": [
                     {
-                      "kind": "text",
-                      "value": "+"
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "+"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -564,11 +570,17 @@
               "runs": [
                 {
                   "kind": "span",
-                  "style": "bold",
+                  "style": "italic",
                   "children": [
                     {
-                      "kind": "text",
-                      "value": "−"
+                      "kind": "span",
+                      "style": "bold",
+                      "children": [
+                        {
+                          "kind": "text",
+                          "value": "−"
+                        }
+                      ]
                     }
                   ]
                 }

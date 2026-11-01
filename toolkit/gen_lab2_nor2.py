@@ -79,5 +79,5 @@ f.build(long_haul={"r-vdd-rail-0", "r-vdd-rail-1", "r-o2", "r-o3", "r-o4",
         rail_ends={"jvdd-start", "jvdd-end"}, viewbox=(110, 105, 290, 275),
         # the editor's builder subscripts a trailing capital run
         # (IN -> I_N, CK -> C_K, Out -> O_ut); our formatOverride
-        # keeps them plain, so they DIFFER on purpose -- SOP 4
-        )
+        # keeps the whole word, so it DIFFERs on purpose -- SOP §2A
+        expect_differ={"instance-label-OUT"})

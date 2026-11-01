@@ -36,7 +36,23 @@ function findBuilder() {
   }
   return null;
 }
-const Ws = findBuilder();
+// refresh_model.py records the builder it verified as `buildName` in
+// model-adapter.mjs (v58: export Hn = Kd, "first letter, then subscript").
+// Prefer that, so the reference is exactly the one the adapter names; fall
+// back to the search when the adapter is missing or stale.
+async function adapterBuilder() {
+  try {
+    const a = await import("./model-adapter.mjs");
+    const b = a.buildName;
+    const r = typeof b === "function" ? call(b, "M_1") : null;
+    if (r && Array.isArray(r.runs) && r.runs.length === 2
+        && r.runs[0].style === "italic" && r.runs[1].style === "subscript"
+        && toName(r) === "M_1")
+      return b;
+  } catch { /* no adapter */ }
+  return null;
+}
+const Ws = (await adapterBuilder()) ?? findBuilder();
 if (!Ws) { console.log("no RichText builder found in model.mjs"); process.exit(2); }
 const proj = JSON.parse(readFileSync(process.argv[2], "utf8"));
 

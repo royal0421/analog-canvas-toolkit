@@ -121,12 +121,12 @@ f.inst_label("R", 0, dy_below(5.37, 6), "middle")
 # the secondary voltage, as the page marks it
 f.text("n-6v", 230, 150, "start", plain("6 V"))
 f.text("n-vi", 230, 185, "start", name("V_i"))
-f.text("n-vip", 238, 118, "middle", plain("+"))
-f.text("n-vim", 238, 292, "middle", plain("\u2212"))
+f.text("n-vip", 238, 118, "middle", name("+"))
+f.text("n-vim", 238, 292, "middle", name("\u2212"))
 # V_o across R, + on the LEFT node
-f.text("n-vop", 366, 180, "middle", plain("+"), owner="R")
+f.text("n-vop", 366, 180, "middle", name("+"), owner="R")
 f.text("n-vo", 400, 180, "middle", name("V_o"), owner="R")
-f.text("n-vom", 434, 180, "middle", plain("\u2212"), owner="R")
+f.text("n-vom", 434, 180, "middle", name("\u2212"), owner="R")
 
 f.build(long_haul={"r-in1",        # 70+110: in at the top, down to the primary
                    "r-in2",        # 110+70: and out at the bottom
@@ -138,5 +138,4 @@ f.build(long_haul={"r-in1",        # 70+110: in at the top, down to the primary
         extra_evidence=[],
         rail_ends={"JIN2"},
         viewbox=(20, 30, 600, 340),
-        # plain on purpose: a value and two polarity marks
-        expect_differ=set())
+        expect_differ={"n-6v"})   # value (SOP §4)

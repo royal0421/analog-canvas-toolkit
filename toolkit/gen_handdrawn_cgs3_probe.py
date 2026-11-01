@@ -116,5 +116,5 @@ f.build(long_haul={"r-vdd-rail-1",   # 50: rail on to the M_1 riser
                    "r-x-vx"},        # 60+40: V_x's lead, carrying I_x
         rail_ends={"jvdd-start", "jvdd-end"},
         viewbox=(60, 40, 320, 330),
-        # plain on purpose: "1/" is arithmetic, not a device name
-        expect_differ=set())
+        # "1/" is arithmetic, not a device name: composite (SOP §4)
+        expect_differ={"n-gm"})
