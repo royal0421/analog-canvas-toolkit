@@ -25,6 +25,7 @@ import sys
 import io
 import json
 import contextlib
+import copy
 
 import netlist_io as N
 from icproj import ink_box
@@ -4170,6 +4171,46 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
         os.makedirs(d)
 
     tried = {}
+    # What the descent's probes read off a drawn layout (column count,
+    # feedback-track parts, lying-down parts, their candidate rows, the
+    # transistors that can flip).  Each probe used to draw the layout again
+    # to ask; nearly every one asks about a layout `score` has just drawn,
+    # so ~40% of all draws were repeats (8.57: 2336 runs, 1340 distinct).
+    # One draw per layout now records the score AND these.
+    facts = {}
+    NOFACTS = {"ncols": 0, "fb": [], "horiz": [], "latrows": {},
+               "trans": []}
+
+    def extract(pr):
+        out = {}
+        for k, get in (("ncols", lambda: getattr(pr, "ncols", 0)),
+                       ("fb", lambda: sorted(getattr(pr, "fb_track", {}))),
+                       ("horiz", lambda: [d.ref for d in pr.horiz]),
+                       ("latrows", pr.lateral_row_offsets),
+                       ("trans", lambda: [(iid, pl[3]) for iid, pl
+                                          in pr.f.placed.items()
+                                          if pl[0] in CTRL])):
+            try:
+                out[k] = get()
+            except Exception:
+                out[k] = NOFACTS[k]
+        return out
+
+    def fact(grid, style, k):
+        key = (grid, tuple(sorted(style.items())))
+        f = facts.get(key)
+        if f is None:
+            buf = io.StringIO()
+            try:
+                pr = Placer(c, out_proj, out_svg, pitch=grid[0],
+                            rowgap=grid[1], portstub=grid[2], style=style)
+                with contextlib.redirect_stdout(buf):
+                    pr.run(verbose=True)
+                f = extract(pr)
+            except Exception:
+                f = NOFACTS
+            facts[key] = f
+        return copy.deepcopy(f[k])
 
     def score(grid, style):
         key = (grid, tuple(sorted(style.items())))
@@ -4179,8 +4220,13 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
         p = Placer(c, out_proj, out_svg, pitch=grid[0], rowgap=grid[1],
                    portstub=grid[2], style=style)
         try:
-            with contextlib.redirect_stdout(buf):
-                p.run(verbose=True)
+            try:
+                with contextlib.redirect_stdout(buf):
+                    p.run(verbose=True)
+            except Exception:
+                facts.setdefault(key, NOFACTS)
+                raise
+            facts.setdefault(key, extract(p))
             log = buf.getvalue()
             wire = sum(abs(x1 - x0) + abs(y1 - y0)
                        for _rid, x0, y0, x1, y1 in p.f.segments())
@@ -4267,75 +4313,34 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
                 st = dict(st)
                 if fm:
                     st["formir"] = tuple(sorted(fm.items()))
-                buf = io.StringIO()
-                try:
-                    pr = Placer(c, out_proj, out_svg, pitch=g[0], rowgap=g[1],
-                                portstub=g[2], style=st)
-                    with contextlib.redirect_stdout(buf):
-                        pr.run(verbose=True)
-                    return getattr(pr, "ncols", 0)
-                except Exception:
-                    return 0
+                return fact(g, st, "ncols")
 
             def probe_fb(g, st, fm):
                 """Which lying-down parts ride a feedback track."""
                 st = dict(st)
                 if fm:
                     st["formir"] = tuple(sorted(fm.items()))
-                buf = io.StringIO()
-                try:
-                    pr = Placer(c, out_proj, out_svg, pitch=g[0], rowgap=g[1],
-                                portstub=g[2], style=st)
-                    with contextlib.redirect_stdout(buf):
-                        pr.run(verbose=True)
-                    return sorted(getattr(pr, "fb_track", {}))
-                except Exception:
-                    return []
+                return fact(g, st, "fb")
 
             def probe_laterals(g, st, fm):
                 st = dict(st)
                 if fm:
                     st["formir"] = tuple(sorted(fm.items()))
-                buf = io.StringIO()
-                try:
-                    pr = Placer(c, out_proj, out_svg, pitch=g[0], rowgap=g[1],
-                                portstub=g[2], style=st)
-                    with contextlib.redirect_stdout(buf):
-                        pr.run(verbose=True)
-                    return [d.ref for d in pr.horiz]
-                except Exception:
-                    return []
+                return fact(g, st, "horiz")
 
             def probe_latrows(g, st, fm):
                 """Which rows each lying-down part could be pulled onto."""
                 st = dict(st)
                 if fm:
                     st["formir"] = tuple(sorted(fm.items()))
-                buf = io.StringIO()
-                try:
-                    pr = Placer(c, out_proj, out_svg, pitch=g[0], rowgap=g[1],
-                                portstub=g[2], style=st)
-                    with contextlib.redirect_stdout(buf):
-                        pr.run(verbose=True)
-                    return pr.lateral_row_offsets()
-                except Exception:
-                    return {}
+                return fact(g, st, "latrows")
 
             def transistors(g, st, fm):
                 """Which parts can be turned over, and which way they face now."""
                 st = dict(st)
                 if fm:
                     st["formir"] = tuple(sorted(fm.items()))
-                buf = io.StringIO()
-                try:
-                    pr = Placer(c, out_proj, out_svg, pitch=g[0], rowgap=g[1],
-                                portstub=g[2], style=st)
-                    with contextlib.redirect_stdout(buf):
-                        pr.run(verbose=True)
-                    return [(iid, pl[3]) for iid, pl in pr.f.placed.items()
-                            if pl[0] in CTRL]
-                except Exception:
-                    return []
+                return fact(g, st, "trans")
 
             best = sc_of(grid, style, formir)
             grids = _grids(tune)
