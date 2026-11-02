@@ -3897,28 +3897,52 @@ class Placer(object):
         """How safe is this spot?  (wire gap, neighbour gap) -- both bigger
         is better, and the audit needs wire >= 2 and neighbour >= 17."""
         f = self.f
+        segs, inkof = self._ann_geom()
         x, y = f.placed[iid][1] + dx, f.placed[iid][2] + dy
         box = label_box(rt, x, y, align)
-        wire = min([_box_gap(box, s[1:]) for s in f.segments()] or [999])
+        wire = min([_box_gap(box, s) for s in segs] or [999])
         kind = f.placed[iid][0]
         near = 999
         for jid in f.placed:
             if jid == iid or f.placed[jid][0] != kind:
                 continue
-            b = f.ink(jid)
+            b = inkof[jid]
             if align in ("start", "end") and (b[1] > box[3] or b[3] < box[1]):
                 continue
             near = min(near, _box_gap_box(box, b))
-        own = _box_gap_box(box, f.ink(iid))
+        own = _box_gap_box(box, inkof[iid])
         other = min([_box_gap_box(box, b) for b in placed] or [999])
         # `near` only looks at the SAME kind of part, because that is what
         # makes a name ambiguous.  But a label sitting on top of any other
         # body is simply unreadable, so that gets its own term.
-        anyink = min([_box_gap_box(box, f.ink(j)) for j in f.placed
+        anyink = min([_box_gap_box(box, inkof[j]) for j in f.placed
                       if j != iid] or [999])
         return wire, near, own, other, anyink
 
+    def _ann_geom(self):
+        """Wire segments and part ink boxes, as label placement sees them.
+
+        Placing a label adds text and nothing else -- no wire moves, no part
+        moves -- so inside `annotate` both are computed once instead of once
+        per candidate spot (8.57: 326 616 `segments()` calls, ~9% of the
+        whole search).  Outside it they are read fresh.
+        """
+        g = getattr(self, "_ann_cache", None)
+        if g is not None:
+            return g
+        f = self.f
+        return ([s[1:] for s in f.segments()],
+                dict((j, f.ink(j)) for j in f.placed))
+
     def annotate(self):
+        self._ann_cache = None
+        self._ann_cache = self._ann_geom()
+        try:
+            self._annotate()
+        finally:
+            self._ann_cache = None
+
+    def _annotate(self):
         f = self.f
         self._lbox = []
         for nd, (pid, nm, di) in self.ports_placed.items():
@@ -4037,11 +4061,11 @@ class Placer(object):
                                                         "start"),
                               (c - 12, y, "end"), (c + 12, y, "start")]
             best, bestkey = cands[0], None
+            segs, inkof = self._ann_geom()
             for x, y, al in cands:
                 box = label_box(rt, x, y, al)
-                wire = min([_box_gap(box, sg[1:])
-                            for sg in f.segments()] or [999])
-                ink = min([_box_gap_box(box, f.ink(i))
+                wire = min([_box_gap(box, sg) for sg in segs] or [999])
+                ink = min([_box_gap_box(box, inkof[i])
                            for i in f.placed] or [999])
                 other = min([_box_gap_box(box, b)
                              for b in self._lbox] or [999])
