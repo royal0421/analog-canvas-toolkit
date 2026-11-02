@@ -24,3 +24,4 @@
 - 2026-11-02｜**撤回**（未跑全套，單張即無效）：_trunk_cost 的零件框外推預先算好放在 tracks()｜預期：省每次呼叫的減法｜8.57 單張 CPU 47.5→47.7–48.2 s，沒變快 → 撤回｜—
 - 2026-11-02｜autoplace 搜尋期間 Schematic.build 走 dry：稽核與報告照舊，不寫 JSON／SVG（SVG 在記憶體做同樣的 XML 檢查）；勝出者最後再畫一次才寫｜預期：分數與輸出不變，省 json.dump 與檔案 I/O（8.57：2182 次候選）｜28 張每行相同、auto/ 56 檔逐位元相同；牆鐘 709→681 s、CPU 43.9→42.7 min；regress 36/36、unittest 23/23｜d632118
 - 2026-11-02｜autoplace.annotate：標籤擺放期間 segments()／ink() 只算一次（放標籤只加文字，不動線與零件）｜預期：分數與輸出不變（8.57：32.7 萬次 segments，約佔 9%）｜28 張每行相同、auto/ 56 檔逐位元相同；牆鐘 681→627 s、CPU 42.7→39.1 min；regress 36/36、unittest 23/23｜3652828
+- 2026-11-02｜tests/test_autoplace.py：平行與依序 descent 輸出逐位元相同；依序搜尋 json.dump 只呼叫一次（把 dry 關掉會失敗）；平行 descent 不留暫存目錄｜測試，程式碼與上一筆 bench（3652828）相同，不影響 bench；unittest 23→26（+6 s）、regress 36/36｜ce7def0
