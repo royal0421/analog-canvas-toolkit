@@ -34,7 +34,7 @@ import netlist_io as N
 from icproj import ink_box
 from icproj import (Schematic, name, plain, LABEL_PORT, dy_above,
                     dy_below, label_box, _box_gap, _box_gap_box,
-                    NEIGHBOUR_GAP, LABEL_INK_GAP)
+                    NEIGHBOUR_GAP, LABEL_INK_GAP, CROWD_MIN)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, os.pardir, "out")
@@ -3774,6 +3774,26 @@ class Placer(object):
                     for bx, by, bm in list(cands):
                         cands.append((bx + step * k, by, bm) if axis == "h"
                                      else (bx, by + step * k, bm))
+            # A port off a VERTICAL trunk has a horizontal stub, and sliding
+            # along the trunk is not the only way out: the stub itself can be
+            # shorter or longer.  The AIC midterm's V_out1 sat 0.4 units off
+            # the V_b4 bus that runs down between the two cascode stacks;
+            # one grid step along its own stub clears it.  The circle never
+            # crosses its trunk and keeps a grid step from it.
+            # Only a LAST RESORT, when every other spot still fails the
+            # on-wire audit: offered always, it moved a port that was merely
+            # tight and the search redrew 14.36(b) (place 18% -> 0%).
+            stubs = []
+            if (str(self.opt("stubslide", "1")) == "1" and axis == "v"
+                    and not onpin and not self._has_bend(pid)
+                    and nd in self.trunk):
+                tc = self.trunk[nd][1]
+                side = 1 if px0 > tc else -1
+                for k in (1, 2, 3):
+                    for d in (-1, 1):
+                        npx = px0 + d * 10 * k
+                        if (npx - tc) * side >= 10:
+                            stubs.append((x0 + d * 10 * k, y0, mir0))
             best, bestk = None, None
             for cx, cy, cm in cands:
                 move(cx, cy, cm)
@@ -3785,6 +3805,14 @@ class Placer(object):
                 k = (min(g, 12), -disp, g)
                 if bestk is None or k > bestk:
                     best, bestk = (cx, cy, cm), k
+            if stubs and bestk[2] < CROWD_MIN:
+                for cx, cy, cm in stubs:
+                    move(cx, cy, cm)
+                    g = clear()
+                    disp = abs(cx - x0) + abs(cy - y0)
+                    k = (min(g, 12), -disp, g)
+                    if k > bestk:
+                        best, bestk = (cx, cy, cm), k
             move(*best)
 
     def _has_bend(self, iid):
