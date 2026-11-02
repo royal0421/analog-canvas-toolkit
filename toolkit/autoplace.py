@@ -1968,7 +1968,29 @@ class Placer(object):
         mode = str(self.opt("shave", "off"))
         bodycost_hard = str(self.opt("bodycost", "soft")) == "hard"
         mine_parts = member.get(nd, ())
+        # Every test below looks at most M (8) units past a segment, so a box
+        # more than M outside the box around ALL of this trunk's segments
+        # cannot count -- skipping it changes nothing, and it is most boxes
+        # (this loop was ~60% of the Midterm search).
+        ux0 = uy0 = float("inf")
+        ux1 = uy1 = float("-inf")
+        for _k, ax, cc, s0, s1 in trunks + rsegs:
+            if ax == "h":
+                x0_, x1_, y0_, y1_ = s0, s1, cc, cc
+            else:
+                x0_, x1_, y0_, y1_ = cc, cc, s0, s1
+            if x0_ < ux0:
+                ux0 = x0_
+            if x1_ > ux1:
+                ux1 = x1_
+            if y0_ < uy0:
+                uy0 = y0_
+            if y1_ > uy1:
+                uy1 = y1_
         for iid, bb in inks:
+            if (bb[0] - M > ux1 or bb[2] + M < ux0
+                    or bb[1] - M > uy1 or bb[3] + M < uy0):
+                continue
             if iid in mine_parts:
                 # A wire may touch its own component's pin -- it may not go
                 # INSIDE the body to get there.  This one exemption is what
