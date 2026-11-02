@@ -3702,6 +3702,23 @@ class Placer(object):
             ci = 1 if axis == "h" else 0
             others = [t for t in self.netterms[nd]
                       if t in self.pinxy and t[0] != pid]
+            # Moving the port moves only the routes that end on its pin;
+            # every other line stays put while its spots are tried, so
+            # those are listed once (clear() was ~8% of the 8.57 search,
+            # re-listing the whole drawing and looking every route's net up
+            # by a linear scan for each spot).
+            netof = {}
+            for r in f.routes:
+                netof.setdefault(r["id"], r["netId"])
+
+            def _on_port(r):
+                if r["start"].get("instanceId") == pid:
+                    return True
+                return any(lg["to"].get("endpoint", {}).get("instanceId")
+                           == pid for lg in r["legs"])
+            moving = [r for r in f.routes if _on_port(r)]
+            fixed = [sg for r in f.routes if not _on_port(r)
+                     for sg in f._route_segments(r)]
 
             def clear():
                 """How close the port and its NAME come to anything else."""
@@ -3713,10 +3730,11 @@ class Placer(object):
                 lab = str(self.opt("portnudge", "label")) == "label"
                 worst = 999
                 ix = (box[0] + 1, box[1] + 1, box[2] - 1, box[3] - 1)
-                for rid, x0, y0, x1, y1 in f.segments():
+                segs = fixed + [sg for r in moving
+                                for sg in f._route_segments(r)]
+                for rid, x0, y0, x1, y1 in segs:
                     seg = (x0, y0, x1, y1)
-                    net = next((r["netId"] for r in f.routes
-                                if r["id"] == rid), None)
+                    net = netof.get(rid)
                     if net != self.netid[nd]:
                         worst = min(worst, _box_gap(box, seg))
                     elif (min(x0, x1) < ix[2] and max(x0, x1) > ix[0]
