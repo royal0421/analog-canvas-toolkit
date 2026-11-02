@@ -1865,10 +1865,37 @@ class Placer(object):
         if segs is None:
             return None
         mine = [s[1:] for s in segs]
+        # The box around every line this trunk draws.  Each test below only
+        # reaches a bounded distance past a segment, so whatever lies
+        # further out than that is skipped without changing any count.
+        ux0 = uy0 = float("inf")
+        ux1 = uy1 = float("-inf")
+        for ax, cc, s0, s1 in mine:
+            if ax == "h":
+                x0_, x1_, y0_, y1_ = s0, s1, cc, cc
+            else:
+                x0_, x1_, y0_, y1_ = cc, cc, s0, s1
+            if x0_ < ux0:
+                ux0 = x0_
+            if x1_ > ux1:
+                ux1 = x1_
+            if y0_ < uy0:
+                uy0 = y0_
+            if y1_ > uy1:
+                uy1 = y1_
         sep = int(os.environ.get("AC_SEP", 30))
         shorted = overlap = cross = 0
         for onet, oax, oc, o0, o1 in taken:
             if onet == nd:
+                continue
+            # a cross needs the other line to pass through the box; a short
+            # or an overlap needs it within `sep` of the box, along it
+            if oax == "h":
+                if (oc < uy0 - sep or oc > uy1 + sep
+                        or o1 < ux0 or o0 > ux1):
+                    continue
+            elif (oc < ux0 - sep or oc > ux1 + sep
+                    or o1 < uy0 or o0 > uy1):
                 continue
             for max_, mc, m0, m1 in mine:
                 if max_ != oax:
@@ -1889,9 +1916,11 @@ class Placer(object):
         # joint -- Sallen-Key ran n1's bus over R1's V_in pin and the output
         # riser straight through the op-amp's IN+ (user 2026-09-02)
         for pxy, owners in self._pinnet.items():
+            px, py = pxy
+            if px < ux0 or px > ux1 or py < uy0 or py > uy1:
+                continue              # a pin off the box lies on no line
             if nd in owners:
                 continue
-            px, py = pxy
             for max_, mc, m0, m1 in mine:
                 if max_ == "h":
                     if py == mc and m0 <= px <= m1:
@@ -1969,24 +1998,9 @@ class Placer(object):
         bodycost_hard = str(self.opt("bodycost", "soft")) == "hard"
         mine_parts = member.get(nd, ())
         # Every test below looks at most M (8) units past a segment, so a box
-        # more than M outside the box around ALL of this trunk's segments
-        # cannot count -- skipping it changes nothing, and it is most boxes
-        # (this loop was ~60% of the Midterm search).
-        ux0 = uy0 = float("inf")
-        ux1 = uy1 = float("-inf")
-        for _k, ax, cc, s0, s1 in trunks + rsegs:
-            if ax == "h":
-                x0_, x1_, y0_, y1_ = s0, s1, cc, cc
-            else:
-                x0_, x1_, y0_, y1_ = cc, cc, s0, s1
-            if x0_ < ux0:
-                ux0 = x0_
-            if x1_ > ux1:
-                ux1 = x1_
-            if y0_ < uy0:
-                uy0 = y0_
-            if y1_ > uy1:
-                uy1 = y1_
+        # more than M outside (ux0, uy0, ux1, uy1) cannot count -- skipping
+        # it changes nothing, and it is most boxes (this loop was ~60% of
+        # the Midterm search).
         for iid, bb in inks:
             if (bb[0] - M > ux1 or bb[2] + M < ux0
                     or bb[1] - M > uy1 or bb[3] + M < uy0):
