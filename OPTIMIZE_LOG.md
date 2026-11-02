@@ -30,3 +30,5 @@
 - 2026-11-02｜**撤回**（第一版）：_nudge_ports 對垂直 trunk 上的 port 一律加「沿 stub 左右滑」候選｜預期：清掉 port 圈貼別 net 垂直線的情形｜wire 1.06→1.05x、bends 1.28→1.27x、crossings 17→16（Q2f X 1→0），但 place 34.81→34.16%（14.36b 18%→0%、wire 1.2→1.4x）→ 撤回｜—
 - 2026-11-02｜autoplace._nudge_ports：上一項改成最後手段，原有候選全都 < CROWD_MIN 時才試沿 stub 滑動｜預期：現有圖不變；讓下一項（Midterm 差動對放一起）的 V_out1 能離開 V_b4 線｜28 張每行相同、auto/ 56 檔逐位元相同、place 34.81% 不變；牆鐘 606 s；regress 36/36、unittest 26/26｜5e122b0
 - 2026-11-02｜**撤回**：Midterm 折疊差動對免除 anchor（`dpfold`，判定收緊為「汲極是兩顆電晶體疊接的中間節點」，28 張裡只有 Midterm 吃到），搭配上一項 stub 滑動｜預期：差動對放一起、全乾淨｜Midterm 全乾淨、wire 2.1→1.4x、X 6→5、place 9→18%，但 bends 36.5→38：V_b2／V_b3／V_b4 三個偏壓 port 依「輸入在左」擠在差動對與左堆之間，ol、xl 兩條線被迫往左繞一圈 → 撤回。手排的做法是偏壓 port 從閘極匯流排中點往上拉一段垂直 stub；這會改到「輸入 port 在左」的 SOP 規則，需使用者同意｜—
+- 2026-11-02｜**未採用**：stub 滑動的觸發門檻改成 8／12／一律（Q2f、HW2、14.36b 三張單跑）｜預期：保住 Q2f 交叉 1→0、又不重畫 14.36b｜門檻 8：三張都不變；12：14.36b 就被重畫（place 18%→0%）；Q2f 的改善只在「一律」才出現 → 分不開，維持 CROWD_MIN｜—
+- 2026-11-02｜autoplace._nudge_ports：clear() 的其他 net 線段與 route→net 對照每個 port 只算一次，只重算接到 port 的 route｜預期：分數與輸出不變（8.57：clear 約 8%）｜28 張每行相同、auto/ 56 檔逐位元相同；牆鐘 606→583 s、CPU 39.1→36.1 min；regress 36/36、unittest 26/26｜91f600c
