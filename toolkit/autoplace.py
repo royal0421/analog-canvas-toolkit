@@ -26,6 +26,9 @@ import io
 import json
 import contextlib
 import copy
+import pickle
+import shutil
+import tempfile
 
 import netlist_io as N
 from icproj import ink_box
@@ -4632,12 +4635,80 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
         _res = None
         _WIDE_FIRED[0] = _SNAP_FIRED[0] = _ROW_FIRED[0] = False
         _MID_FIRED[0] = False
-        for _gr in _starts:
-            for _lt in (1, 0):
-                _r = descend(_gr, start={"ltrunk": _lt, "bdwide": 1,
-                                         "snapcol": 1})
-                if _res is None or _r[0] < _res[0]:
-                    _res = _r
+        _FLAGS = (_WIDE_FIRED, _SNAP_FIRED, _ROW_FIRED, _MID_FIRED)
+
+        def par(jobs):
+            """Run independent descents side by side; same answer as in turn.
+
+            A descent's path depends only on the scores it sees, and every
+            score is a pure function of its layout, so the memo tables only
+            save time -- descents started from different points can run in
+            separate processes.  Merging their tables back in job order,
+            adding only the keys not yet present, gives the very insertion
+            order running them one after another gives, and the `*_FIRED`
+            flags are OR-ed.  The bench's long pole (Midterm) otherwise ran
+            its descents one at a time on one core after every other figure
+            had finished.  AC_SERIAL=1 runs them in turn.
+            """
+            nonlocal out_proj, out_svg
+            if len(jobs) < 2 or os.environ.get("AC_SERIAL") == "1" \
+                    or not hasattr(os, "fork"):
+                return [descend(*a, **k) for a, k in jobs]
+            kids = []
+            for a, k in jobs:
+                rfd, wfd = os.pipe()
+                pid = os.fork()
+                if pid == 0:                         # child
+                    os.close(rfd)
+                    # Every draw writes the project and its SVG preview, and
+                    # build() parses the SVG back.  Siblings sharing one path
+                    # read each other's half-written file, the draw raises,
+                    # `score` books it as 999 and the descent walks a
+                    # different path (4 of 28 figures came out translated by
+                    # 10 units).  Same file names, a private directory.
+                    tmpd = tempfile.mkdtemp(prefix="ac-descent-")
+                    out_proj = os.path.join(tmpd, os.path.basename(out_proj))
+                    out_svg = os.path.join(tmpd, os.path.basename(out_svg))
+                    try:
+                        r = descend(*a, **k)
+                        msg = ("ok", r, tried, facts,
+                               [f[0] for f in _FLAGS])
+                    except BaseException as e:      # noqa: BLE001
+                        msg = ("err", "%s: %s" % (type(e).__name__, e))
+                    try:
+                        with os.fdopen(wfd, "wb") as w:
+                            pickle.dump(msg, w, protocol=pickle.HIGHEST_PROTOCOL)
+                    finally:
+                        shutil.rmtree(tmpd, ignore_errors=True)
+                        os._exit(0)
+                os.close(wfd)
+                kids.append((pid, rfd))
+            msgs = []
+            for pid, rfd in kids:
+                with os.fdopen(rfd, "rb") as rd:
+                    data = rd.read()
+                os.waitpid(pid, 0)
+                msgs.append(pickle.loads(data) if data
+                            else ("err", "descent process died"))
+            out = []
+            for msg in msgs:
+                if msg[0] != "ok":
+                    raise RuntimeError("parallel descent failed: " + msg[1])
+                _ok, r, t2, f2, fl = msg
+                for key, v in t2.items():
+                    if key not in tried:
+                        tried[key] = v
+                for key, v in f2.items():
+                    if key not in facts:
+                        facts[key] = v
+                for f, v in zip(_FLAGS, fl):
+                    f[0] = f[0] or v
+                out.append(r)
+            return out
+
+        _jobs = [((_gr,), {"start": {"ltrunk": _lt, "bdwide": 1,
+                                     "snapcol": 1}})
+                 for _gr in _starts for _lt in (1, 0)]
         # The wide detour and the column snap are starting points, not
         # axes, for the same reason `ltrunk` is: each adds a move the
         # search did not have, and a figure that never uses one can still
@@ -4652,19 +4723,19 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
         # score (which DOES see corners, crossings and `block_shaves`)
         # decide.  Only figures that draw a block can want it.
         if any(d.sym in N.BLOCKS for d in c.devices):
-            for _gr in _starts:
-                for _lt in (1, 0):
-                    # `hard` here, not a price: as a STARTING POINT its job
-                    # is to make the layout that clears the block reachable
-                    # at all, and the outer score then decides whether to
-                    # keep it.  Priced in wire the nudge was too weak to
-                    # move 8.69's trunk (clearing costs it one wire point),
-                    # and priced anywhere inside the trunk cost it cannot
-                    # see the three corners it costs 8.57.
-                    _r = descend(_gr, start={"ltrunk": _lt, "bdwide": 1,
-                                             "snapcol": 1, "shave": "hard"})
-                    if _r[0] < _res[0]:
-                        _res = _r
+            # `hard` here, not a price: as a STARTING POINT its job is to
+            # make the layout that clears the block reachable at all, and
+            # the outer score then decides whether to keep it.  Priced in
+            # wire the nudge was too weak to move 8.69's trunk (clearing
+            # costs it one wire point), and priced anywhere inside the trunk
+            # cost it cannot see the three corners it costs 8.57.
+            _jobs += [((_gr,), {"start": {"ltrunk": _lt, "bdwide": 1,
+                                          "snapcol": 1, "shave": "hard"}})
+                      for _gr in _starts for _lt in (1, 0)]
+        # the starts above are independent of each other: one batch
+        for _r in par(_jobs):
+            if _res is None or _r[0] < _res[0]:
+                _res = _r
         _extra = []
         if _WIDE_FIRED[0]:
             _extra.append({"bdwide": 0, "snapcol": 1})
@@ -4678,12 +4749,11 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
         # ...and centring the lying-down parts, for the same reason.
         if _MID_FIRED[0]:
             _extra.append({"bdwide": 1, "snapcol": 1, "midlat": 0})
-        for _st in _extra:
-            for _gr in _starts:
-                for _lt in (1, 0):
-                    _r = descend(_gr, start=dict(_st, ltrunk=_lt))
-                    if _r[0] < _res[0]:
-                        _res = _r
+        for _r in par([((_gr,), {"start": dict(_st, ltrunk=_lt)})
+                       for _st in _extra for _gr in _starts
+                       for _lt in (1, 0)]):
+            if _r[0] < _res[0]:
+                _res = _r
         # Still dirty?  Run the whole descent again without the newer cost
         # orders.  Coordinate descent is path-sensitive: adding "hnbRwo"
         # was enough to hide the clean layout 8.57 had been finding, and no
@@ -4691,8 +4761,8 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
         # clean one needs the colmove/latrow/compact moves that only the
         # other path accumulates.
         if _res[0][0] > 0:
-            for _gr in _starts:
-                _r = descend(_gr, drop=("hnbRwo", "hbRnwo"))
+            for _r in par([((_gr,), {"drop": ("hnbRwo", "hbRnwo")})
+                           for _gr in _starts]):
                 if _r[0] < _res[0]:
                     _res = _r
         best, style, grid = _res
