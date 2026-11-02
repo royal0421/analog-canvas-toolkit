@@ -85,6 +85,10 @@ _SNAP_FIRED = [False]
 _PARA_FIRED = [False]
 _ROW_FIRED = [False]
 _MID_FIRED = [False]
+# True while place_deck is searching: candidate drawings are scored from
+# memory and never written (icproj.Schematic.build `dry`); the winner is
+# drawn once more afterwards and that draw writes the files.
+_DRY = [False]
 
 
 def span_of(sym):
@@ -1044,6 +1048,7 @@ class Placer(object):
             supply_net="net-" + (self.c.globals[0] if self.c.globals
                                  else "VDD"))
         f.lane2_audits = True      # the netlist lane opts into its own checks
+        f.dry = _DRY[0]            # a search candidate writes no files
         self.pinxy = {}
         self._lat = []
         # a lateral the signal never traverses forward is feedback: it goes
@@ -4329,6 +4334,7 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
 
     fast = os.environ.get("AC_FAST")
     os.environ["AC_FAST"] = "1"
+    _DRY[0] = True
     try:
         # gaterow moves every name in a mirror row, so it reshapes what
         # the trunks must dodge.  That makes it a STARTING POINT, not an
@@ -4793,6 +4799,7 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
                     best, style, grid = sc, dict(items), g2
                     break
     finally:
+        _DRY[0] = False
         if fast is None:
             os.environ.pop("AC_FAST", None)
         else:

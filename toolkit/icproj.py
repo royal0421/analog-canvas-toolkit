@@ -1028,6 +1028,17 @@ class Schematic(object):
         clipped = self._viewbox_audit(viewbox)
         self._preview(viewbox)
 
+        if getattr(self, "dry", False):
+            # autoplace's search: thousands of candidate drawings are scored
+            # and thrown away, only the winner is written.  Same audits, same
+            # report, no files (AC_FAST only -- nothing external to check).
+            assert os.environ.get("AC_FAST"), "dry build needs AC_FAST=1"
+            print("  external checks: SKIPPED (AC_FAST=1)")
+            if strict and (errs or legs or labels or onwire or tees
+                           or shorts or clipped):
+                raise BuildValidationError(["dry build failed audits"])
+            return project
+
         out_dir = os.path.dirname(os.path.abspath(self.out_proj))
         os.makedirs(out_dir, exist_ok=True)
         fd, staged = tempfile.mkstemp(
@@ -2158,10 +2169,13 @@ class Schematic(object):
             P.append('<text x="%g" y="%g" text-anchor="%s">%s</text>'
                      % (x, y, align, "".join(parts)))
         P.append('</g></svg>')
-        with open(self.out_svg, "w", encoding="utf-8") as f:
-            f.write("".join(P))
         import xml.etree.ElementTree as ET
-        ET.parse(self.out_svg)
+        if getattr(self, "dry", False):
+            ET.fromstring("".join(P))     # the same well-formedness check
+        else:
+            with open(self.out_svg, "w", encoding="utf-8") as f:
+                f.write("".join(P))
+            ET.parse(self.out_svg)
         if os.environ.get("AC_FAST"):        # _verify prints the render line
             print("preview -> %s   --window-size=%d,%d"
                   % (os.path.basename(self.out_svg), self.preview_px[0] + 20,
