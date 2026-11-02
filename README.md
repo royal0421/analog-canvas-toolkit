@@ -138,8 +138,9 @@ python netlist_io.py
 python autoplace.py decks/Razavi_Fig_9_34_pnp-current-mirror.cir
 
 # 3. 拿 21 張手排圖當標準答案打分
-python netlist_bench.py          # 序列，約 40 分鐘
-python bench_par.py              # 同樣的數字，一張圖一核，約 14 分鐘
+python netlist_bench.py          # 一次一張圖，約 14 分鐘（4 核；每張圖的 descent 會平行跑）
+python bench_par.py              # 同樣的數字，一張圖一核，約 12 分鐘（4 核）
+# AC_SERIAL=1 讓 descent 依序跑（結果相同，只是比較慢）
 ```
 
 `netlist_io.py` 必須先跑——`decks/*.cir` 是從 `out/` 的專案匯出的產物，
