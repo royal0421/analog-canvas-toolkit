@@ -4655,6 +4655,32 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
                 if _r[0] < _res[0]:
                     _res = _r
         best, style, grid = _res
+
+        # Two parts jammed into each other is a defect no audit in the score
+        # sees (icproj._part_clear_audit).  Scoring it inside the descent
+        # moved the descent itself -- Midterm went from 6 crossings to 10 --
+        # so it is a FILTER on the winner instead: if the winner touches,
+        # take the best layout already tried that does not.  A winner that
+        # does not touch costs one extra draw and changes nothing.
+        def touches(g, st):
+            buf = io.StringIO()
+            try:
+                pr = Placer(c, out_proj, out_svg, pitch=g[0], rowgap=g[1],
+                            portstub=g[2], style=st)
+                with contextlib.redirect_stdout(buf):
+                    pr.run(verbose=True)
+                    return pr.f._part_clear_audit()
+            except Exception:
+                return 999
+
+        if touches(grid, style):
+            ranked = sorted(tried.items(), key=lambda kv: kv[1])
+            for (g2, items), sc in ranked[:300]:
+                if sc[0] > 0:
+                    break                  # only audit-clean layouts qualify
+                if not touches(g2, dict(items)):
+                    best, style, grid = sc, dict(items), g2
+                    break
     finally:
         if fast is None:
             os.environ.pop("AC_FAST", None)

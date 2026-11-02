@@ -27,6 +27,13 @@ def symbol(*pins):
     }
 
 
+def tall_blob():
+    sym = symbol(("P", 0, 8, "south"))
+    sym["primitives"][0]["from"] = {"x": -5, "y": -8}
+    sym["primitives"][0]["to"] = {"x": 5, "y": 8}
+    return sym
+
+
 class SchematicTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -63,6 +70,29 @@ class SchematicTests(unittest.TestCase):
         errors = self.figure._selfcheck(set())
         self.assertFalse(any("unrouted terminal M1.B" in error
                              for error in errors), errors)
+
+    def test_unrelated_parts_may_not_touch(self):
+        # the ink box is 10 wide, 16 tall: 4 units apart along a 10-unit
+        # face is the HW4 Fig. (c) ground jammed onto R_S
+        icproj._SYMS["blob"] = tall_blob()
+        self.figure.place("A", "blob", 100, 100)
+        self.figure.place("B", "blob", 100, 120)
+        self.figure.net("net-a", [("A", "P")])
+        self.figure.net("net-b", [("B", "P")])
+        with redirect_stdout(StringIO()):
+            self.assertEqual(1, self.figure._part_clear_audit())
+
+    def test_parts_meeting_corner_to_corner_or_on_one_net_pass(self):
+        icproj._SYMS["blob"] = tall_blob()
+        self.figure.place("A", "blob", 100, 100)
+        self.figure.place("B", "blob", 110, 120)    # corner to corner
+        self.figure.place("C", "blob", 200, 100)
+        self.figure.place("D", "blob", 200, 120)    # same net as C
+        self.figure.net("net-a", [("A", "P")])
+        self.figure.net("net-b", [("B", "P")])
+        self.figure.net("net-c", [("C", "P"), ("D", "P")])
+        with redirect_stdout(StringIO()):
+            self.assertEqual(0, self.figure._part_clear_audit())
 
     def test_route_endpoints_must_belong_to_route_net(self):
         icproj._SYMS["port"] = symbol(("P", 0, 0, "east"))

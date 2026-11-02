@@ -54,6 +54,9 @@ LABEL_PORT = 14            # port label offset from the port CENTRE.  The
 # two different nets end-to-end on one line, closer than this, read as a
 # single wire (user, 2026-09-04 -- P2's drain and source at constant-gm)
 COLLINEAR_GAP = 10
+# Two unrelated parts closer than CROWD_MIN that face each other along at
+# least this many units have their strokes run together (_part_clear_audit)
+PART_FACE = 5
 CROWD_MIN = 6              # tightest acceptable ink-to-ink clearance.  The
                            # user accepted 7.0-7.1 (Fig 14.36 caps, Fig 5.170
                            # R_E1/C_2) but not 0.6.
@@ -1532,6 +1535,48 @@ class Schematic(object):
                         print("  ! WIRE INSIDE BODY  %s runs inside %s"
                               % (rid, iid))
                         bad += 1
+        return bad
+
+    def _part_clear_audit(self):
+        """Two unrelated parts drawn into each other.
+
+        Every other audit compares a WIRE (or a label) against a body, so
+        two bodies jammed together passed all of them.  With R_S lying down
+        under C_L in AIC HW4 Fig. (c), C_L's ground sat 4 units above the
+        resistor: the boxes do not touch, but the strokes do, and the render
+        showed the ground drawn through the zigzag (2026-11-02).
+
+        Parts that share a net are exempt -- a ground hanging off an op-amp
+        input sits inside the triangle's box by design (Fig 14.36b) -- and
+        so are boxes that only meet corner to corner: Diff-amp's C_L ground
+        comes 3.6 units from C_1 but faces it along 3, and reads cleanly.
+
+        NOT part of build()'s audits.  Scored inside the autoplace search it
+        steered the descent off the layouts it used to find (Midterm:
+        crossings 6 -> 10), so autoplace applies it only to the FINAL pick:
+        a winner that touches gives way to the best clean layout already
+        tried (autoplace.place_deck).
+        """
+        onnet = {}
+        for n in self.nets:
+            ids = set(t["instanceId"] for t in n["terminals"])
+            for iid in ids:
+                onnet.setdefault(iid, set()).add(n["id"])
+        boxes = [(iid, self.ink(iid)) for iid in sorted(self.placed)]
+        bad = 0
+        for i in range(len(boxes)):
+            a, ba = boxes[i]
+            for b, bb in boxes[i + 1:]:
+                if onnet.get(a, set()) & onnet.get(b, set()):
+                    continue
+                gx = max(ba[0], bb[0]) - min(ba[2], bb[2])
+                gy = max(ba[1], bb[1]) - min(ba[3], bb[3])
+                gap, face = (gx, -gy) if gx > gy else (gy, -gx)
+                if gap < CROWD_MIN and face >= PART_FACE:
+                    print("  ! PARTS TOUCH  %s and %s are %.1f apart along"
+                          " %.1f units -- the strokes run into each other"
+                          % (a, b, gap, face))
+                    bad += 1
         return bad
 
     def _pin_touch_audit(self):
