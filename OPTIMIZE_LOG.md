@@ -23,3 +23,4 @@
 - 2026-11-02｜README：netlist_bench／bench_par 的時間改成實測值，補 AC_SERIAL 說明｜文件。官方 netlist_bench.py 全跑驗證：28 figures | 28 clean | place 35% | order 76% | mirror 91% | wire 1.06x | bends 1.28x | crossings 17，auto/ 56 檔與基準逐位元相同；13 min 54 s（4 核）｜3ce7eac
 - 2026-11-02｜**撤回**（未跑全套，單張即無效）：_trunk_cost 的零件框外推預先算好放在 tracks()｜預期：省每次呼叫的減法｜8.57 單張 CPU 47.5→47.7–48.2 s，沒變快 → 撤回｜—
 - 2026-11-02｜autoplace 搜尋期間 Schematic.build 走 dry：稽核與報告照舊，不寫 JSON／SVG（SVG 在記憶體做同樣的 XML 檢查）；勝出者最後再畫一次才寫｜預期：分數與輸出不變，省 json.dump 與檔案 I/O（8.57：2182 次候選）｜28 張每行相同、auto/ 56 檔逐位元相同；牆鐘 709→681 s、CPU 43.9→42.7 min；regress 36/36、unittest 23/23｜d632118
+- 2026-11-02｜autoplace.annotate：標籤擺放期間 segments()／ink() 只算一次（放標籤只加文字，不動線與零件）｜預期：分數與輸出不變（8.57：32.7 萬次 segments，約佔 9%）｜28 張每行相同、auto/ 56 檔逐位元相同；牆鐘 681→627 s、CPU 42.7→39.1 min；regress 36/36、unittest 23/23｜3652828
