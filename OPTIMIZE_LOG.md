@@ -18,3 +18,4 @@
 - 2026-11-02｜autoplace.place_deck：五個 probe 共用 score() 已畫好的版面，不再各自重畫（8.57：2336 次 run 只有 1340 個不同）｜預期：分數與輸出不變、CPU 下降｜28 張每行相同、auto/ 56 檔逐位元相同；CPU 75.8→71.6 min（−5.5%）、牆鐘 1671→1609 s；regress 36/36、unittest 23/23｜1583b9c
 - 2026-11-02｜autoplace._trunk_cost：零件框在 trunk 全部線段外框再外推 M(8) 之外者直接略過（裡面的 inside／near／shaving 都看不到那麼遠，等價）｜預期：分數與輸出不變、牆鐘下降（py-spy：Midterm 約 60% 在此迴圈）｜28 張每行相同、auto/ 56 檔逐位元相同；牆鐘 1609→985 s（−39%）、CPU 71.6→47.5 min；regress 36/36、unittest 23/23｜e8565a0
 - 2026-11-02｜autoplace._trunk_cost：已畫線段（交叉／短路／重疊）與外 net 腳位也用 trunk 外框先略過（等價；外框改在函式開頭算一次）｜預期：分數與輸出不變、牆鐘再降｜28 張每行相同、auto/ 56 檔逐位元相同；牆鐘 985→903 s、CPU 47.5→44.4 min；regress 36/36、unittest 23/23｜d544c1f
+- 2026-11-02｜**撤回**：autoplace.place_deck 勝出者乾淨但仍有交叉時，也跑一次拿掉 hnbRwo／hbRnwo 的第二條 descent（原本只在有稽核錯誤時跑）｜預期：只動 7 張有交叉的圖，降交叉｜7 張（Q2f、HW2 比較器、Midterm、Cgs3、NAND2、NOR2、10.35a）的輸出與基準逐位元相同，交叉 17→17；只多花時間（Midterm 868→1019 s）→ 撤回。另：Q2f 是 8 個並聯支路的小訊號模型，NAND2 的交叉是 B 線橫越 M_N1 汲極欄，都不是 descent 路徑問題｜—
