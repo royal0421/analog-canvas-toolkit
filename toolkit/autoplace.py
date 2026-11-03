@@ -485,9 +485,18 @@ class Placer(object):
                     cand = [d for d in cand if d.sym == ch[-1].sym]
                 if not cand:
                     break
-                # the leg that reaches ground keeps the column going
-                cand.sort(key=lambda d: (0 if self.c.is_ground(d.pins[d.bot])
-                                         else 1, decl[d.ref]))
+                # the leg that reaches ground keeps the column going --
+                # but a TRANSISTOR on the node is the conduction path, and
+                # a capacitor straight to ground beside it is a load hung
+                # off the node (Diff-amp: L_3-R_2 stand on M_1, C_L hangs
+                # beside them, as hand-drawn).  AC_TRFIRST=0 reverts.
+                # (decided BEFORE sorting: list.sort empties the list while
+                # it runs, so a key that looks at `cand` sees nothing)
+                trf = (os.environ.get("AC_TRFIRST", "1") == "1"
+                       and any(e.sym == "capacitor" for e in cand))
+                cand.sort(key=lambda d: (
+                    0 if (trf and d.sym in CTRL) else 1,
+                    0 if self.c.is_ground(d.pins[d.bot]) else 1, decl[d.ref]))
                 ch.append(cand[0])
                 used.add(cand[0].ref)
                 node = cand[0].pins[cand[0].bot]
@@ -971,8 +980,14 @@ class Placer(object):
                     mid.append(k)
                 elif ("c", j) in cur and j not in done:
                     done.add(j)
-                    left.append(k)
-                    right.append(("c", j))
+                    # the half the deck declares first goes on the left
+                    # (Diff-amp's M_1 side; the search's order had swapped
+                    # the halves and the figure lost every rank)
+                    fi = min(self.decl[d.ref] for d in chains[i])
+                    fj = min(self.decl[d.ref] for d in chains[j])
+                    a_, b_ = (k, ("c", j)) if fi <= fj else (("c", j), k)
+                    left.append(a_)
+                    right.append(b_)
                 else:
                     mid.append(k)
             # A cross-coupled pair (each gate on its partner's drain: a
@@ -4525,6 +4540,10 @@ def _grids(tune):
     return out
 
 
+_UNPOLAR = ("resistor", "capacitor", "inductor", "inductor-compact",
+            "variable-resistor", "variable-capacitor")
+
+
 def _mirror_map(c):
     """Left/right symmetry of a deck: (node map, device map) or None.
 
@@ -4560,24 +4579,34 @@ def _mirror_map(c):
                     continue
                 if set(e.pins) != set(d.pins):
                     continue
-                ok, known = True, 0
-                for p, n in d.pins.items():
-                    if n in nmap:
-                        known += 1
-                        if nmap[n] != e.pins[p]:
+                # an unpolarised two-terminal part may lie either way round
+                # in its mirror image (Diff-amp's C_LL is ol-0, C_LR 0-or;
+                # R_1 between the two sources maps onto itself reversed)
+                ways = [dict((p, p) for p in d.pins)]
+                if d.sym in _UNPOLAR and len(d.pins) == 2:
+                    p1, p2 = sorted(d.pins)
+                    ways.append({p1: p2, p2: p1})
+                for w in ways:
+                    ok, known = True, 0
+                    for p, n in d.pins.items():
+                        m = e.pins[w[p]]
+                        if n in nmap:
+                            known += 1
+                            if nmap[n] != m:
+                                ok = False
+                                break
+                        elif m in nmap and nmap[m] != n:
                             ok = False
                             break
-                    elif e.pins[p] in nmap and nmap[e.pins[p]] != n:
-                        ok = False
+                    if ok and known:
+                        fits.append((e, w))
                         break
-                if ok and known:
-                    fits.append(e)
             if len(fits) != 1:
                 continue
-            e = fits[0]
+            e, w = fits[0]
             dmap[d.ref], dmap[e.ref] = e.ref, d.ref
             for p, n in d.pins.items():
-                m = e.pins[p]
+                m = e.pins[w[p]]
                 if n not in nmap and m not in nmap:
                     nmap[n], nmap[m] = m, n
                 elif n not in nmap:
