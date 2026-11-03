@@ -123,6 +123,12 @@ class HintTests(unittest.TestCase):
                          c.groups)
         self.assertEqual({"a": "top"}, c.portside)
 
+    def test_row_below_names_a_group(self):
+        c = self.read(".group dn MN1 MN2\n.row dn below\n")
+        self.assertEqual(["dn"], c.below)
+        with self.assertRaises(ValueError):
+            self.read(".group dn MN1 MN2\n.row up below\n")
+
     def test_unknown_names_are_errors(self):
         with self.assertRaises(ValueError):
             self.read(".group up MP1 MX9\n")
@@ -133,7 +139,7 @@ class HintTests(unittest.TestCase):
 
     def test_bench_reads_no_hints(self):
         c = autoplace._read_hints(netlist_io.parse(NAND2), None)
-        self.assertEqual(([], {}), (c.groups, c.portside))
+        self.assertEqual(([], {}, []), (c.groups, c.portside, c.below))
 
 
 if __name__ == "__main__":

@@ -1218,12 +1218,33 @@ class Placer(object):
         # transistors first: a part hanging on a gate has to know where the
         # gate is before it can stop there (Razavi Fig 7.32 puts R_G's lower
         # end exactly on the gate line, not on a row of its own)
+        self._below, self._dy = set(), 0
+        for g, refs in getattr(self.c, "groups", ()):
+            if g in getattr(self.c, "below", ()):
+                self._below.update(refs)
+        excl = set()
+        if self._below:
+            # a block that hangs below the rest (decks/hints `.row`): its
+            # nodes that nothing else touches move with it, and its rail
+            # sits under the lowest row anything else uses
+            for n in self.c.nodes():
+                if self.c.is_ground(n) or self.c.is_supply(n):
+                    continue
+                on = [d.ref for d, _p in self.c.pins_on(n)]
+                if on and all(r in self._below for r in on):
+                    excl.add(n)
+            others = [y for n, y in self.ynode.items()
+                      if n not in excl and not self.c.is_supply(n)]
+            if others:
+                self._dy = int(round((max(others) + 80 - RAIL_Y) / 10.0)) * 10
         for d in sorted(self.vert, key=lambda e: 0 if e.sym in CTRL else 1):
             self._place_vert(d)
         for d in self.blocks:
             self._place_block(d)          # blocks first: a lying-down part
         for d in self.horiz:              # has to be able to see them
             self._place_horiz(d)
+        for n in excl:
+            self.ynode[n] += self._dy
 
     def _spans_over(self, d):
         """Does this lying-down part reach across something?
@@ -1314,6 +1335,8 @@ class Placer(object):
         # the search may hang a grounded source lower (see `vdrop` in
         # place_deck): its live pin then sits below the row it feeds
         cy += dict(self.opt("vdrop", ()) or ()).get(d.ref, 0)
+        if d.ref in getattr(self, "_below", ()):
+            cy += self._dy
         # A symmetric two-terminal part is drawn with pin 1 on top, always.
         # When the netlist puts the UPPER node on pin 2 the part has to be
         # turned over, or the drawing hangs it upside down: `RO1 0 out1`
@@ -1378,6 +1401,8 @@ class Placer(object):
         # of one net landing on different rows is what makes the net loop
         # round (Fig 3.57's C_1 and D_2)
         cy += dict(self.opt("latrow", ()) or ()).get(d.ref, 0)
+        if d.ref in getattr(self, "_below", ()):
+            cy += self._dy
         if x1 is None or x2 is None or x1 == x2:
             base = x1 if x1 is not None else (x2 if x2 is not None else X0)
             # the diode symbol is drawn horizontal already, so 0 lies it
@@ -1801,10 +1826,12 @@ class Placer(object):
             pins = [self.pinxy[t] for t in self.netterms.get(nd, [])
                     if t in self.pinxy]
             if self.c.is_supply(nd):
-                for x, y in pins:
-                    if y != RAIL_Y:
-                        out.append((nd, "v", x, min(RAIL_Y, y),
-                                    max(RAIL_Y, y)))
+                for t in self.netterms.get(nd, []):
+                    if t not in self.pinxy:
+                        continue
+                    (x, y), ry = self.pinxy[t], self._rail_y(t)
+                    if y != ry:
+                        out.append((nd, "v", x, min(ry, y), max(ry, y)))
             else:
                 bycol = {}
                 for x, y in pins:
@@ -3390,6 +3417,12 @@ class Placer(object):
             return "V_" + nm[1:]
         return nm
 
+    def _rail_y(self, t):
+        """The rail a supply pin hangs from: a block placed below (`.row`)
+        has a rail of its own, _dy lower."""
+        return RAIL_Y + (self._dy if t[0] in getattr(self, "_below", ())
+                         else 0)
+
     def _wire_supply(self, nd):
         f = self.f
         pins = [(self.pinxy[t][0], t) for t in self.netterms[nd]
@@ -3397,23 +3430,38 @@ class Placer(object):
         pins.sort()
         xs = [p[0] for p in pins]
         if self.supply_marker is None and len(pins) >= 2:
-            lo, hi = min(xs) - RAIL_OVERHANG, max(xs) + RAIL_OVERHANG
-            taps = [lo] + sorted(set(xs)) + [hi]
-            for i, x in enumerate(taps):
-                jid = ("jvdd-start" if i == 0 else
-                       "jvdd-end" if i == len(taps) - 1 else "jvdd-%d" % i)
-                f.junction(jid, self.netid[nd], x, RAIL_Y)
-            f.rail(self.netid[nd], RAIL_Y, taps)
-            for i in range(len(taps) - 1):
-                self.long_haul.add("r-vdd-rail-%d" % i)
-            self.rail_ends |= {"jvdd-start", "jvdd-end"}
+            # one rail per height: the main one, and one for a block that
+            # hangs below the rest (`.row`).  Same net, two bars, each with
+            # its own V_DD label -- the hand-drawn HW2 comparator.
+            byrail = {}
             for x, t in pins:
-                jid = f._jat(x, RAIL_Y)
-                rid = "r-vdd-%s-%s" % (t[0].lower(), t[1].lower())
-                f.route(rid, self.netid[nd], f.jn(jid), [("to", f.term(*t))])
-                self._note_legs(rid, [(x, RAIL_Y), self.pinxy[t]])
-            f.power_label("label-vdd", self.netid[nd], "jvdd-end", 12, 6,
-                          self._supply_label())
+                byrail.setdefault(self._rail_y(t), []).append((x, t))
+            if len(byrail) > 1 and any(len(v) < 2 for v in byrail.values()):
+                byrail = {RAIL_Y: pins}       # a one-tap rail is no rail
+            for k, ry in enumerate(sorted(byrail)):
+                sfx = "" if k == 0 else str(k + 1)
+                rp = byrail[ry]
+                rxs = [p[0] for p in rp]
+                lo, hi = min(rxs) - RAIL_OVERHANG, max(rxs) + RAIL_OVERHANG
+                taps = [lo] + sorted(set(rxs)) + [hi]
+                for i, x in enumerate(taps):
+                    jid = ("jvdd%s-start" % sfx if i == 0 else
+                           "jvdd%s-end" % sfx if i == len(taps) - 1
+                           else "jvdd%s-%d" % (sfx, i))
+                    f.junction(jid, self.netid[nd], x, ry)
+                f.rail(self.netid[nd], ry, taps,
+                       prefix="r-vdd%s-rail" % sfx)
+                for i in range(len(taps) - 1):
+                    self.long_haul.add("r-vdd%s-rail-%d" % (sfx, i))
+                self.rail_ends |= {"jvdd%s-start" % sfx, "jvdd%s-end" % sfx}
+                for x, t in rp:
+                    jid = f._jat(x, ry)
+                    rid = "r-vdd-%s-%s" % (t[0].lower(), t[1].lower())
+                    f.route(rid, self.netid[nd], f.jn(jid),
+                            [("to", f.term(*t))])
+                    self._note_legs(rid, [(x, ry), self.pinxy[t]])
+                f.power_label("label-vdd%s" % sfx, self.netid[nd],
+                              "jvdd%s-end" % sfx, 12, 6, self._supply_label())
             self.f.rail_end = "jvdd-end"
         elif pins:
             t = pins[0][1]
@@ -4478,11 +4526,14 @@ def _read_hints(c, path):
                                          its bus (all its pins on one row),
                                          stub straight down -- the midterm's
                                          cascode biases
+        .row <group> below               that block hangs BELOW the others
+                                         with a supply rail of its own (the
+                                         HW2 comparator's latch)
 
     Blank lines and `*` comments are ignored.  Unknown refs are an error,
     so a renamed part cannot silently drop out of its block.
     """
-    c.groups, c.portside = [], {}
+    c.groups, c.portside, c.below = [], {}, []
     if not path or not os.path.exists(path):
         return c
     refs = set(d.ref for d in c.devices)
@@ -4495,6 +4546,9 @@ def _read_hints(c, path):
                 raise ValueError("%s:%d: no such port %r" % (path, ln, tok[1]))
             c.portside[tok[1]] = "top"
             continue
+        if tok[0] == ".row" and len(tok) == 3 and tok[2] == "below":
+            c.below.append(tok[1])
+            continue
         if tok[0] == ".group" and len(tok) >= 3:
             bad = [r for r in tok[2:] if r not in refs]
             if bad:
@@ -4502,6 +4556,10 @@ def _read_hints(c, path):
             c.groups.append((tok[1], tok[2:]))
         else:
             raise ValueError("%s:%d: cannot read %r" % (path, ln, line.strip()))
+    names = [g for g, _r in c.groups]
+    for g in c.below:
+        if g not in names:
+            raise ValueError("%s: .row names no such group %r" % (path, g))
     return c
 
 
