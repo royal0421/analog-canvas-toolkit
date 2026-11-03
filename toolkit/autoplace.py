@@ -1215,6 +1215,9 @@ class Placer(object):
         elif gt is not None:
             cy = gt + span / 2.0
         cy = int(round(cy / 10.0)) * 10
+        # the search may hang a grounded source lower (see `vdrop` in
+        # place_deck): its live pin then sits below the row it feeds
+        cy += dict(self.opt("vdrop", ()) or ()).get(d.ref, 0)
         # A symmetric two-terminal part is drawn with pin 1 on top, always.
         # When the netlist puts the UPPER node on pin 2 the part has to be
         # turned over, or the drawing hangs it upside down: `RO1 0 out1`
@@ -4621,6 +4624,26 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
                     if not nudged:
                         break
                     moved = True
+                # A grounded source may hang LOWER than its peers.  AIC HW4
+                # Fig. (a): V_in stood level with M_1, so its + pin was above
+                # the gate and R_S had to choose -- on the pin's row with a
+                # jog down into the gate, or on the gate row with the wire
+                # coming down through V_in.  Razavi (and the hand-drawn
+                # figure) drops the source: its + pin rises to the gate row
+                # and R_S runs straight in.  Two corners fewer.
+                drops = list(style.get("vdrop") or ())
+                for ref in _droppable:
+                    if any(r[0] == ref for r in drops):
+                        continue
+                    for dy in (20, 40, 60):
+                        cand = dict(style)
+                        cand["vdrop"] = tuple(drops + [(ref, dy)])
+                        sc = sc_of(grid, cand, formir)
+                        if sc < best:
+                            best, style = sc, cand
+                            drops = list(cand["vdrop"])
+                            moved = True
+                            break
                 # a feedback part may ride the track BELOW instead of above:
                 # Razavi puts R_5 under 14.36(b) while R_3 and R_6 stay on
                 # top, and he chooses per part (user, 2026-09-03)
@@ -4685,6 +4708,16 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
             return best, style, grid
 
         _swappable = [d.ref for d in c.devices if d.sym in Placer.SWAP_SYM]
+        # independent voltage sources with one end on ground (`vdrop`)
+        _droppable = []
+        if str(os.environ.get("AC_VDROP", "1")) == "1":
+            for _d in c.devices:
+                if _d.sym not in ("voltage-source", "pulse-voltage-source"):
+                    continue
+                _ns = list(_d.pins.values())
+                if len(_ns) == 2 and sum(1 for _n in _ns
+                                         if c.is_ground(_n)) == 1:
+                    _droppable.append(_d.ref)
         _g = {}
         for _d in c.devices:
             if _d.sym in CTRL:
