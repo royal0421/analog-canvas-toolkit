@@ -975,6 +975,22 @@ class Placer(object):
                     right.append(("c", j))
                 else:
                     mid.append(k)
+            # A cross-coupled pair (each gate on its partner's drain: a
+            # latch) sits on the INSIDE of its half, next to the middle,
+            # so the cross is one X between the halves; anything else in
+            # the half -- a reset/precharge switch -- goes outside it.
+            def crossed(k):
+                for d in chains[k[1]]:
+                    p = dmap.get(d.ref)
+                    if (d.sym in CTRL and p and p != d.ref
+                            and d.pins[CTRL[d.sym]]
+                            == self.c.by_ref[p].pins.get(FIXED_VERT.get(
+                                d.sym, ("D", "S"))[0])):
+                        return 1
+                return 0
+            order_l = sorted(range(len(left)), key=lambda i: crossed(left[i]))
+            left = [left[i] for i in order_l]
+            right = [right[i] for i in order_l]
             want = left + mid + right[::-1]
             at = sorted(seq.index(k) for k in want)
             for i, k in zip(at, want):
