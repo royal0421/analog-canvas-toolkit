@@ -36,3 +36,4 @@
 - 2026-11-02｜**撤回**（未跑全套，單張即無效）：_spec_corners 的 `p in pts` 改查 set｜8.57 單張 CPU 34.6→34.7–35.4 s，沒變快｜—
 - 2026-11-03｜容器換新（較慢約 20%）：舊程式在新機器重跑全套，28 張與基準逐位元相同，牆鐘 738 s、CPU 45.7 min（之後的牆鐘以此為準）｜—｜—｜—
 - 2026-11-03｜autoplace：descent 新增 `vdrop`，一端接地的獨立電壓源可整顆下移 20／40／60，分數變好才採用（AC_VDROP=0 關閉）｜預期：HW4 Fig-a 的 R_S 對齊閘極、少 2 個彎折｜28 figures | 28 clean | place 35%→36%（34.81→35.65%）| wire 1.06→1.05x | bends 1.28→1.25x | crossings 17→17 | 稽核錯誤 0；Fig-a bends 5→3（1.00x）、place 60→100%、wire 0.83→0.94x；Fig-c wire 2.0→1.8x、place 33→17%；其餘 26 張逐位元相同；牆鐘同機 738→729 s；regress 36/36、unittest 26/26｜38ce8d9
+- 2026-11-03｜全量驗證（vdrop 之後，38ce8d9）：unittest 26/26、regress 36/36、`generate all --no-render` 重產 36 個專案 out/ 0 變動；官方 netlist_bench.py：28 figures | 28 clean | place 36% | order 77% | col 53% | row 55% | mirror 91% | wire 1.05x | bends 1.25x | crossings 17 | 稽核錯誤 0，auto/ 56 檔與 bench_par 逐位元相同；15 min 6 s（新容器）｜—｜—｜—
