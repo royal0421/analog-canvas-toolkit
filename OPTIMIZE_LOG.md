@@ -5,7 +5,8 @@
 ## 使用者禁令（每輪開工前先讀，任何改動、實驗、給使用者看的圖都不得違反）
 
 - **二極體接法（閘極接自己汲極）禁止從閘極腳沿本體旁拉下去接汲極**（12.57c 的 M6；diodelink 實驗那種接法）。唯一允許的是固定畫法：共閘極匯流排在閘極高度，回授從兩閘極之間的匯流排拉下接汲極（手排 before）。scratchpad/diodecol.patch 就是違禁畫法，不得再拿出來給使用者看或當候選。
-- 目前分支上的 12.57c（匯流排壓到閘極下方）也不是固定畫法，屬過渡狀態，待改成固定畫法。
+- 12.57c 已依使用者指示改回 f3ea718 之前的畫法（M5/M6 匯流排在閘極高度、回授從兩閘極之間拉下接汲極）；不得再改掉。
+- StrongARM CLK「M7/M8 放內側、閘極面對面」被使用者評為錯誤畫法，已撤回，不得再用。
 - 埠複製只限 NAND／NOR。V_in 放左、尾巴置中、對稱結構中間那顆置中、配對鏡像。問使用者一定附對照圖。
 
 基準（v58-migration 2d929be）：28 figures | 27 clean | place 33% | wire 1.07x | bends 1.30x | crossings 17 | labels=1 on-wire=3 shorts=3 | 牆鐘 ≈57 min（3 workers）
@@ -77,3 +78,5 @@
 - 2026-11-03｜使用者看 12.57(c)：M5/M6 共用閘極、其中一顆二極體接法「是固定畫法，before 那樣」（匯流排在閘極高度，回授從兩閘極之間的匯流排拉下接汲極），after（匯流排壓到閘極下方）不對；比較器「前後都挺醜的」；StrongARM「CLK 一般都會直接穿越閘極」｜—｜—｜—
 - 2026-11-03｜**未採用**（patch 保留）：diodelink（汲極另拉 D→G 連線）＋同欄腳位直接接汲極、匯流排只接閘極｜預期：12.57(c) 照固定畫法｜12.57c bends 16.5→15，但連線從 M6 閘極腳拉下、仍貼著本體；9.26c X 0→1、bends 11→14.5，9.34 bends 7→9，10.35a wire 1.1→1.4x。要照固定畫法，回授須從兩閘極中間的匯流排上分接點拉下，需能在匯流排中段切接點，留待下次｜—
 - 2026-11-03｜autoplace：對稱電路中共用一條外部閘極網（非任何汲極）的開關對放在半邊最內側（使用者：StrongARM「CLK 都會直接穿越閘極」）｜預期：CLK 一條直線接 M7／M8 閘極｜bench 28 張每行相同（place 49%、wire 0.94x、bends 0.96x、crossings 8 (over hand 2)、稽核錯誤 0）；StrongARM（無手排、不在 bench）CLK 由繞一圈改為兩閘極間直線；牆鐘 587→628 s（+7%，限 10% 內）；regress 逐位元相同、unittest 35/35、generate all out/ 0 變動｜4f2512c
+- 2026-11-03｜**撤回**：StrongARM 共用外部閘極的開關對放內側（4f2512c）；使用者：「收回吧」｜—｜—｜revert
+- 2026-11-03｜autoplace：12.57(c) 改回 f3ea718 之前的畫法（使用者：「給我改回去」），AC_INPAIR／AC_TAILMID／AC_DIODETIE 預設改 0（程式保留）｜預期：12.57c 回到 before 的固定畫法｜28 figures | 28 clean | place 49%→46% | wire 0.94→0.93x | bends 0.96→0.95x | crossings 8→7 (over hand 2→2) | 稽核錯誤 0；12.57c wire 1.1→0.7x、bends 16.5→11、X 1→0（place 下降來自 V_in／尾巴不再照手排位置，使用者指示優先）；HW2 bends 37→36、9.26c bends 11→11.5；牆鐘 606 s；regress 逐位元相同、unittest 35/35、generate all out/ 0 變動｜23cf4de
