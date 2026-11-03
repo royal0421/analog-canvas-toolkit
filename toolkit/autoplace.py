@@ -2601,6 +2601,42 @@ class Placer(object):
             if not moved:
                 return
 
+    def _left_half_output(self, nd):
+        """Is `nd` the LEFT one of a pair of outputs of a mirror-symmetric
+        drawing?  Decided by the conduction pins (not gates) on the node:
+        a cross-coupled latch reaches both halves through its gates, but
+        its drains say which half the node belongs to."""
+        mir = getattr(self.c, "mirror", None)
+        if (not mir or str(self.opt("sym", 0)) != "1"
+                or getattr(self.c, "groups", None)):
+            return False
+        nmap, dmap = mir
+        twin = nmap.get(nd)
+        outs = [n for n, _nm, di in self.c.ports if di == "output"]
+        if twin is None or twin == nd or twin not in outs:
+            return False
+        paired = [r for r, v in dmap.items() if r != v and r in self.f.placed]
+        if not paired:
+            return False
+        mid = sum(self.f.placed[r][1] for r in paired) / float(len(paired))
+
+        def side(n):
+            xs = [self.pinxy[(d.ref, p)][0] for d, p in self.c.pins_on(n)
+                  if (d.ref, p) in self.pinxy
+                  and p != CTRL.get(d.sym)]
+            return sum(xs) / float(len(xs)) if xs else None
+        a, b = side(nd), side(twin)
+        if a is None or b is None or not a < mid < b:
+            return False
+        # ...and only a CROSS-COUPLED output: one whose node also drives
+        # gates in the other half, so a port on the inside would sit across
+        # the middle.  Two outputs that stay in their own halves face each
+        # other in the middle instead (Diff-amp's V_o, 10.35(a)'s V_out):
+        # moving those outside cost Diff-amp wire 1.3x -> 1.9x.
+        return any(p == CTRL.get(d.sym) and (d.ref, p) in self.pinxy
+                   and self.pinxy[(d.ref, p)][0] > mid
+                   for d, p in self.c.pins_on(nd))
+
     def _add_ports(self):
         f = self.f
         self._vports = set()
@@ -2694,6 +2730,13 @@ class Placer(object):
                 y = self.ynode.get(nd, pins[0][1])
                 x = max(p[0] for p in pins) + self.portstub + 10
                 mir = "x"
+                if self._left_half_output(nd):
+                    # two mirror halves, two outputs: each leaves from the
+                    # outside of its OWN half (StrongARM: V_outn left,
+                    # V_outp right -- user, 2026-11-03: 「Voutn 和 Voutp
+                    # 明顯是要拿來對稱的」)
+                    x = min(p[0] for p in pins) - self.portstub - 10
+                    mir = "none"
             pid = "P" + nd.upper().replace("-", "")
             side = getattr(self.c, "portside", {}).get(nd)
             if side == "top" and len(set(p[1] for p in pins)) == 1:
