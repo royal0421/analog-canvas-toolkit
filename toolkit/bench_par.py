@@ -46,7 +46,7 @@ def main():
     keys = ("self", "legs", "labels", "on-wire", "tees", "shorts")
     tot = dict((k, 0) for k in keys)
     clean = nerr = 0
-    wrs, bds, xrs, pls = [], [], [], []
+    wrs, bds, xrs, pls, xov = [], [], [], [], []
     bds_opt = []          # SOP 3J: NAND/NOR corners are not comparable
     for r in rows:
         if r.get("error"):
@@ -63,17 +63,18 @@ def main():
         if "NAND" not in r["stem"] and "NOR" not in r["stem"]:
             bds_opt.append(r.get("bend", 0))
         xrs.append(r.get("cross", 0))
+        xov.append(r.get("cross_over", 0))
         pls.append(r["place"])
-        print("%-46s wire %4.1fx  bends %4.2fx (%5.1f/%5.1f)  X %2d  %s"
+        print("%-46s wire %4.1fx  bends %4.2fx (%5.1f/%5.1f)  X %2d/%d  %s"
               % (r["stem"][:46], r["wire"], r.get("bend", 0),
                  r.get("bend_got", 0), r.get("bend_ref", 0),
-                 r.get("cross", -1),
+                 r.get("cross", -1), r.get("cross_ref", 0),
                  "/".join(str(r.get(k, -1)) for k in keys)))
     n = max(1, len(wrs))
     print("\n%d figures | %d fully clean | place %.0f%% | wire %.2fx | "
-          "bends %.2fx | crossings %d | %s | errors %d"
+          "bends %.2fx | crossings %d (over hand %d) | %s | errors %d"
           % (len(rows), clean, 100 * sum(pls) / n, sum(wrs) / n,
-             sum(bds) / n, sum(xrs),
+             sum(bds) / n, sum(xrs), sum(xov),
              " ".join("%s=%d" % kv for kv in sorted(tot.items())), nerr))
     print("wall %.0f s on %d workers" % (elapsed, pool._processes))
 

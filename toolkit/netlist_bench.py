@@ -249,6 +249,33 @@ def bend_count(doc):
     return n + 2.5 * (len(gx) + nbody)
 
 
+def ref_crossings(stem):
+    """Unconnected crossings in the HAND-DRAWN figure, counted the way the
+    netlist lane counts its own (Schematic._cross_count).
+
+    Some figures cross on purpose -- 12.57(c)'s X wire runs over the M_6/M_4
+    column, the midterm's fold wires over a stack -- so a layout that keeps
+    the reference's crossing is not worse than one that drops it by
+    drawing something else.  The bench scores the crossings BEYOND the
+    reference (user, 2026-11-03: the 12.57(c) layout with that crossing was
+    the better one).
+    """
+    path = os.path.join(ROOT, stem + ".icproj.json")
+    d = json.load(open(path, encoding="utf-8"))["documents"][0]
+    f = icproj.Schematic("ref", "ref", "ref", out_proj=os.devnull,
+                         out_svg=os.devnull)
+    for i in d["instances"]:
+        pl = i["placement"]
+        m, rot = icproj.mirror_in(pl.get("mirror", "none"),
+                                  pl.get("rotation", 0))
+        f.placed[i["id"]] = (i["symbolId"], pl["position"]["x"],
+                             pl["position"]["y"], m, rot)
+        f.instances.append(i)
+    f.routes, f.junctions, f.nets = d["routes"], d["junctions"], d["nets"]
+    with contextlib.redirect_stdout(io.StringIO()):
+        return f._cross_count()
+
+
 def ref_placement(stem):
     p = os.path.join(ROOT, stem + ".icproj.json")
     doc = json.load(open(p, encoding="utf-8"))["documents"][0]
@@ -384,6 +411,11 @@ def run_one(stem, full=False, verbose=False):
             r["pitch"] = line.split("pitch:")[1].strip()
         if line.startswith("extent"):
             r["extent"] = line.split("|")[0].strip()
+    try:
+        r["cross_ref"] = ref_crossings(stem)
+    except Exception:                            # noqa: BLE001
+        r["cross_ref"] = 0
+    r["cross_over"] = max(0, r.get("cross", 0) - r["cross_ref"])
     rw, rh = extent(ref)
     gw, gh = extent(got)
     r["aspect"] = (gw / float(gh)) / (rw / float(rh)) if rh and gh else 0
@@ -416,7 +448,7 @@ def main(argv):
            "shorts": 0, "self": 0}
     pls, mis, ors, wrs, bad, aud_rows = [], [], [], [], [], []
     bds = []
-    cls, rws, xrs = [], [], []
+    cls, rws, xrs, xov = [], [], [], []
     print("%-42s %5s %5s %5s %5s %5s %4s %5s  %-16s %s"
           % ("figure", "col", "row", "order", "mirr", "wire", "X", "aspct",
              "audits s/l/L/w/t/S", "size"))
@@ -432,6 +464,7 @@ def main(argv):
         wrs.append(r["wire"])
         bds.append(r.get("bend", 0))
         xrs.append(r.get("cross", 0))
+        xov.append(r.get("cross_over", 0))
         cls.append(r["col"]); rws.append(r["row"])
         pls.append(r["place"])
         ors.append(r["order"])
@@ -452,13 +485,14 @@ def main(argv):
     clean = sum(1 for v in aud_rows if v == 0)
     print("\n%d figures | %d fully clean | place %.0f%% | order %.0f%% | "
           "col %.0f%% | row %.0f%% | "
-          "mirror %.0f%% | wire %.2fx | bends %.2fx | crossings %d | %s "
+          "mirror %.0f%% | wire %.2fx | bends %.2fx | crossings %d "
+          "(over hand %d) | %s "
           "| errors %d"
           % (len(pls), clean, 100 * sum(pls) / n, 100 * sum(ors) / n,
              100 * sum(cls) / n, 100 * sum(rws) / n,
              100 * sum(mis) / n, sum(wrs) / n,
              sum(bds) / max(1, len(bds)),
-             sum(xrs),
+             sum(xrs), sum(xov),
              " ".join("%s=%d" % kv for kv in sorted(tot.items())), len(bad)))
 
 
