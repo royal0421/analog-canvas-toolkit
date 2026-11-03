@@ -1796,7 +1796,7 @@ class Placer(object):
         # A diode-connected device's net goes first: its tie has to sit
         # right under the drain, above any long bus that crosses the column
         # (12.57(c): X took that row and the tie had nowhere to go).
-        need.sort(reverse=True, key=lambda t: (bool(self._diode_refs(t[1])),
+        need.sort(reverse=True, key=lambda t: (os.environ.get("AC_DIODEFIRST", "1") == "1" and bool(self._diode_refs(t[1])),
                                                t[0], t[1]))
         taken = []                      # every segment already committed
         inks = [(iid, self.f.ink(iid)) for iid in self.f.placed]
@@ -1903,7 +1903,11 @@ class Placer(object):
             # 「這種典型的共用閘極然後其中一顆有回授的其實都是固定畫法」).
             # So among the candidates as good on hard / body / crossings,
             # the one with fewest gate risers wins before wire length.
-            if self._diode_refs(nd):
+            _mir = getattr(self.c, "mirror", None)
+            _dm = _mir[1] if _mir else {}
+            if (os.environ.get("AC_GATEMAIN", "1") == "1"
+                    and any(_dm.get(r) not in (None, r)
+                            for r in self._diode_refs(nd))):
                 def _gr(t, _pts=pts):
                     sg = self._spec_segments((t[1], t[2], t[3]), _pts)
                     return sum(1 for q in (sg or ()) if q[0] == "r")
@@ -1912,8 +1916,15 @@ class Placer(object):
                 if tied:
                     g0 = min(_gr(t) for t in tied)
                     if _gr(cands[0]) > g0:
-                        cands.insert(0, min((t for t in tied if _gr(t) == g0),
-                                            key=lambda t: t[0]))
+                        alt = min((t for t in tied if _gr(t) == g0),
+                                  key=lambda t: t[0])
+                        # ...only for a mirrored (symmetric) pair, a plain
+                        # trunk that needs two or more gate risers, and an L
+                        # that keeps the gates on the bus.  Anywhere else it
+                        # sent Constant-gm (resistorless) 13 -> 15 bends.
+                        if (alt[3] is not None and cands[0][3] is None
+                                and _gr(cands[0]) >= 2):
+                            cands.insert(0, alt)
             _k, axis, c, spur = cands[0]
             self.trunk[nd] = (axis, c, spur)
             if os.environ.get("AC_TRUNKDBG"):
