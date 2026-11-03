@@ -426,6 +426,55 @@ class Placer(object):
         self.ynode = {n: ys[lvl[n]] for n in lvl}
 
     # ----------------------------------------------------------- columns
+    def _diode_refs(self, nd):
+        """Transistors wired as a diode on net `nd` (gate and drain or
+        collector both on it).  AC_DIODETIE=0 lets the bus run through."""
+        cache = getattr(self, "_diode_cache", None)
+        if cache is None:
+            cache = self._diode_cache = {}
+            if os.environ.get("AC_DIODETIE", "1") == "1":
+                for d in self.c.devices:
+                    if d.sym in CTRL and d.sym in FIXED_VERT:
+                        g = d.pins[CTRL[d.sym]]
+                        if g in (d.pins[FIXED_VERT[d.sym][0]],
+                                 d.pins[FIXED_VERT[d.sym][1]]):
+                            cache.setdefault(g, set()).add(d.ref)
+        return cache.get(nd, ())
+
+    def _pair_tails(self):
+        """{tail device: (half a, half b)} for every differential pair: two
+        like transistors on one source node that is not a rail, and exactly
+        one other device between that node and a rail.  The tail goes in
+        the MIDDLE, between the two halves (user, 2026-11-03: 「尾巴要置中。
+        對稱結構該置中的置中」 -- 12.57(c)'s I_SS hung under M_3)."""
+        if os.environ.get("AC_TAILMID", "1") != "1":
+            return {}
+        out = {}
+        bysrc = {}
+        for d in self.c.devices:
+            sp = _SRC_PIN.get(d.sym)
+            if sp and sp in d.pins:
+                sn = d.pins[sp]
+                if not (self.c.is_ground(sn) or self.c.is_supply(sn)):
+                    bysrc.setdefault(sn, []).append(d)
+        for sn, ds in bysrc.items():
+            if len(ds) != 2 or ds[0].sym != ds[1].sym:
+                continue
+            others = [e for e, _p in self.c.pins_on(sn) if e not in ds]
+            if len(others) != 1:
+                continue
+            t = others[0]
+            # a rail on a CONDUCTION pin (a bulk tied to ground is not one:
+            # NAND2's M_N1 has B on ground and is no tail)
+            if not any(self.c.is_ground(n) or self.c.is_supply(n)
+                       for p, n in t.pins.items() if p != "B"):
+                continue
+            out[t.ref] = (ds[0].ref, ds[1].ref)
+        # ONE pair: with two (10.35(a)'s M_1/M_2 on I_SS1 and the diode
+        # loads M_3/M_4 on I_SS2) both tails crowd the middle and Razavi
+        # keeps I_SS1 under M_1 -- centring both cost place 100% -> 38%
+        return out if len(out) == 1 else {}
+
     def _own_cols(self):
         """Devices that take a column of their own: the folded cascode's
         tail (_analyze), and -- when drawn as two mirror halves (`sym`) --
@@ -433,6 +482,7 @@ class Placer(object):
         一顆，就要擺中間不要擺邊邊" (user, 2026-11-03): the telescopic
         cascode's tail hung under M_1 instead of between the halves."""
         own = set(getattr(self.c, "own_col", ()) or ())
+        own |= set(self._pair_tails())
         mir = getattr(self.c, "mirror", None)
         if (mir and str(self.opt("sym", 0)) == "1"
                 and not getattr(self.c, "groups", None)):
@@ -1010,6 +1060,49 @@ class Placer(object):
             at = sorted(seq.index(k) for k in want)
             for i, k in zip(at, want):
                 seq[i] = k
+        # A differential pair with ONE input: the half the input drives is
+        # the left one (12.57(c): V_in -> M_3 on the left, M_4 to R_M on the
+        # right; the search had the halves the other way round and V_in
+        # came in from the right).  Held after every colmove.
+        if str(os.environ.get("AC_INPAIR", "1")) == "1":
+            ins = set(n for n, _nm, di in self.c.ports if di == "input")
+            col_of = {}
+            for k in [x for x in seq if x[0] == "c"]:
+                for d in chains[k[1]]:
+                    col_of[d.ref] = k
+            bysrc = {}
+            for d in self.c.devices:
+                sp = _SRC_PIN.get(d.sym)
+                if sp and sp in d.pins and d.ref in col_of:
+                    sn = d.pins[sp]
+                    if not (self.c.is_ground(sn) or self.c.is_supply(sn)):
+                        bysrc.setdefault(sn, []).append(d)
+            for ds in bysrc.values():
+                if len(ds) != 2 or ds[0].sym != ds[1].sym:
+                    continue
+                gi = [d.pins[CTRL[d.sym]] in ins for d in ds]
+                if gi.count(True) != 1:
+                    continue
+                a, b = (ds[0], ds[1]) if gi[0] else (ds[1], ds[0])
+                ka, kb = col_of[a.ref], col_of[b.ref]
+                if ka != kb and seq.index(ka) > seq.index(kb):
+                    ia, ib = seq.index(ka), seq.index(kb)
+                    seq[ia], seq[ib] = kb, ka
+        # ...and every pair's tail sits between its two halves
+        col_of = {}
+        for k in [x for x in seq if x[0] == "c"]:
+            for d in chains[k[1]]:
+                col_of[d.ref] = k
+        for t, (a, b) in self._pair_tails().items():
+            kt, ka, kb = col_of.get(t), col_of.get(a), col_of.get(b)
+            if None in (kt, ka, kb) or len({kt, ka, kb}) != 3:
+                continue
+            ia, ib = sorted((seq.index(ka), seq.index(kb)))
+            if ia < seq.index(kt) < ib:
+                continue
+            seq.remove(kt)
+            ia, ib = sorted((seq.index(ka), seq.index(kb)))
+            seq.insert(ib, kt)
         if getattr(self, "_gate_seq", None):
             # NAND/NOR column order is the gate's structure, not a choice:
             # like _pull_parallel it holds after every colmove
@@ -2217,6 +2310,13 @@ class Placer(object):
                 # Never for an op-amp: the owner map only holds CTRL gates.
                 onpin = False
                 mypins = owned.get(iid, ())
+                # ...but never through a DIODE-CONNECTED device: its drain
+                # is on this net too, so a bus along its gate runs straight
+                # through the body to its own drain -- the user forbids
+                # exactly that (2026-11-03, 12.57(c)'s M_6: 「汲極回授禁止這
+                # 樣接」).  The tie leaves the bus and comes down beside it.
+                if iid in self._diode_refs(nd):
+                    mypins = ()
                 for _k, ax, cc, _s0, _s1 in trunks if mypins else ():
                     ci_ = 1 if ax == "h" else 0
                     if any(abs(p[ci_] - cc) <= 10 for p in mypins):
@@ -4582,6 +4682,10 @@ def _grids(tune):
                 out.append((pitch, rowgap, 30))
     return out
 
+
+# the SOURCE (emitter) pin -- not FIXED_VERT's bottom pin, which for a
+# pmos is the drain (NAND2's pull-up pair looked like a differential pair)
+_SRC_PIN = {"nmos": "S", "pmos": "S", "npn": "E", "pnp": "E"}
 
 _UNPOLAR = ("resistor", "capacitor", "inductor", "inductor-compact",
             "variable-resistor", "variable-capacitor")
