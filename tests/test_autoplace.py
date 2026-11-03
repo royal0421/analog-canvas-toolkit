@@ -171,6 +171,16 @@ class AnalyzeTests(unittest.TestCase):
         self.assertEqual({"b1", "b2", "b3", "b4"}, set(portside))
         self.assertEqual({"M11"}, own)
 
+    def test_symmetric_biases_come_in_from_the_top(self):
+        deck = (ROOT / "toolkit" / "decks" / "new"
+                / "telescopic-cascode.cir").read_text(encoding="utf-8")
+        c = netlist_io.parse(deck)
+        c.mirror = autoplace._mirror_map(c)
+        autoplace._read_hints(c, None)
+        autoplace._analyze(c)
+        self.assertEqual({"vb2", "vb3", "vb4"}, set(c.portside))
+        self.assertIsNone(autoplace._folded_cascode(c))
+
     def test_other_circuits_are_left_alone(self):
         self.assertIsNone(autoplace._folded_cascode(netlist_io.parse(NAND2)))
         same_stack = FOLDED.replace("M2 fr in2", "M2 fl in2")

@@ -426,6 +426,24 @@ class Placer(object):
         self.ynode = {n: ys[lvl[n]] for n in lvl}
 
     # ----------------------------------------------------------- columns
+    def _own_cols(self):
+        """Devices that take a column of their own: the folded cascode's
+        tail (_analyze), and -- when drawn as two mirror halves (`sym`) --
+        every device the mirror maps onto itself.  "對稱的架構中，如果有中間
+        一顆，就要擺中間不要擺邊邊" (user, 2026-11-03): the telescopic
+        cascode's tail hung under M_1 instead of between the halves."""
+        own = set(getattr(self.c, "own_col", ()) or ())
+        mir = getattr(self.c, "mirror", None)
+        if (mir and str(self.opt("sym", 0)) == "1"
+                and not getattr(self.c, "groups", None)):
+            # ONE middle device: two (10.35(a)'s I_SS1 and I_SS2) are not
+            # "the one in the middle" -- Razavi keeps I_SS1 under M_1, and
+            # centring both cost the figure place 100% -> 38%
+            mid = [r for r, v in mir[1].items() if r == v]
+            if len(mid) == 1:
+                own |= set(mid)
+        return own
+
     def columns(self):
         """One column per series chain.
 
@@ -451,12 +469,11 @@ class Placer(object):
                 continue
             ch, node = [seed], seed.pins[seed.bot]
             used.add(seed.ref)
-            own = getattr(self.c, "own_col", ())
+            own = self._own_cols()
             while (not self.c.is_ground(node) and not self.c.is_supply(node)
                    and seed.ref not in own):
                 cand = [d for d in left if d.ref not in used
                         and d.pins[d.top] == node]
-                own = getattr(self.c, "own_col", ())
                 if own:
                     # a device given a column of its own (the folded
                     # cascode's tail, between the two halves of the pair)
@@ -2509,11 +2526,30 @@ class Placer(object):
         for ref, m in forced.items():
             if ref in self.f.placed:
                 self._set_mirror(ref, m)
+        mir = getattr(self.c, "mirror", None)
+        if (mir and str(self.opt("sym", 0)) == "1"
+                and not getattr(self.c, "groups", None)):
+            # two mirror halves are drawn as mirror IMAGES: the right-hand
+            # device of every pair faces the other way from its partner on
+            # the left (user, 2026-11-03: 「有更好的畫法，比如鏡像之類的」)
+            self._sym_pairs = []
+            for r, v in mir[1].items():
+                if r >= v or r not in self.f.placed or v not in self.f.placed:
+                    continue
+                dr_ = self.c.by_ref[r]
+                if dr_.sym not in CTRL:
+                    continue
+                l_, r_ = sorted((r, v), key=lambda e: self.f.placed[e][1])
+                if self.f.placed[l_][1] != self.f.placed[r_][1]:
+                    self._sym_pairs.append((l_, r_))
+        else:
+            self._sym_pairs = []
+        rights = set(r_ for _l, r_ in self._sym_pairs)
         for _ in range(4):
             moved = False
             for d in self.c.devices:
                 if (d.sym not in CTRL or d.ref not in self.f.placed
-                        or d.ref in forced):
+                        or d.ref in forced or d.ref in rights):
                     continue
                 cur = self.f.placed[d.ref][3]
                 best, bestk = cur, None
@@ -2524,6 +2560,13 @@ class Placer(object):
                         best, bestk = m, k
                 self._set_mirror(d.ref, best)
                 moved = moved or best != cur
+            for l_, r_ in self._sym_pairs:
+                # the right-hand half is the left-hand half's mirror image,
+                # whatever the search flipped: a pair turns over together
+                want = "x" if self.f.placed[l_][3] != "x" else "none"
+                if self.f.placed[r_][3] != want:
+                    self._set_mirror(r_, want)
+                    moved = True
             if not moved:
                 return
 
@@ -4650,6 +4693,22 @@ def _analyze(c):
     fc = _folded_cascode(c)
     if fc:
         c.groups, c.portside, c.own_col = fc[0], dict(fc[1]), set(fc[2])
+        return c
+    # Two mirror halves: a bias that drives the gates of one mirror PAIR and
+    # nothing else comes in from above the middle of their bus, as the
+    # hand-drawn midterm feeds its cascodes (the telescopic cascode's V_b2
+    # otherwise crossed the whole left half to reach M_3/M_4).
+    mir = getattr(c, "mirror", None)
+    if mir:
+        dmap = mir[1]
+        for nd, _nm, di in c.ports:
+            if di != "input":
+                continue
+            on = c.pins_on(nd)
+            if (len(on) == 2 and all(p in ("G", "B") for _d, p in on)
+                    and dmap.get(on[0][0].ref) == on[1][0].ref
+                    and on[0][0].ref != on[1][0].ref):
+                c.portside[nd] = "top"
     return c
 
 
@@ -5320,13 +5379,14 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True,
         _jobs = [((_gr,), {"start": {"ltrunk": _lt, "bdwide": 1,
                                      "snapcol": 1}})
                  for _gr in _starts for _lt in (1, 0)]
-        # a symmetric deck is also tried as two mirror halves (`sym`); the
-        # score decides, so a figure the symmetry does not suit keeps what
-        # it had.  ONE extra descent: offering it from every start cost the
-        # bench 12% CPU (the midterm's four extra descents never won).
-        if getattr(c, "mirror", None):
-            _jobs.append(((_starts[0],), {"start": {"ltrunk": 1, "bdwide": 1,
-                                                    "snapcol": 1, "sym": 1}}))
+        # A symmetric deck IS drawn as two mirror halves (`sym`), from every
+        # start.  The score cannot see symmetry, and offered as one option
+        # among others the lopsided layout kept winning on wire: the user
+        # rejected exactly those (2026-11-03, the telescopic cascode and the
+        # StrongARM latch: 「對稱的架構中，如果有中間一顆，就要擺中間」).
+        if getattr(c, "mirror", None) and not getattr(c, "groups", None):
+            for _j in _jobs:
+                _j[1]["start"]["sym"] = 1
         # The wide detour and the column snap are starting points, not
         # axes, for the same reason `ltrunk` is: each adds a move the
         # search did not have, and a figure that never uses one can still
