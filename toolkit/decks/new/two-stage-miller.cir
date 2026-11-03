@@ -1,0 +1,22 @@
+* hand-written deck, not exported from any drawing
+* two-stage Miller op amp: 5T OTA + common-source second stage, C_c
+.title Two-stage Miller op amp
+.global VDD
+.subckt MILLER inp inn vb out
+.iodir inp=input inn=input vb=input out=output
+.name inp V_inp
+.name inn V_inn
+.name vb V_b
+.name out V_out
+M1 d1 inp tail 0 nmos
+M2 x inn tail 0 nmos
+M3 d1 d1 VDD VDD pmos
+M4 x d1 VDD VDD pmos
+M5 tail vb 0 0 nmos
+M6 out x VDD VDD pmos
+M7 out vb 0 0 nmos
+CC x out
+.name CC C_c
+CL out 0
+.name CL C_L
+.ends

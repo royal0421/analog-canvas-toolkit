@@ -451,7 +451,9 @@ class Placer(object):
                 continue
             ch, node = [seed], seed.pins[seed.bot]
             used.add(seed.ref)
-            while not self.c.is_ground(node) and not self.c.is_supply(node):
+            own = getattr(self.c, "own_col", ())
+            while (not self.c.is_ground(node) and not self.c.is_supply(node)
+                   and seed.ref not in own):
                 cand = [d for d in left if d.ref not in used
                         and d.pins[d.top] == node]
                 own = getattr(self.c, "own_col", ())
@@ -4604,11 +4606,18 @@ def _folded_cascode(c):
     stacks = [v for v in comps.values() if len(v) >= 3]
     if len(stacks) != 2 or len(rest) != sum(len(s) for s in stacks):
         return None
-    # 3. folded: each pair drain lands on a different stack
-    def stack_of(n):
+    # 3. folded: each pair drain is the MIDDLE of a different stack -- two
+    # stack transistors meet there (the midterm's fl: M_7's drain, M_5's
+    # source).  A drain that only reaches one stack transistor is the end
+    # of a stack the pair belongs to: a telescopic cascode, or a StrongARM
+    # latch, neither of which is drawn this way.
+    def stack_of(n, middle=False):
         for i, s in enumerate(stacks):
-            if any(n in (dr(d), so(d)) for d in s):
+            k = sum(1 for d in s if n in (dr(d), so(d)))
+            if k >= (2 if middle else 1):
                 return i
+        return None
+    if stack_of(dr(a), True) is None or stack_of(dr(b), True) is None:
         return None
     sa, sb = stack_of(dr(a)), stack_of(dr(b))
     if sa is None or sb is None or sa == sb:

@@ -1,0 +1,21 @@
+* hand-written deck, not exported from any drawing
+* StrongARM latch comparator (clk resets the outputs high)
+.title StrongARM latch
+.global VDD
+.subckt SARM clk inp inn outp outn
+.iodir clk=input inp=input inn=input outp=output outn=output
+.name inp V_inp
+.name inn V_inn
+.name outp V_outp
+.name outn V_outn
+.name clk CLK
+M1 p inp tail 0 nmos
+M2 q inn tail 0 nmos
+M3 outn outp p 0 nmos
+M4 outp outn q 0 nmos
+M5 outn outp VDD VDD pmos
+M6 outp outn VDD VDD pmos
+M7 outn clk VDD VDD pmos
+M8 outp clk VDD VDD pmos
+M9 tail clk 0 0 nmos
+.ends

@@ -1,0 +1,24 @@
+* hand-written deck, not exported from any drawing
+* telescopic cascode op amp (the pair sits INSIDE the stacks: not folded)
+.title Telescopic cascode op amp
+.global VDD
+.subckt TELE vb1 vb2 vb3 vb4 inp inn outl outr
+.iodir vb1=input vb2=input vb3=input vb4=input inp=input inn=input outl=output outr=output
+.name inp V_inp
+.name inn V_inn
+.name outl V_out1
+.name outr V_out2
+.name vb1 V_b1
+.name vb2 V_b2
+.name vb3 V_b3
+.name vb4 V_b4
+M7 xl vb4 VDD VDD pmos
+M8 xr vb4 VDD VDD pmos
+M5 outl vb3 xl VDD pmos
+M6 outr vb3 xr VDD pmos
+M3 outl vb2 yl 0 nmos
+M4 outr vb2 yr 0 nmos
+M1 yl inp tail 0 nmos
+M2 yr inn tail 0 nmos
+M9 tail vb1 0 0 nmos
+.ends
