@@ -164,6 +164,29 @@ class Placer(object):
         g = self._graph()
         sup = [n for n in g if self.c.is_supply(n)]
         gnd = [n for n in g if self.c.is_ground(n)]
+        if not sup and not gnd and os.environ.get("AC_VREF", "1") == "1":
+            # A small-signal model has no rail at all, so every node sat on
+            # one row and every part lay down.  Its COMMON terminal -- the
+            # node most parts return to (the hybrid-pi's emitter, the MOS
+            # model's source) -- plays ground: the parts on it stand up
+            # between it and the rest, the series ones lie down, as Razavi
+            # and the hand-drawn AIC HW1 models draw them.  Only the ROWS use
+            # it; nothing is drawn as a ground.  Ties: the later port.
+            cnt = {}
+            for d in self.c.devices:
+                for n in set(d.pins.values()):
+                    cnt[n] = cnt.get(n, 0) + 1
+            if cnt:
+                order = [nd for nd, _nm, _di in self.c.ports]
+                ref = max(cnt, key=lambda n: (cnt[n], order.index(n)
+                                              if n in order else -1))
+                # two rows, not a distance: the common terminal at the
+                # bottom and every other node on the row above it, so what
+                # returns to it stands up and everything else lies along
+                # the top (the hybrid-pi's r_b and C_mu, as hand-drawn)
+                self.dgnd = {n: (0 if n == ref else 1) for n in g}
+                self._vref = ref
+                return {n: (1.0 if n == ref else 0.0) for n in g}
         dg = self._bfs(g, gnd)
         BIG = len(g) + 5
         self.dgnd = {n: dg.get(n, BIG) for n in g}
@@ -308,6 +331,12 @@ class Placer(object):
             # not worth a crossing (user, 2026-09-03).
             lateral = (self.dgnd.get(na) == self.dgnd.get(nb)
                        or (na in signal and nb in signal))
+            vref = getattr(self, "_vref", None)
+            if vref is not None and vref in (na, nb):
+                # a part on a small-signal model's common terminal stands
+                # up between it and the top row, port or no port (every
+                # node of a device model is a port)
+                lateral = False
             if (na != nb and lateral
                     and not self.c.is_ground(na)
                     and not self.c.is_ground(nb)
