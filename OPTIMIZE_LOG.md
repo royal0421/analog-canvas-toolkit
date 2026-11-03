@@ -34,3 +34,5 @@
 - 2026-11-02｜autoplace._nudge_ports：clear() 的其他 net 線段與 route→net 對照每個 port 只算一次，只重算接到 port 的 route｜預期：分數與輸出不變（8.57：clear 約 8%）｜28 張每行相同、auto/ 56 檔逐位元相同；牆鐘 606→583 s、CPU 39.1→36.1 min；regress 36/36、unittest 26/26｜91f600c
 - 2026-11-02｜**撤回**（未跑全套，單張即無效）：icproj.label_box／text_width 以 RichText 物件身分快取字寬｜預期：省 8.57 的 57.8 萬次 label_box 攤平｜8.57 單張 CPU 34.6→34.2 s（約 1%，RichText 多半每次新建，打不中）→ 不值得，撤回｜—
 - 2026-11-02｜**撤回**（未跑全套，單張即無效）：_spec_corners 的 `p in pts` 改查 set｜8.57 單張 CPU 34.6→34.7–35.4 s，沒變快｜—
+- 2026-11-03｜容器換新（較慢約 20%）：舊程式在新機器重跑全套，28 張與基準逐位元相同，牆鐘 738 s、CPU 45.7 min（之後的牆鐘以此為準）｜—｜—｜—
+- 2026-11-03｜autoplace：descent 新增 `vdrop`，一端接地的獨立電壓源可整顆下移 20／40／60，分數變好才採用（AC_VDROP=0 關閉）｜預期：HW4 Fig-a 的 R_S 對齊閘極、少 2 個彎折｜28 figures | 28 clean | place 35%→36%（34.81→35.65%）| wire 1.06→1.05x | bends 1.28→1.25x | crossings 17→17 | 稽核錯誤 0；Fig-a bends 5→3（1.00x）、place 60→100%、wire 0.83→0.94x；Fig-c wire 2.0→1.8x、place 33→17%；其餘 26 張逐位元相同；牆鐘同機 738→729 s；regress 36/36、unittest 26/26｜38ce8d9
