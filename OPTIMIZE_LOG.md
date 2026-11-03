@@ -60,3 +60,4 @@
 - 2026-11-03｜autoplace：鏡像配對允許無極性元件反向、建鏈電晶體優先於掛在節點上的電容（並修排序 key 讀空 list 的 bug）、對稱兩半依宣告順序分左右｜預期：Diff-amp 照手排對稱｜28 figures | 28 clean | place 42%→46%（41.53→46.47%）| wire 0.96→0.94x | bends 0.98→0.97x | crossings 8 | 稽核錯誤 0；HW4 Fig-b place 20→100%；HW4 Fig-c place 67→100%；Diff-amp bends 10→8、place 25→50%；牆鐘 608→579 s；regress 36/36、unittest 35/35｜e268945
 - 2026-11-03｜使用者看圖：伸縮式疊接「該置中的置中，就還可以接受了」；StrongARM「Voutn 和 Voutp 明顯是要拿來對稱的」→ 下一項：對稱電路的成對輸出 port 各放自己那半的外側｜—｜—｜—
 - 2026-11-03｜autoplace：對稱電路的交叉耦合輸出 port 各從自己那半的外側出去（使用者：StrongARM 的 Voutn／Voutp 要對稱）｜預期：StrongARM 輸出對稱｜bench 28 張每行相同、place 46.47% 不變；一律往外的版本讓 Diff-amp wire 1.3→1.9x、place 50→8%，改為只限交叉耦合；牆鐘 578 s；regress 36/36、unittest 35/35｜8760f0a
+- 2026-11-03｜**撤回**（patch 保留）：只有一邊接輸入的差動對，接輸入的那半排左邊｜預期：12.57c 照手排 V_in 從左進｜12.57c place 0→40%、結構與手排一致（M5/M3 左、M6/M4 右、V_in 左），但 X 0→1、bends 11→14 → 依規則撤回。注意：多出的交叉手排也有（X 線跨過 M6/M4 欄）。量了手排本身的交叉：Midterm 2、HW2 比較器 2、12.57c 1、10.35a 1、Cgs3 1，其餘 0，合計 7（自動版 8）。待使用者決定交叉是否改成「比手排多幾個」｜—
