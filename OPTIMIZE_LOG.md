@@ -2,6 +2,12 @@
 
 每輪一行：日期（UTC）｜改了什麼｜預期｜bench 前 → 後（28 張：clean／place／wire／bends／crossings／稽核錯誤／牆鐘）｜commit
 
+## 使用者禁令（每輪開工前先讀，任何改動、實驗、給使用者看的圖都不得違反）
+
+- **二極體接法（閘極接自己汲極）禁止從閘極腳沿本體旁拉下去接汲極**（12.57c 的 M6；diodelink 實驗那種接法）。唯一允許的是固定畫法：共閘極匯流排在閘極高度，回授從兩閘極之間的匯流排拉下接汲極（手排 before）。scratchpad/diodecol.patch 就是違禁畫法，不得再拿出來給使用者看或當候選。
+- 目前分支上的 12.57c（匯流排壓到閘極下方）也不是固定畫法，屬過渡狀態，待改成固定畫法。
+- 埠複製只限 NAND／NOR。V_in 放左、尾巴置中、對稱結構中間那顆置中、配對鏡像。問使用者一定附對照圖。
+
 基準（v58-migration 2d929be）：28 figures | 27 clean | place 33% | wire 1.07x | bends 1.30x | crossings 17 | labels=1 on-wire=3 shorts=3 | 牆鐘 ≈57 min（3 workers）
 
 - 2026-11-01｜新增 SOP_QUICK.md 生圖速查（SOP 127 KB → 速查 6.9 KB，約 1/18），SOP §0 與 README 指向它｜預期：手寫一張圖要讀的規則 token 降到約 5%｜文件，不影響 bench｜2105d53
