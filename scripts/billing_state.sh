@@ -15,8 +15,14 @@
 #   until [ "$(date +%s)" -ge "$(bash scripts/billing_state.sh --resets)" ];
 #   do sleep 300; done; date -u
 #
-# The session owner authorised this on 2026-11-03; it needs a Bash allow
-# rule for this script.
+# The session owner authorised this on 2026-11-03 (.claude/settings.json).
+#
+# ⚠️ DOES NOT WORK (tested 2026-11-03): the endpoint answers 401
+# "authentication required" -- the agent proxy does not add credentials for
+# it; Claude Code calls it with its own session credential, and lifting that
+# credential into a shell script is not something this script will do.  It
+# therefore prints `unknown` (or the last value it ever read).  Read the
+# billing type with the claude-code-remote `list_events` tool instead.
 set -u
 mode=${1:-}
 cfg=$(ls /tmp/mcp-config-cse_*.json 2>/dev/null | head -1)
