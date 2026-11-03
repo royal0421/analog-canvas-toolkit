@@ -4114,6 +4114,7 @@ class Placer(object):
     def _annotate(self):
         f = self.f
         self._lbox = []
+        self._plain_nodes = set()
         for nd, (pid, nm, di) in self.ports_placed.items():
             rt = name(nm)
             # A pin's name sits beside its CIRCLE, at the fixed SOP 3A
@@ -4188,7 +4189,15 @@ class Placer(object):
                    if t in self.pinxy]
             if not pts:
                 continue
-            rt = name(nd.upper() if len(nd) == 1 else nd)
+            # a bare word is printed whole and upright, as the hand-drawn
+            # HW2 comparator prints `clk` (plain("clk")); the editor's own
+            # name() turns it into c + subscript lk.  One letter is a node
+            # letter and is capitalised (P, Q).
+            plainword = len(nd) > 1 and "_" not in nd
+            rt = (plain(nd) if plainword
+                  else name(nd.upper() if len(nd) == 1 else nd))
+            if plainword:
+                self._plain_nodes.add("n-" + nd)
             lo = min(p[0] for p in pts), min(p[1] for p in pts)
             hi = max(p[0] for p in pts), max(p[1] for p in pts)
             # Anywhere along its OWN bus, not just three points on it.  The
@@ -4297,7 +4306,7 @@ class Placer(object):
         """Names the editor's own generator would subscript but the page
         does not: the rail label, and any port whose name is a bare word
         (`Vout`, `CK`) rather than base plus subscript."""
-        out = set()
+        out = set(getattr(self, "_plain_nodes", ()))
         for _nd, (pid, nm, _di) in self.ports_placed.items():
             if "_" not in nm and len(nm) > 1:
                 out.add("instance-label-" + pid)
