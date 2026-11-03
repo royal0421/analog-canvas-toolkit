@@ -142,5 +142,41 @@ class HintTests(unittest.TestCase):
         self.assertEqual(([], {}, []), (c.groups, c.portside, c.below))
 
 
+
+FOLDED = """.title t
+.global VDD
+.subckt FC b4 b3 b2 b1 b5 in1 in2 ol or
+.iodir b4=input b3=input b2=input b1=input b5=input in1=input in2=input ol=output or=output
+M7 fl b4 VDD VDD pmos
+M8 fr b4 VDD VDD pmos
+M5 ol b3 fl VDD pmos
+M6 or b3 fr VDD pmos
+M3 ol b2 xl 0 nmos
+M4 or b2 xr 0 nmos
+M9 xl b1 0 0 nmos
+M10 xr b1 0 0 nmos
+M1 fl in1 tail 0 nmos
+M2 fr in2 tail 0 nmos
+M11 tail b5 0 0 nmos
+.ends
+"""
+
+
+class AnalyzeTests(unittest.TestCase):
+    def test_folded_cascode_is_recognised(self):
+        groups, portside, own = autoplace._folded_cascode(
+            netlist_io.parse(FOLDED))
+        self.assertEqual(("input", ["M1", "M11", "M2"]), groups[0])
+        self.assertEqual({"M7", "M5", "M3", "M9"}, set(groups[1][1]))
+        self.assertEqual({"b1", "b2", "b3", "b4"}, set(portside))
+        self.assertEqual({"M11"}, own)
+
+    def test_other_circuits_are_left_alone(self):
+        self.assertIsNone(autoplace._folded_cascode(netlist_io.parse(NAND2)))
+        same_stack = FOLDED.replace("M2 fr in2", "M2 fl in2")
+        self.assertIsNone(autoplace._folded_cascode(
+            netlist_io.parse(same_stack)))
+
+
 if __name__ == "__main__":
     unittest.main()

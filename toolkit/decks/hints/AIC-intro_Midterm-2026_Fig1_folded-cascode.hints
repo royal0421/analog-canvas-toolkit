@@ -1,8 +1,0 @@
-* AIC intro midterm Fig. 1 -- folded-cascode op amp (as hand-drawn)
-.group input  M1 M2 M11
-.group foldL  M7 M5 M3 M9
-.group foldR  M8 M6 M4 M10
-.portside b4 top
-.portside b3 top
-.portside b2 top
-.portside b1 top

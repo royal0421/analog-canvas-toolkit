@@ -454,6 +454,11 @@ class Placer(object):
             while not self.c.is_ground(node) and not self.c.is_supply(node):
                 cand = [d for d in left if d.ref not in used
                         and d.pins[d.top] == node]
+                own = getattr(self.c, "own_col", ())
+                if own:
+                    # a device given a column of its own (the folded
+                    # cascode's tail, between the two halves of the pair)
+                    cand = [d for d in cand if d.ref not in own]
                 if getattr(self.c, "alias", None):
                     # a NAND/NOR (see _split_gate_inputs): the pull-up and
                     # the pull-down network are separate columns, never one
@@ -903,10 +908,20 @@ class Placer(object):
                     gi.setdefault(r, k)
             cur = [k for k in seq if k[0] == "c"]
 
+            pos_in = {}
+            for _nm, refs in groups:
+                for j, r in enumerate(refs):
+                    pos_in.setdefault(r, j)
+
             def blk(k):
                 hits = [gi[d.ref] for d in chains[k[1]] if d.ref in gi]
                 return min(hits) if hits else len(groups)
-            want = sorted(cur, key=lambda k: (blk(k), cur.index(k)))
+
+            def inblk(k):
+                # left to right as the group lists its parts
+                hits = [pos_in[d.ref] for d in chains[k[1]] if d.ref in pos_in]
+                return min(hits) if hits else cur.index(k)
+            want = sorted(cur, key=lambda k: (blk(k), inblk(k), cur.index(k)))
             at = sorted(seq.index(k) for k in want)
             for i, k in zip(at, want):
                 seq[i] = k
@@ -4518,6 +4533,117 @@ def _mirror_map(c):
     return nmap, dmap
 
 
+_CTRLS = {"nmos": ("G", "D", "S"), "pmos": ("G", "D", "S"),
+         "npn": ("B", "C", "E"), "pnp": ("B", "C", "E")}
+
+
+def _rail(c, n):
+    return c.is_ground(n) or c.is_supply(n)
+
+
+def _folded_cascode(c):
+    """Recognise a folded-cascode core: (groups, portside, own_col) or None.
+
+    What the circuit DOES decides how it is drawn (user, 2026-11-03: 「要畫對
+    一定要知道電路在幹嘛才能好好分級」), and a person can say it in a hints
+    file -- this says it for them, for one well-defined structure:
+
+      * a differential pair: two like transistors sharing a source node
+        that is not a rail, gates on different nets, one tail device;
+      * exactly two cascode stacks: every other transistor, linked drain
+        to source between the rails, three or more per stack;
+      * FOLDED: each half of the pair drains into a different stack;
+      * a bias input drives one gate in each stack and nothing else.
+
+    It yields the blocks the hand-drawn AIC midterm is drawn in -- input
+    pair with its tail | left stack | right stack -- and sends each bias in
+    from above its bus.  Anything that does not match exactly is left to
+    the topology lane as before.
+    """
+    tr = [d for d in c.devices if d.sym in _CTRLS]
+    if len(tr) < 8:
+        return None
+    g = lambda d: d.pins[_CTRLS[d.sym][0]]
+    dr = lambda d: d.pins[_CTRLS[d.sym][1]]
+    so = lambda d: d.pins[_CTRLS[d.sym][2]]
+    # 1. differential pair on a tail node, and the tail device
+    pairs = []
+    bysrc = {}
+    for d in tr:
+        if not _rail(c, so(d)):
+            bysrc.setdefault(so(d), []).append(d)
+    for t, ds in bysrc.items():
+        if len(ds) != 2 or ds[0].sym != ds[1].sym or g(ds[0]) == g(ds[1]):
+            continue
+        tails = [e for e in tr if e not in ds and t in (dr(e), so(e))]
+        if len(tails) == 1:
+            pairs.append((ds[0], ds[1], tails[0], t))
+    if len(pairs) != 1:
+        return None
+    a, b, td, tnode = pairs[0]
+    # 2. stacks: conduction chains of the remaining transistors
+    rest = [d for d in tr if d not in (a, b, td)]
+    parent = {d.ref: d.ref for d in rest}
+
+    def find(r):
+        while parent[r] != r:
+            parent[r] = parent[parent[r]]
+            r = parent[r]
+        return r
+    byn = {}
+    for d in rest:
+        for n in (dr(d), so(d)):
+            if not _rail(c, n):
+                byn.setdefault(n, []).append(d.ref)
+    for n, refs in byn.items():
+        for r in refs[1:]:
+            parent[find(r)] = find(refs[0])
+    comps = {}
+    for d in rest:
+        comps.setdefault(find(d.ref), []).append(d)
+    stacks = [v for v in comps.values() if len(v) >= 3]
+    if len(stacks) != 2 or len(rest) != sum(len(s) for s in stacks):
+        return None
+    # 3. folded: each pair drain lands on a different stack
+    def stack_of(n):
+        for i, s in enumerate(stacks):
+            if any(n in (dr(d), so(d)) for d in s):
+                return i
+        return None
+    sa, sb = stack_of(dr(a)), stack_of(dr(b))
+    if sa is None or sb is None or sa == sb:
+        return None
+    order = lambda s: sorted(s, key=lambda d: [x.ref for x in c.devices].index(d.ref))
+    # the tail sits BETWEEN the two halves, in a column of its own
+    groups = [("input", [a.ref, td.ref, b.ref]),
+              ("stackL", [d.ref for d in order(stacks[sa])]),
+              ("stackR", [d.ref for d in order(stacks[sb])])]
+    # 4. biases: an input port that drives one gate in EACH stack only
+    portside = {}
+    for nd, _nm, di in c.ports:
+        if di != "input":
+            continue
+        on = c.pins_on(nd)
+        if not on or any(p != _CTRLS.get(d.sym, ("",))[0] for d, p in on):
+            continue
+        hit = set(stack_of(dr(d)) for d, _p in on
+                  if d in stacks[0] or d in stacks[1])
+        if len(on) == 2 and hit == {0, 1}:
+            portside[nd] = "top"
+    return groups, portside, {td.ref}
+
+
+def _analyze(c):
+    """Functional blocks found in the deck itself (no person involved), in
+    the same form a hints file gives.  AC_ANALYZE=0 turns it off."""
+    if os.environ.get("AC_ANALYZE", "1") != "1" or c.groups:
+        return c
+    fc = _folded_cascode(c)
+    if fc:
+        c.groups, c.portside, c.own_col = fc[0], dict(fc[1]), set(fc[2])
+    return c
+
+
 def _read_hints(c, path):
     """A person's layout hints for one deck, from decks/hints/<stem>.hints.
 
@@ -4562,6 +4688,7 @@ def _read_hints(c, path):
             c.groups.append((tok[1], tok[2:]))
         else:
             raise ValueError("%s:%d: cannot read %r" % (path, ln, line.strip()))
+    c.own_col = set()
     names = [g for g, _r in c.groups]
     for g in c.below:
         if g not in names:
@@ -4644,6 +4771,8 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True,
     # hints are a person's input, so the bench (topology only) never reads
     # them; `python autoplace.py deck` does
     _read_hints(c, hints_path(path) if hints else None)
+    # ...and with no hints, what the circuit's structure says by itself
+    _analyze(c)
     stem = os.path.basename(path)[:-4]
     out_proj = out_proj or os.path.join(HERE, "auto", stem + ".icproj.json")
     out_svg = out_svg or os.path.join(HERE, "auto", "preview_" + stem + ".svg")
