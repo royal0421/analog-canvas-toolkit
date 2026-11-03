@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash scripts/billing_state.sh)",
+      "Bash(bash scripts/billing_state.sh:*)"
+    ]
+  }
+}
