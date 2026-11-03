@@ -4207,6 +4207,12 @@ class Placer(object):
         for d in self.c.devices:
             if d.ref not in f.placed:
                 continue
+            if d.sym in N.BLOCKS:
+                # an op amp or a gate carries no name: none of the
+                # hand-drawn figures labels one (8.57, 14.36(b), the HW2
+                # comparator), and the editor's own rule printed OA1 as
+                # O + subscript A1 and INV1 as I + subscript NV1
+                continue
             rt = name(d.label)
             best, bestkey = None, None
             for dx, dy, al in self._label_candidates(d.ref, d.sym):
