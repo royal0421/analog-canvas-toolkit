@@ -106,5 +106,35 @@ class SplitGateInputTests(unittest.TestCase):
             self.assertEqual({}, self.split(NAND2).alias)
 
 
+
+class HintTests(unittest.TestCase):
+    def read(self, text, deck=NAND2):
+        c = netlist_io.parse(deck)
+        with tempfile.NamedTemporaryFile("w", suffix=".hints",
+                                         delete=False) as f:
+            f.write(text)
+        self.addCleanup(os.remove, f.name)
+        return autoplace._read_hints(c, f.name)
+
+    def test_groups_and_portside_are_read(self):
+        c = self.read("* comment\n.group up MP1 MP2\n.group dn MN1 MN2\n"
+                      ".portside a top\n")
+        self.assertEqual([("up", ["MP1", "MP2"]), ("dn", ["MN1", "MN2"])],
+                         c.groups)
+        self.assertEqual({"a": "top"}, c.portside)
+
+    def test_unknown_names_are_errors(self):
+        with self.assertRaises(ValueError):
+            self.read(".group up MP1 MX9\n")
+        with self.assertRaises(ValueError):
+            self.read(".portside nope top\n")
+        with self.assertRaises(ValueError):
+            self.read(".stage 1\n")
+
+    def test_bench_reads_no_hints(self):
+        c = autoplace._read_hints(netlist_io.parse(NAND2), None)
+        self.assertEqual(([], {}), (c.groups, c.portside))
+
+
 if __name__ == "__main__":
     unittest.main()

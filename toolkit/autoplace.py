@@ -892,8 +892,28 @@ class Placer(object):
                     and same_stage(seq[i], seq[j])):
                 seq.insert(j, seq.pop(i))
         self._pull_parallel(seq, chains)
+        groups = getattr(self.c, "groups", None)
+        if groups:
+            # a person's functional blocks (decks/hints): each block's
+            # columns stay together, blocks left to right in file order,
+            # parts nobody grouped after them; held after every colmove
+            gi = {}
+            for k, (_nm, refs) in enumerate(groups):
+                for r in refs:
+                    gi.setdefault(r, k)
+            cur = [k for k in seq if k[0] == "c"]
+
+            def blk(k):
+                hits = [gi[d.ref] for d in chains[k[1]] if d.ref in gi]
+                return min(hits) if hits else len(groups)
+            want = sorted(cur, key=lambda k: (blk(k), cur.index(k)))
+            at = sorted(seq.index(k) for k in want)
+            for i, k in zip(at, want):
+                seq[i] = k
         mir = getattr(self.c, "mirror", None)
-        if mir and str(self.opt("sym", 0)) == "1":
+        # a person's blocks outrank the detected symmetry (it would split
+        # the midterm's input pair across the two folded stacks)
+        if mir and not groups and str(self.opt("sym", 0)) == "1":
             # two mirror halves: each pair of chains (one the image of the
             # other) splits left | right around the chains that are their
             # own image, and the right half runs in reverse -- the order
@@ -2465,6 +2485,7 @@ class Placer(object):
 
     def _add_ports(self):
         f = self.f
+        self._vports = set()
         declared = [p[0] for p in self.c.ports]
         extra = []
         for nd in self.c.nodes():
@@ -2556,6 +2577,22 @@ class Placer(object):
                 x = max(p[0] for p in pins) + self.portstub + 10
                 mir = "x"
             pid = "P" + nd.upper().replace("-", "")
+            side = getattr(self.c, "portside", {}).get(nd)
+            if side == "top" and len(set(p[1] for p in pins)) == 1:
+                # a person asked for this port ABOVE its bus (decks/hints):
+                # the hand-drawn midterm feeds every cascode bias from the
+                # top, at the middle of the gate bus between the two
+                # stacks.  Turned 90 degrees: circle up, pin 10 above the
+                # bus, so the stub is one short vertical into a tee.
+                xm = (min(p[0] for p in pins) + max(p[0] for p in pins)) / 2.0
+                xm = int(round(xm / 10.0)) * 10
+                f.place(pid, "port", xm, pins[0][1] - 20, rotation=90)
+                self._vports.add(pid)
+                self.pinxy[(pid, "P")] = f.pin(pid, "P")
+                self.netterms[nd].append((pid, "P"))
+                self.ports_placed[nd] = (pid, nm, di)
+                f.terminal("t-" + nd, nm, self.netid[nd], di, [pid])
+                continue
             f.port(pid, int(round(x / 10.0)) * 10, y, mirror=mir)
             self.pinxy[(pid, "P")] = f.pin(pid, "P")
             self.netterms[nd].append((pid, "P"))
@@ -3781,6 +3818,8 @@ class Placer(object):
         """
         f = self.f
         for nd, (pid, nm, di) in self.ports_placed.items():
+            if pid in getattr(self, "_vports", ()):
+                continue          # placed where a person asked (hints)
             step = -10 if di == "input" else 10
             axis = self.trunk.get(nd, ("h", 0))[0]
             ci = 1 if axis == "h" else 0
@@ -4084,6 +4123,12 @@ class Placer(object):
             mir = f.placed[pid][3]
             dx = LABEL_PORT if mir == "x" else -LABEL_PORT
             cands = [(dx, 5, "start" if dx > 0 else "end")]
+            if pid in getattr(self, "_vports", ()):
+                # right of the raised circle, level with it: the circle
+                # sits 7 above the pin, and the bus may run AT the pin row,
+                # so the name stays clear of that row (at the hand-drawn
+                # -2 it came 1.6 units off the bus)
+                cands = [(8, -10, "start")]
             best, bestkey = None, None
             for dx, dy, al in cands:
                 wire, near, own, other, anyink = self._score_label(
@@ -4410,6 +4455,52 @@ def _mirror_map(c):
     return nmap, dmap
 
 
+def _read_hints(c, path):
+    """A person's layout hints for one deck, from decks/hints/<stem>.hints.
+
+    The netlist lane draws from topology alone, and a complex figure needs
+    to know what the circuit DOES (user, 2026-11-03: 「要畫對一定要知道電路
+    在幹嘛才能好好分級」).  The hints are where a person says it:
+
+        .group  <name> <ref> <ref> ...   one functional block per line;
+                                         its parts' columns stay together,
+                                         blocks left to right in file order
+        .portside <node> top             that port sits above the middle of
+                                         its bus (all its pins on one row),
+                                         stub straight down -- the midterm's
+                                         cascode biases
+
+    Blank lines and `*` comments are ignored.  Unknown refs are an error,
+    so a renamed part cannot silently drop out of its block.
+    """
+    c.groups, c.portside = [], {}
+    if not path or not os.path.exists(path):
+        return c
+    refs = set(d.ref for d in c.devices)
+    for ln, line in enumerate(open(path, encoding="utf-8"), 1):
+        tok = line.split()
+        if not tok or tok[0].startswith("*"):
+            continue
+        if tok[0] == ".portside" and len(tok) == 3 and tok[2] == "top":
+            if tok[1] not in [nd for nd, _nm, _di in c.ports]:
+                raise ValueError("%s:%d: no such port %r" % (path, ln, tok[1]))
+            c.portside[tok[1]] = "top"
+            continue
+        if tok[0] == ".group" and len(tok) >= 3:
+            bad = [r for r in tok[2:] if r not in refs]
+            if bad:
+                raise ValueError("%s:%d: no such part %s" % (path, ln, bad))
+            c.groups.append((tok[1], tok[2:]))
+        else:
+            raise ValueError("%s:%d: cannot read %r" % (path, ln, line.strip()))
+    return c
+
+
+def hints_path(deck):
+    stem = os.path.basename(deck)[:-4]
+    return os.path.join(HERE, "decks", "hints", stem + ".hints")
+
+
 def _split_gate_inputs(c):
     """NAND and NOR draw each input TWICE: one port beside the pull-up
     gate, one beside the pull-down gate, and no wire between them (the
@@ -4454,7 +4545,8 @@ def _split_gate_inputs(c):
     return c
 
 
-def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
+def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True,
+               hints=False):
     """Draw the deck, searching the layout choices instead of guessing them.
 
     Two things are being chosen: HOW to draw (which parts lie down, which
@@ -4476,6 +4568,9 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
     c = _split_gate_inputs(N.parse(open(path, encoding="utf-8").read()))
     c.mirror = (_mirror_map(c) if os.environ.get("AC_SYM", "1") == "1"
                 else None)
+    # hints are a person's input, so the bench (topology only) never reads
+    # them; `python autoplace.py deck` does
+    _read_hints(c, hints_path(path) if hints else None)
     stem = os.path.basename(path)[:-4]
     out_proj = out_proj or os.path.join(HERE, "auto", stem + ".icproj.json")
     out_svg = out_svg or os.path.join(HERE, "auto", "preview_" + stem + ".svg")
@@ -5123,4 +5218,4 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
 
 if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
-    place_deck(args[0])
+    place_deck(args[0], hints="--no-hints" not in sys.argv)
