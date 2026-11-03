@@ -1081,23 +1081,6 @@ class Placer(object):
                             == self.c.by_ref[p].pins.get(FIXED_VERT.get(
                                 d.sym, ("D", "S"))[0])):
                         return 1
-                # A switch pair on ONE outside gate net (StrongARM's
-                # precharge M_7/M_8 on CLK) goes innermost of all: the two
-                # gates face each other and CLK is one straight line
-                # between them (user: "CLK 都會直接穿越閘極").
-                if str(os.environ.get("AC_CLKIN", "1")) == "1":
-                    drains = set()
-                    for d in self.c.devices:
-                        dp = FIXED_VERT.get(d.sym, ("D", "S"))[0]
-                        if d.sym in CTRL and dp in d.pins:
-                            drains.add(d.pins[dp])
-                    for d in chains[k[1]]:
-                        p = dmap.get(d.ref)
-                        if (d.sym in CTRL and p and p != d.ref
-                                and d.pins[CTRL[d.sym]]
-                                == self.c.by_ref[p].pins.get(CTRL[d.sym])
-                                and d.pins[CTRL[d.sym]] not in drains):
-                            return 2
                 return 0
             order_l = sorted(range(len(left)), key=lambda i: crossed(left[i]))
             left = [left[i] for i in order_l]
