@@ -892,6 +892,39 @@ class Placer(object):
                     and same_stage(seq[i], seq[j])):
                 seq.insert(j, seq.pop(i))
         self._pull_parallel(seq, chains)
+        mir = getattr(self.c, "mirror", None)
+        if mir and str(self.opt("sym", 0)) == "1":
+            # two mirror halves: each pair of chains (one the image of the
+            # other) splits left | right around the chains that are their
+            # own image, and the right half runs in reverse -- the order
+            # Razavi draws a differential stage in.  It is a STARTING POINT
+            # (place_deck runs the descent with and without it), and like
+            # _pull_parallel it holds after every colmove.
+            dmap = mir[1]
+            head = {}
+            for i, ch in enumerate(chains):
+                for d in ch:
+                    head[d.ref] = i
+            cur = [k for k in seq if k[0] == "c"]
+            left, mid, right, done = [], [], [], set()
+            for k in cur:
+                i = k[1]
+                if i in done:
+                    continue
+                j = head.get(dmap.get(chains[i][0].ref))
+                done.add(i)
+                if j is None or j == i:
+                    mid.append(k)
+                elif ("c", j) in cur and j not in done:
+                    done.add(j)
+                    left.append(k)
+                    right.append(("c", j))
+                else:
+                    mid.append(k)
+            want = left + mid + right[::-1]
+            at = sorted(seq.index(k) for k in want)
+            for i, k in zip(at, want):
+                seq[i] = k
         if getattr(self, "_gate_seq", None):
             # NAND/NOR column order is the gate's structure, not a choice:
             # like _pull_parallel it holds after every colmove
@@ -4308,6 +4341,75 @@ def _grids(tune):
     return out
 
 
+def _mirror_map(c):
+    """Left/right symmetry of a deck: (node map, device map) or None.
+
+    A differential circuit is drawn as two mirror halves (Razavi Fig
+    10.35(a): M_1 | M_3 | I_SS2 | M_4 | M_2).  The symmetry is found from
+    the ports that come in PAIRS with the same direction (V_in1/V_in2,
+    V_out1/V_out2) and grown by matching devices of the same symbol whose
+    already-mapped pins agree.  It must be an involution that maps every
+    device, and must move at least one.  Used by `sym` in columns().
+    """
+    ports = {}
+    for nd, _nm, di in c.ports:
+        ports.setdefault(di, []).append(nd)
+    seeds = [tuple(v) for v in ports.values() if len(v) == 2]
+    if not seeds:
+        return None
+    nmap = {}
+    for a, b in seeds:
+        nmap[a], nmap[b] = b, a
+    for n in c.nodes():
+        if c.is_ground(n) or c.is_supply(n):
+            nmap[n] = n
+    dmap = {}
+    devs = list(c.devices)
+    for _ in range(len(devs) + 2):
+        grown = False
+        for d in devs:
+            if d.ref in dmap:
+                continue
+            fits = []
+            for e in devs:
+                if e.sym != d.sym or (e.ref in dmap and dmap[e.ref] != d.ref):
+                    continue
+                if set(e.pins) != set(d.pins):
+                    continue
+                ok, known = True, 0
+                for p, n in d.pins.items():
+                    if n in nmap:
+                        known += 1
+                        if nmap[n] != e.pins[p]:
+                            ok = False
+                            break
+                    elif e.pins[p] in nmap and nmap[e.pins[p]] != n:
+                        ok = False
+                        break
+                if ok and known:
+                    fits.append(e)
+            if len(fits) != 1:
+                continue
+            e = fits[0]
+            dmap[d.ref], dmap[e.ref] = e.ref, d.ref
+            for p, n in d.pins.items():
+                m = e.pins[p]
+                if n not in nmap and m not in nmap:
+                    nmap[n], nmap[m] = m, n
+                elif n not in nmap:
+                    nmap[n] = m
+            grown = True
+        if not grown:
+            break
+    if len(dmap) != len(devs):
+        return None
+    if any(dmap[dmap[r]] != r for r in dmap):
+        return None
+    if all(dmap[r] == r for r in dmap):
+        return None
+    return nmap, dmap
+
+
 def _split_gate_inputs(c):
     """NAND and NOR draw each input TWICE: one port beside the pull-up
     gate, one beside the pull-down gate, and no wire between them (the
@@ -4372,6 +4474,8 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
     # the per-candidate `except Exception` below cannot tell them apart.
     import ring_corners as _RC
     c = _split_gate_inputs(N.parse(open(path, encoding="utf-8").read()))
+    c.mirror = (_mirror_map(c) if os.environ.get("AC_SYM", "1") == "1"
+                else None)
     stem = os.path.basename(path)[:-4]
     out_proj = out_proj or os.path.join(HERE, "auto", stem + ".icproj.json")
     out_svg = out_svg or os.path.join(HERE, "auto", "preview_" + stem + ".svg")
@@ -4910,6 +5014,13 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
         _jobs = [((_gr,), {"start": {"ltrunk": _lt, "bdwide": 1,
                                      "snapcol": 1}})
                  for _gr in _starts for _lt in (1, 0)]
+        # a symmetric deck is also tried as two mirror halves (`sym`); the
+        # score decides, so a figure the symmetry does not suit keeps what
+        # it had.  ONE extra descent: offering it from every start cost the
+        # bench 12% CPU (the midterm's four extra descents never won).
+        if getattr(c, "mirror", None):
+            _jobs.append(((_starts[0],), {"start": {"ltrunk": 1, "bdwide": 1,
+                                                    "snapcol": 1, "sym": 1}}))
         # The wide detour and the column snap are starting points, not
         # axes, for the same reason `ltrunk` is: each adds a move the
         # search did not have, and a figure that never uses one can still
