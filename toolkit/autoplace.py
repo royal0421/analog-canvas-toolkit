@@ -461,7 +461,7 @@ class Placer(object):
         cache = getattr(self, "_diode_cache", None)
         if cache is None:
             cache = self._diode_cache = {}
-            if os.environ.get("AC_DIODETIE", "1") == "1":
+            if os.environ.get("AC_DIODETIE", "0") == "1":
                 for d in self.c.devices:
                     if d.sym in CTRL and d.sym in FIXED_VERT:
                         g = d.pins[CTRL[d.sym]]
@@ -476,7 +476,7 @@ class Placer(object):
         one other device between that node and a rail.  The tail goes in
         the MIDDLE, between the two halves (user, 2026-11-03: 「尾巴要置中。
         對稱結構該置中的置中」 -- 12.57(c)'s I_SS hung under M_3)."""
-        if os.environ.get("AC_TAILMID", "1") != "1":
+        if os.environ.get("AC_TAILMID", "0") != "1":
             return {}
         out = {}
         bysrc = {}
@@ -1093,7 +1093,7 @@ class Placer(object):
         # the left one (12.57(c): V_in -> M_3 on the left, M_4 to R_M on the
         # right; the search had the halves the other way round and V_in
         # came in from the right).  Held after every colmove.
-        if str(os.environ.get("AC_INPAIR", "1")) == "1":
+        if str(os.environ.get("AC_INPAIR", "0")) == "1":
             ins = set(n for n, _nm, di in self.c.ports if di == "input")
             col_of = {}
             for k in [x for x in seq if x[0] == "c"]:
