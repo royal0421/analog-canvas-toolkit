@@ -47,3 +47,5 @@
 - 2026-11-03｜**收回撤回**：左右對稱擺放 `sym`（上一筆撤回的同一份 patch）依修訂後規則採用｜預期：10.35(a) 對稱｜28 figures | 28 clean | place 39%→41%（39.22→40.56%）| wire 1.01→1.00x | bends 1.03x | crossings 13 | 稽核錯誤 0；同機牆鐘 802→860 s（+7%）；regress 36/36、unittest 28/28｜4521adb
 - 2026-11-03｜計費腳本：使用者授權後建 .claude/settings.json 允許規則（a543ec4），腳本可執行，但 claude-code-remote 端點回 401 authentication required：proxy 不替它補憑證，要用 Claude Code 自己的 session 憑證，不把它搬進腳本 → 純 bash 讀計費不可行，維持用 list_events（花 token）。腳本註明此限制，印 unknown｜—｜—｜—
 - 2026-11-03｜autoplace：複雜電路的分組提示 decks/hints/<名稱>.hints（.group 功能區塊、.portside <節點> top）；只在 python autoplace.py 直接畫圖時讀，bench 不讀｜預期：使用者提供電路功能，Midterm 能畫對｜bench：28 張每行相同、27 張逐位元相同（提示不影響 bench）；牆鐘 744 s；Midterm 帶 7 行提示：bends 36.5→12（手排 17.5）、X 6→1、wire 2.1→0.97x、稽核 0，尚差 M11 未置中、V_b2 與 V_out1 標籤間距 2.4；regress 36/36、unittest 31/31｜bdb7c2f
+- 2026-11-03｜**未採用**：HW2 比較器的分組提示（第一級／鎖存／反相器三組）｜預期：照手排分級｜bends 36、X 4，跟沒提示一樣：手排把鎖存放右下、有自己較低的 VDD 軌，提示只能管欄序 → 草稿刪除；要畫對需新增「整組下移＋自己的電源軌」｜—
+- 2026-11-03｜autoplace：.show 的多字母節點名照整個字、直立粗體（同 port 名規則，宣告 expect_differ），clk 不再變成 c 下標 lk｜預期：標籤與手排一致（手排是 plain("clk")）｜28 張每行相同；HW2 比較器完整驗證 schema VALID、labels OK；牆鐘 744→758 s（波動）；regress 36/36、unittest 31/31｜46a8362
