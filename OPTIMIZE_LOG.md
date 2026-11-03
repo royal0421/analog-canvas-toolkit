@@ -46,3 +46,4 @@
 - 2026-11-03｜使用者裁示（規則 2 修訂）：品質欄（clean／place／wire／bends／crossings／稽核錯誤）不變差、牆鐘同機最多慢 10% 可以收；牆鐘超過 10% 或任何品質欄變差才撤回｜—｜—｜—
 - 2026-11-03｜**收回撤回**：左右對稱擺放 `sym`（上一筆撤回的同一份 patch）依修訂後規則採用｜預期：10.35(a) 對稱｜28 figures | 28 clean | place 39%→41%（39.22→40.56%）| wire 1.01→1.00x | bends 1.03x | crossings 13 | 稽核錯誤 0；同機牆鐘 802→860 s（+7%）；regress 36/36、unittest 28/28｜4521adb
 - 2026-11-03｜計費腳本：使用者授權後建 .claude/settings.json 允許規則（a543ec4），腳本可執行，但 claude-code-remote 端點回 401 authentication required：proxy 不替它補憑證，要用 Claude Code 自己的 session 憑證，不把它搬進腳本 → 純 bash 讀計費不可行，維持用 list_events（花 token）。腳本註明此限制，印 unknown｜—｜—｜—
+- 2026-11-03｜autoplace：複雜電路的分組提示 decks/hints/<名稱>.hints（.group 功能區塊、.portside <節點> top）；只在 python autoplace.py 直接畫圖時讀，bench 不讀｜預期：使用者提供電路功能，Midterm 能畫對｜bench：28 張每行相同、27 張逐位元相同（提示不影響 bench）；牆鐘 744 s；Midterm 帶 7 行提示：bends 36.5→12（手排 17.5）、X 6→1、wire 2.1→0.97x、稽核 0，尚差 M11 未置中、V_b2 與 V_out1 標籤間距 2.4；regress 36/36、unittest 31/31｜bdb7c2f
