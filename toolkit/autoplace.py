@@ -461,7 +461,7 @@ class Placer(object):
         cache = getattr(self, "_diode_cache", None)
         if cache is None:
             cache = self._diode_cache = {}
-            if os.environ.get("AC_DIODETIE", "0") == "1":
+            if os.environ.get("AC_DIODETIE", "1") == "1":
                 for d in self.c.devices:
                     if d.sym in CTRL and d.sym in FIXED_VERT:
                         g = d.pins[CTRL[d.sym]]
@@ -476,7 +476,7 @@ class Placer(object):
         one other device between that node and a rail.  The tail goes in
         the MIDDLE, between the two halves (user, 2026-11-03: 「尾巴要置中。
         對稱結構該置中的置中」 -- 12.57(c)'s I_SS hung under M_3)."""
-        if os.environ.get("AC_TAILMID", "0") != "1":
+        if os.environ.get("AC_TAILMID", "1") != "1":
             return {}
         out = {}
         bysrc = {}
@@ -1093,7 +1093,7 @@ class Placer(object):
         # the left one (12.57(c): V_in -> M_3 on the left, M_4 to R_M on the
         # right; the search had the halves the other way round and V_in
         # came in from the right).  Held after every colmove.
-        if str(os.environ.get("AC_INPAIR", "0")) == "1":
+        if str(os.environ.get("AC_INPAIR", "1")) == "1":
             ins = set(n for n, _nm, di in self.c.ports if di == "input")
             col_of = {}
             for k in [x for x in seq if x[0] == "c"]:
@@ -1793,7 +1793,11 @@ class Placer(object):
             w = max(p[0] for p in pts) - min(p[0] for p in pts)
             h = max(p[1] for p in pts) - min(p[1] for p in pts)
             need.append((max(w, h), nd, pts, w, h))
-        need.sort(reverse=True, key=lambda t: (t[0], t[1]))
+        # A diode-connected device's net goes first: its tie has to sit
+        # right under the drain, above any long bus that crosses the column
+        # (12.57(c): X took that row and the tie had nowhere to go).
+        need.sort(reverse=True, key=lambda t: (bool(self._diode_refs(t[1])),
+                                               t[0], t[1]))
         taken = []                      # every segment already committed
         inks = [(iid, self.f.ink(iid)) for iid in self.f.placed]
         # A transistor's name has exactly one legal spot, so its box is known
@@ -1893,6 +1897,23 @@ class Placer(object):
                     cands.append((key + (bias, 0), axis, c, spur))
             # a plain trunk wins an exact tie: the L has to EARN its elbow
             cands.sort(key=lambda t: (t[0], t[1], t[2], t[3] is not None))
+            # A diode-connected device's net is drawn the fixed way: the
+            # gate bus at gate height straight between the gates, the tie
+            # dropping off it to the drain (user, 2026-11-03, 12.57(c):
+            # 「這種典型的共用閘極然後其中一顆有回授的其實都是固定畫法」).
+            # So among the candidates as good on hard / body / crossings,
+            # the one with fewest gate risers wins before wire length.
+            if self._diode_refs(nd):
+                def _gr(t, _pts=pts):
+                    sg = self._spec_segments((t[1], t[2], t[3]), _pts)
+                    return sum(1 for q in (sg or ()) if q[0] == "r")
+                top3 = cands[0][0][:3]
+                tied = [t for t in cands if t[0][:3] == top3]
+                if tied:
+                    g0 = min(_gr(t) for t in tied)
+                    if _gr(cands[0]) > g0:
+                        cands.insert(0, min((t for t in tied if _gr(t) == g0),
+                                            key=lambda t: t[0]))
             _k, axis, c, spur = cands[0]
             self.trunk[nd] = (axis, c, spur)
             if os.environ.get("AC_TRUNKDBG"):
@@ -1963,6 +1984,15 @@ class Placer(object):
                 js = [10 * ((sal[i] + sal[i + 1]) // 20)
                       for i in range(len(sal) - 1)]
                 js = [x for x in js if sal[0] < x < sal[-1]][:3]
+                # ...and just past either end pin of the spur: a diode tie
+                # joins its drain right under the body, above whatever
+                # other net crosses the column lower down (12.57(c)'s M_6:
+                # the tie sits above X).
+                if str(os.environ.get("AC_SPUREND", "1")) == "1":
+                    for x in (sal[0] + 10, sal[0] + 20, sal[0] + 30, sal[-1] - 20,
+                              sal[-1] - 30):
+                        if sal[0] < x < sal[-1] and x not in js:
+                            js.append(x)
                 if not hcs or not js:
                     continue
                 cnt = {}
