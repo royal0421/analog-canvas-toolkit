@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT / "toolkit"))
 
 import autoplace  # noqa: E402
 import icproj  # noqa: E402
+import netlist_io  # noqa: E402
 
 DECK = ROOT / "toolkit" / "decks" / "razavi" / "cs-resistive-load.cir"
 HAVE_SYMBOLS = bool(glob.glob(os.path.join(icproj.SYMDIR, "*.json")))
@@ -64,6 +65,45 @@ class PlaceDeckTests(unittest.TestCase):
                                            "ac-descent-*")))
         self.assertEqual(before, after)
         self.assertFalse(autoplace._DRY[0])
+
+
+
+NAND2 = """.title t
+.global VDD
+.subckt NAND2 a b out
+.iodir a=input b=input out=output
+MP1 out a VDD VDD pmos
+MP2 out b VDD VDD pmos
+MN1 out a mid 0 nmos
+MN2 mid b 0 0 nmos
+.ends
+"""
+
+
+class SplitGateInputTests(unittest.TestCase):
+    def split(self, text):
+        return autoplace._split_gate_inputs(netlist_io.parse(text))
+
+    def test_nand_inputs_get_one_port_per_gate(self):
+        c = self.split(NAND2)
+        self.assertEqual({"a__2": "a", "b__2": "b"}, c.alias)
+        self.assertEqual("a__2", c.by_ref["MN1"].pins["G"])
+        self.assertEqual("a", c.by_ref["MP1"].pins["G"])
+        names = [nm for nd, nm, di in c.ports if di == "input"]
+        self.assertEqual(4, len(names))
+
+    def test_only_complementary_gates_are_split(self):
+        inverter = NAND2.replace("a b out", "a out").replace(
+            "a=input b=input", "a=input").replace(
+            "MP2 out b VDD VDD pmos\n", "").replace(
+            "MN1 out a mid 0 nmos\nMN2 mid b 0 0 nmos", "MN1 out a 0 0 nmos")
+        self.assertEqual({}, self.split(inverter).alias)
+        with_r = NAND2.replace(".ends", "R1 out 0\n.ends")
+        self.assertEqual({}, self.split(with_r).alias)
+        tied = NAND2.replace("MN2 mid b 0 0 nmos", "MN2 mid b a 0 nmos")
+        self.assertEqual({}, self.split(tied).alias)
+        with mock.patch.dict(os.environ, {"AC_PORTCOPY": "0"}):
+            self.assertEqual({}, self.split(NAND2).alias)
 
 
 if __name__ == "__main__":

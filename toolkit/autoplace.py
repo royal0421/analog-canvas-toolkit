@@ -454,6 +454,11 @@ class Placer(object):
             while not self.c.is_ground(node) and not self.c.is_supply(node):
                 cand = [d for d in left if d.ref not in used
                         and d.pins[d.top] == node]
+                if getattr(self.c, "alias", None):
+                    # a NAND/NOR (see _split_gate_inputs): the pull-up and
+                    # the pull-down network are separate columns, never one
+                    # chain through the output node
+                    cand = [d for d in cand if d.sym == ch[-1].sym]
                 if not cand:
                     break
                 # the leg that reaches ground keeps the column going
@@ -581,6 +586,21 @@ class Placer(object):
                 if v != me:
                     edges.append((me, v, 1))
                     fwd_edges.append((me, v))
+        # A NAND/NOR is drawn with its SERIES stack in the middle and the
+        # two parallel devices either side (the hand-drawn Lab 2 figures:
+        # M_P1 | M_N1-M_N2 | M_P2 for NAND, M_N1 | M_P1-M_P2 | M_N2 for
+        # NOR).  The anchor rule would park the stack beside one of them.
+        gate_cols, gate_seq = set(), None
+        if getattr(self.c, "alias", None):
+            stacks = [i for i, ch in enumerate(chains) if len(ch) >= 2]
+            if len(stacks) == 1:
+                st = stacks[0]
+                sides = sorted((i for i, ch in enumerate(chains)
+                                if len(ch) == 1 and ch[0].sym != chains[st][0].sym),
+                               key=lambda i: decl[chains[i][0].ref])
+                if len(sides) == 2:
+                    gate_cols = {st: None, sides[0]: None, sides[1]: None}
+                    gate_seq = [("c", sides[0]), ("c", st), ("c", sides[1])]
         # Ordering constraints go round in circles whenever the circuit does
         # -- a self-biased mirror (each branch drives the other's gate), an
         # op-amp whose input comes back from a later stage.  Collapse every
@@ -779,6 +799,16 @@ class Placer(object):
                     n = d.pins[p]
                     if n not in self._produced:
                         self._stage_node.setdefault(n, d.ref)
+        self._gate_cols = set(gate_cols)
+        self._gate_seq = gate_seq if gate_cols else None
+        if gate_cols:
+            # the output-on-the-right edges tie all three NAND/NOR columns
+            # into one cycle, whose order would fall back to the deck's
+            # declaration order -- so the three slots they hold are refilled
+            # in the drawing's order, every other column left where it is
+            at = sorted(order_all.index(k) for k in gate_seq)
+            for i, k in zip(at, gate_seq):
+                order_all[i] = k
         pos = {k: i for i, k in enumerate(order_all)}
         order = [k for k in order_all if k[0] == "c"]
         # a chain that hangs off another chain's node sits beside it
@@ -786,6 +816,8 @@ class Placer(object):
         amode = str(self.opt("anchor", "1"))
         if amode != "0":
             for i, ch in enumerate(chains):
+                if i in gate_cols:
+                    continue          # NAND/NOR: see `gate_cols` above
                 # A branch hanging off another chain's node belongs NEXT TO
                 # that chain, whichever side it currently sits on.  The old
                 # rule only fired when the anchor was already to the left, so
@@ -860,6 +892,13 @@ class Placer(object):
                     and same_stage(seq[i], seq[j])):
                 seq.insert(j, seq.pop(i))
         self._pull_parallel(seq, chains)
+        if getattr(self, "_gate_seq", None):
+            # NAND/NOR column order is the gate's structure, not a choice:
+            # like _pull_parallel it holds after every colmove
+            at = sorted(seq.index(k) for k in self._gate_seq if k in seq)
+            if len(at) == len(self._gate_seq):
+                for i, k in zip(at, self._gate_seq):
+                    seq[i] = k
         self.ncols = len(seq)
         pos = {k: i for i, k in enumerate(seq)}
         order = [k for k in seq if k[0] == "c"]
@@ -907,6 +946,8 @@ class Placer(object):
             for i in sorted(cols):
                 if i == host or len(chains[i]) != 1:
                     continue
+                if i in getattr(self, "_gate_cols", ()):
+                    continue      # NAND/NOR: parallel devices flank the stack
                 a, b = ("c", i), ("c", host)
                 if a not in seq or b not in seq:
                     continue
@@ -2182,8 +2223,10 @@ class Placer(object):
         f = self.f
         self.netid = {}
         self.netterms = {}
+        alias = getattr(self.c, "alias", {})
         for nd in self.c.nodes():
-            self.netid[nd] = "net-" + nd
+            # a split gate input (_split_gate_inputs) is still ONE net
+            self.netid[nd] = "net-" + alias.get(nd, nd)
             self.netterms[nd] = [(d.ref, p) for d in self.c.devices
                                  for p, n in d.pins.items() if n == nd]
         self.ports_placed = {}
@@ -2227,12 +2270,15 @@ class Placer(object):
             self._relocate_blocking_labels()
         self.tracks()               # positions moved, so pick the rows again
         self._settle_ports()
+        merged = {}
         for nd in self.c.nodes():
             terms = self.netterms[nd]
             for ref, top, _g, nd2 in dpairs:
                 if nd2 == nd:
                     terms = terms + [(ref, top)]
-            f.net(self.netid[nd], terms)
+            merged.setdefault(self.netid[nd], []).extend(terms)
+        for nid, terms in merged.items():
+            f.net(nid, terms)
         self.long_haul, self.rail_ends = set(), set()
         for nd in self.c.nodes():
             if self.c.is_ground(nd):
@@ -4262,6 +4308,50 @@ def _grids(tune):
     return out
 
 
+def _split_gate_inputs(c):
+    """NAND and NOR draw each input TWICE: one port beside the pull-up
+    gate, one beside the pull-down gate, and no wire between them (the
+    hand-drawn Lab 2 figures; the user allows it for NAND/NOR only,
+    2026-11-03).  One net and one port forces a wire from the pull-up to
+    the pull-down gate, and it crosses the output column (NAND2, NOR2:
+    2 crossings each).
+
+    Only a complementary CMOS gate qualifies: nothing but nmos/pmos, two
+    inputs or more, and every input drives exactly one pmos gate and one
+    nmos gate and nothing else (an inverter has one input and is drawn
+    with its gates tied).  The nmos side moves to a node of its own --
+    `<node>__2`, with a second port of the same name -- so placement and
+    routing see two nets; `alias` maps it back to the original net when
+    the file is written.  AC_PORTCOPY=0 turns it off.
+    """
+    c.alias = {}
+    if os.environ.get("AC_PORTCOPY", "1") != "1":
+        return c
+    if not c.devices or any(d.sym not in ("nmos", "pmos") for d in c.devices):
+        return c
+    ins = [nd for nd, _nm, di in c.ports if di == "input"]
+    if len(ins) < 2:
+        return c
+    plan = []
+    for nd in ins:
+        on = c.pins_on(nd)
+        if (len(on) != 2 or any(p != "G" for _d, p in on)
+                or sorted(d.sym for d, _p in on) != ["nmos", "pmos"]):
+            return c
+        plan.append((nd, next(d for d, _p in on if d.sym == "nmos")))
+    ports = []
+    for nd, nm, di in c.ports:
+        ports.append((nd, nm, di))
+        for nd0, dn in plan:
+            if nd0 == nd:
+                twin = nd + "__2"
+                dn.pins["G"] = twin
+                c.alias[twin] = nd
+                ports.append((twin, nm, di))
+    c.ports = ports
+    return c
+
+
 def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
     """Draw the deck, searching the layout choices instead of guessing them.
 
@@ -4281,7 +4371,7 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True):
     # A missing dependency must stop the run, not quietly disable the search:
     # the per-candidate `except Exception` below cannot tell them apart.
     import ring_corners as _RC
-    c = N.parse(open(path, encoding="utf-8").read())
+    c = _split_gate_inputs(N.parse(open(path, encoding="utf-8").read()))
     stem = os.path.basename(path)[:-4]
     out_proj = out_proj or os.path.join(HERE, "auto", stem + ".icproj.json")
     out_svg = out_svg or os.path.join(HERE, "auto", "preview_" + stem + ".svg")
