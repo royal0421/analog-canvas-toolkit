@@ -5,7 +5,7 @@
 ## 使用者禁令（每輪開工前先讀，任何改動、實驗、給使用者看的圖都不得違反）
 
 - **二極體接法（閘極接自己汲極）禁止從閘極腳沿本體旁拉下去接汲極**（12.57c 的 M6；diodelink 實驗那種接法）。唯一允許的是固定畫法：共閘極匯流排在閘極高度，回授從兩閘極之間的匯流排拉下接汲極（手排 before）。scratchpad/diodecol.patch 就是違禁畫法，不得再拿出來給使用者看或當候選。
-- 12.57c 已依使用者指示改回 f3ea718 之前的畫法（M5/M6 匯流排在閘極高度、回授從兩閘極之間拉下接汲極）；不得再改掉。
+- 12.57c 的 M5/M6：匯流排在閘極高度、回授從兩閘極之間拉下接 M6 汲極（固定畫法），同時 V_in 最左、I_SS 置中；不得再改掉。
 - StrongARM CLK「M7/M8 放內側、閘極面對面」被使用者評為錯誤畫法，已撤回，不得再用。
 - 埠複製只限 NAND／NOR。V_in 放左、尾巴置中、對稱結構中間那顆置中、配對鏡像。問使用者一定附對照圖。
 
@@ -80,3 +80,5 @@
 - 2026-11-03｜autoplace：對稱電路中共用一條外部閘極網（非任何汲極）的開關對放在半邊最內側（使用者：StrongARM「CLK 都會直接穿越閘極」）｜預期：CLK 一條直線接 M7／M8 閘極｜bench 28 張每行相同（place 49%、wire 0.94x、bends 0.96x、crossings 8 (over hand 2)、稽核錯誤 0）；StrongARM（無手排、不在 bench）CLK 由繞一圈改為兩閘極間直線；牆鐘 587→628 s（+7%，限 10% 內）；regress 逐位元相同、unittest 35/35、generate all out/ 0 變動｜4f2512c
 - 2026-11-03｜**撤回**：StrongARM 共用外部閘極的開關對放內側（4f2512c）；使用者：「收回吧」｜—｜—｜revert
 - 2026-11-03｜autoplace：12.57(c) 改回 f3ea718 之前的畫法（使用者：「給我改回去」），AC_INPAIR／AC_TAILMID／AC_DIODETIE 預設改 0（程式保留）｜預期：12.57c 回到 before 的固定畫法｜28 figures | 28 clean | place 49%→46% | wire 0.94→0.93x | bends 0.96→0.95x | crossings 8→7 (over hand 2→2) | 稽核錯誤 0；12.57c wire 1.1→0.7x、bends 16.5→11、X 1→0（place 下降來自 V_in／尾巴不再照手排位置，使用者指示優先）；HW2 bends 37→36、9.26c bends 11→11.5；牆鐘 606 s；regress 逐位元相同、unittest 35/35、generate all out/ 0 變動｜23cf4de
+- 2026-11-03｜autoplace：12.57(c) 照手排（使用者：「I_SS 要置中、單一個 Vin 放最左、畫到跟手排一樣」）——二極體接法的網先繞線；L 形匯流排的分接點可落在 spur 端腳旁（AC_SPUREND）；同分時閘極直接在主幹上者優先；V_in 放左／尾巴置中／二極體接法三規則恢復開啟｜預期：12.57c 與手排同畫法｜28 figures | 28 clean | place 49%（與 item26 同）| wire 0.94→0.93x | bends 0.96x | crossings 8 (over hand 2) | 稽核錯誤 0；12.57c bends 16.5→14.5（手排 15.5）、X 1（=手排）；Constant-gm 無電阻版 bends 13→15、wire 0.9→0.8x，有電阻版 wire 0.8→0.6x；牆鐘 512 s；regress 逐位元相同、unittest 35/35、generate all out/ 0 變動｜b17759e
+- 2026-11-03｜收尾（使用者指示，credit 約 $7）｜—｜—｜—
