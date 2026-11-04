@@ -14,6 +14,11 @@
   "crossings": 0,
   "errors": 0
  },
+ "beta-helper-mirror": {
+  "bends": 3.0,
+  "crossings": 0,
+  "errors": 0
+ },
  "bjt-cascode-amp": {
   "bends": 1.0,
   "crossings": 0,
@@ -49,6 +54,11 @@
   "crossings": 0,
   "errors": 0
  },
+ "ce-bypassed": {
+  "bends": 4.0,
+  "crossings": 0,
+  "errors": 0
+ },
  "ce-emitter-degen": {
   "bends": 1.0,
   "crossings": 0,
@@ -56,6 +66,11 @@
  },
  "cg-stage-current-load": {
   "bends": 2.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "class-ab-diode-bias": {
+  "bends": 7.0,
   "crossings": 0,
   "errors": 0
  },
@@ -91,6 +106,11 @@
  },
  "darlington-follower": {
   "bends": 4.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "difference-amp": {
+  "bends": 6.0,
   "crossings": 0,
   "errors": 0
  },
@@ -209,6 +229,11 @@
   "crossings": 4,
   "errors": 0
  },
+ "half-wave-rectifier": {
+  "bends": 2.0,
+  "crossings": 0,
+  "errors": 0
+ },
  "instrumentation-amp": {
   "bends": 15.0,
   "crossings": 1,
@@ -239,9 +264,24 @@
   "crossings": 0,
   "errors": 0
  },
+ "opamp-noninverting": {
+  "bends": 4.0,
+  "crossings": 0,
+  "errors": 0
+ },
  "push-pull-output": {
   "bends": 5.0,
   "crossings": 0,
+  "errors": 0
+ },
+ "regulated-cascode": {
+  "bends": 5.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "ring-osc-3": {
+  "bends": 21.5,
+  "crossings": 3,
   "errors": 0
  },
  "sallen-key-lp": {
@@ -264,18 +304,33 @@
   "crossings": 5,
   "errors": 0
  },
+ "summing-amp": {
+  "bends": 6.0,
+  "crossings": 0,
+  "errors": 0
+ },
  "telescopic-cascode": {
   "bends": 8.0,
   "crossings": 0,
   "errors": 0
  },
- "two-stage-miller": {
-  "bends": 22.5,
+ "transmission-gate": {
+  "bends": 13.5,
   "crossings": 1,
+  "errors": 1
+ },
+ "two-stage-miller": {
+  "bends": 22.0,
+  "crossings": 0,
   "errors": 0
  },
  "widlar-source": {
   "bends": 4.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "wien-bridge-osc": {
+  "bends": 10.0,
   "crossings": 0,
   "errors": 0
  },

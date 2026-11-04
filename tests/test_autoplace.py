@@ -331,5 +331,37 @@ class GateOrderTests(unittest.TestCase):
         self.assertEqual(sorted(xs), xs)
 
 
+class TransmissionGateTests(unittest.TestCase):
+    """A parallel pmos/nmos pair is a loop, not a stack (11-04)."""
+
+    def _draw(self):
+        deck = ROOT / "toolkit" / "decks" / "new" / "transmission-gate.cir"
+        c = autoplace._split_gate_inputs(
+            netlist_io.parse(deck.read_text(encoding="utf-8")))
+        autoplace._sink_negatives(c)
+        c.mirror = autoplace._mirror_map(c)
+        autoplace._read_hints(c, None)
+        autoplace._analyze(c)
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.dict(os.environ, {"AC_FAST": "1"}), \
+                contextlib.redirect_stdout(io.StringIO()):
+            p = autoplace.Placer(c, os.path.join(tmp, "t.icproj.json"),
+                                 os.path.join(tmp, "t.svg"),
+                                 style=dict(autoplace.STYLE0))
+            p.run(verbose=False)
+        return p
+
+    def test_parallel_pair_gets_two_columns(self):
+        p = self._draw()
+        self.assertNotEqual(p._colline("MN"), p._colline("MP"))
+        for ch in p.chains:
+            self.assertFalse({"MN", "MP"} <= {d.ref for d in ch})
+
+    def test_bulk_pin_is_an_obstacle(self):
+        p = self._draw()
+        xy = p.f.pin("MN", "B")
+        self.assertIn("0", p._pinnet.get(xy, set()))
+
+
 if __name__ == "__main__":
     unittest.main()
