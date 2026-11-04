@@ -264,5 +264,34 @@ class AmpDropTests(unittest.TestCase):
                          self.y_of(vdrop=(("OA2", 10),)))
 
 
+@unittest.skipUnless(HAVE_SYMBOLS, "run `python -m toolkit setup` first")
+class NegativeSupplyTests(unittest.TestCase):
+    def test_vee_is_its_own_net_drawn_at_the_bottom(self):
+        deck = ROOT / "toolkit" / "decks" / "new" / "push-pull-output.cir"
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.dict(os.environ, {"AC_FAST": "1"}), \
+                contextlib.redirect_stdout(io.StringIO()) as out:
+            p = autoplace.place_deck(
+                str(deck), out_proj=os.path.join(tmp, "pp.icproj.json"),
+                out_svg=os.path.join(tmp, "pp.svg"), verbose=True)
+        self.assertIn("self-check errors: 0", out.getvalue())
+        nets = dict((n["id"], [t["instanceId"] for t in n["terminals"]])
+                    for n in p.f.nets)
+        self.assertIn("net-VEE", nets)
+        self.assertNotIn("net-VEE", [k for k in nets if "Q1" in nets[k]
+                                     and k == "net-0"])
+        markers = [i for i, v in p.f.placed.items() if v[0] == "vdd-port"
+                   and i.startswith("VN")]
+        self.assertEqual(1, len(markers))
+        q2 = p.f.placed["Q2"][2]
+        self.assertGreater(p.f.placed[markers[0]][2], q2)   # below Q_2
+
+    def test_netlist_keeps_vee_apart_from_supply(self):
+        c = netlist_io.parse(".global VCC VEE\n.subckt X\n.ends\n")
+        self.assertTrue(c.is_supply("VCC"))
+        self.assertFalse(c.is_supply("VEE"))
+        self.assertTrue(c.is_negative("VEE"))
+
+
 if __name__ == "__main__":
     unittest.main()

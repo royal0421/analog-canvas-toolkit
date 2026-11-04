@@ -70,6 +70,7 @@ MARKERS = {"ground", "port", "port-filled", "vdd-port"}
 
 SUPPLY_NODE = "VDD"
 GROUND_NODE = "0"
+NEGATIVE_SUPPLIES = {"VEE", "VSS", "VNEG"}
 
 
 class Device(object):
@@ -120,7 +121,13 @@ class Circuit(object):
         return None
 
     def is_supply(self, node):
-        return node in self.globals and node != GROUND_NODE
+        return (node in self.globals and node != GROUND_NODE
+                and not self.is_negative(node))
+
+    def is_negative(self, node):
+        """A negative supply (`.global VCC VEE`): drawn at the BOTTOM, like
+        ground, with its own marker -- not a second top rail."""
+        return node in self.globals and node.upper() in NEGATIVE_SUPPLIES
 
     def is_ground(self, node):
         return node == GROUND_NODE

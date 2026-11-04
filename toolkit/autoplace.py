@@ -3667,15 +3667,17 @@ class Placer(object):
         degenerated pair through C_LR).  So the column is cut wherever the
         chain would enter a body, and each piece grounds itself.
         """
+        self.ggroups, self.gpairs, self._neg_markers = [], [], []
+        for nd in [N.GROUND_NODE] + list(getattr(self.c, "negatives", ())):
+            self._add_sink_markers(nd)
+
+    def _add_sink_markers(self, nd):
         f = self.f
-        nd = N.GROUND_NODE
-        self.ggroups = []
+        neg = nd != N.GROUND_NODE
         if nd not in self.netterms:
-            self.gpairs = []
             return
         pins = [t for t in self.netterms[nd] if t in self.pinxy]
         if not pins:
-            self.gpairs = []
             return
         bycol = {}
         for t in pins:
@@ -3683,7 +3685,7 @@ class Placer(object):
             bycol.setdefault(x, []).append((y, t))
         row = max(max(y for y, _t in v) for v in bycol.values()) + STUB_GND
         out = []
-        n = 0
+        n = len(self.gpairs)
         for x in sorted(bycol):
             seq = sorted(bycol[x])
             runs = [[seq[0]]]
@@ -3698,13 +3700,26 @@ class Placer(object):
                       and not self._body_between(x, low, row)
                       else low + STUB_GND)
                 n += 1
-                gid = "G%d" % n
-                f.gnd(gid, x, gy + 10)
-                self.pinxy[(gid, "0")] = f.pin(gid, "0")
-                self.netterms[nd].append((gid, "0"))
+                if neg:
+                    # a vdd-port turned over: its pin (0,+20) comes out on
+                    # top and the bar sits under the run, the way a book
+                    # draws -V_EE
+                    gid, pin = "VN%d" % n, "P"
+                    f.place(gid, "vdd-port", x, gy + 20, rotation=180)
+                    self._neg_markers.append((gid, nd))
+                    up = nd.upper()
+                    f.power_label("label-" + gid.lower(), self.netid[nd], gid,
+                                  12, 10, "V_" + up[1:] if up.startswith("V")
+                                  else up)
+                else:
+                    gid, pin = "G%d" % n, "0"
+                    f.gnd(gid, x, gy + 10)
+                self.pinxy[(gid, pin)] = f.pin(gid, pin)
+                self.netterms[nd].append((gid, pin))
                 out.append((gid, x))
-                self.ggroups.append((x, [t for _y, t in run] + [(gid, "0")]))
-        self.gpairs = out
+                self.ggroups.append((x, [t for _y, t in run] + [(gid, pin)],
+                                     nd))
+        self.gpairs = self.gpairs + out
 
     def _body_between(self, x, y0, y1, skip=()):
         """Would a straight drop down column x, from y0 to y1, enter a body?
@@ -3748,7 +3763,9 @@ class Placer(object):
         """Each run of pins drops straight onto its own ground symbol; the
         symbols themselves are not wired to each other (SOP 3I)."""
         f = self.f
-        for gi, (x, seq) in enumerate(getattr(self, "ggroups", [])):
+        for gi, (x, seq, gnd) in enumerate(getattr(self, "ggroups", [])):
+            if gnd != nd:
+                continue
             ys = [(self.pinxy[t][1], t) for t in seq if t in self.pinxy]
             ys.sort()
             for i in range(len(ys) - 1):
@@ -4704,10 +4721,38 @@ class Placer(object):
         # than raise.  Upstream's strict gate stays on for the hand-drawn 29.
         return self.f.build(strict=False, long_haul=self.long_haul,
                             rail_ends=self.rail_ends,
-                            viewbox=vb, extra_evidence=None
-                            if self.c.globals else [],
+                            viewbox=vb, extra_evidence=self._evidence(),
                             verbose=verbose,
                             expect_differ=self._plain_labels())
+
+    def _evidence(self):
+        """The supply's name claim (icproj's default when None), plus one
+        per negative supply, owned by its first marker: a power marker is
+        identified by its visible net name, and the schema wants it said."""
+        if not self.c.globals:
+            return []
+        negs = getattr(self, "_neg_markers", [])
+        if not negs:
+            return None
+        f = self.f
+        out = []
+        if any(self.c.is_supply(n) for n in self.c.nodes()):
+            out.append({"id": "cev-vdd-marker", "kind": "name-claim",
+                        "netId": f.supply_net, "name": f.supply_name,
+                        "owner": {"kind": "power-marker",
+                                  "objectId": f.rail_end},
+                        "scope": "global", "powerDomain": "vdd"})
+        seen = set()
+        for gid, nd in negs:
+            if nd in seen:
+                continue
+            seen.add(nd)
+            out.append({"id": "cev-%s-marker" % nd.lower(),
+                        "kind": "name-claim", "netId": self.netid[nd],
+                        "name": nd.upper(),
+                        "owner": {"kind": "power-marker", "objectId": gid},
+                        "scope": "global", "powerDomain": "vdd"})
+        return out
 
     def _plain_labels(self):
         """Names the editor's own generator would subscript but the page
@@ -5083,6 +5128,20 @@ def hints_path(deck):
     return os.path.join(HERE, "decks", "hints", stem + ".hints")
 
 
+def _sink_negatives(c):
+    """Layout sees a negative supply (V_EE) as a sink, like ground: it is
+    drawn at the bottom, each run of pins dropping onto its own marker
+    (`_add_grounds`).  Its net stays its own -- only the layout question
+    "is this the bottom" changes, so is_ground is widened on this circuit
+    alone and the netlist code never sees it."""
+    negs = [n for n in c.globals if c.is_negative(n)]
+    c.negatives = negs
+    if negs:
+        c.is_ground = (lambda n, _n=frozenset(negs):
+                       n == N.GROUND_NODE or n in _n)
+    return c
+
+
 def _split_gate_inputs(c):
     """NAND and NOR draw each input TWICE: one port beside the pull-up
     gate, one beside the pull-down gate, and no wire between them (the
@@ -5148,6 +5207,7 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True,
     # the per-candidate `except Exception` below cannot tell them apart.
     import ring_corners as _RC
     c = _split_gate_inputs(N.parse(open(path, encoding="utf-8").read()))
+    _sink_negatives(c)
     c.mirror = (_mirror_map(c) if os.environ.get("AC_SYM", "1") == "1"
                 else None)
     # hints are a person's input, so the bench (topology only) never reads

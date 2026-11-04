@@ -1,6 +1,4 @@
 * hand-written deck, not exported from any drawing
-* KNOWN LIMIT (2026-11-04): autoplace assumes ONE positive supply; VEE is
-* not drawn as a bottom rail yet, so this deck fails its audits (Q_2).
 .title Push-pull output stage
 .global VCC VEE
 .subckt PushPull in out
