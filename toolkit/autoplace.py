@@ -1004,6 +1004,30 @@ class Placer(object):
                     and same_stage(seq[i], seq[j])):
                 seq.insert(j, seq.pop(i))
         self._pull_parallel(seq, chains)
+        if int(self.opt("inpfirst", 0)):
+            # An op amp's inverting input usually hangs a part to ground
+            # (8.48's R_2): the book draws that column right under the
+            # input, before the amplifier, so the feedback comes back along
+            # the bottom and the output stays clear.  A STARTING POINT only
+            # (place_deck): forcing it into the column order upset the stage
+            # split of 14.36(b) (2026-11-03).
+            for d in self.c.devices:
+                if d.sym not in N.BLOCKS or "IN-" not in d.pins:
+                    continue
+                n, me = d.pins["IN-"], ("b", d.ref)
+                if me not in seq:
+                    continue
+                for k in [x for x in seq if x[0] == "c"]:
+                    ch = chains[k[1]]
+                    if ch and all(
+                            n in e.pins.values()
+                            and all(m == n or self.c.is_ground(m)
+                                    for m in e.pins.values())
+                            for e in ch):
+                        if seq.index(k) > seq.index(me):
+                            seq.remove(k)
+                            seq.insert(seq.index(me), k)
+                        break
         groups = getattr(self.c, "groups", None)
         if groups:
             # a person's functional blocks (decks/hints): each block's
@@ -5689,6 +5713,11 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True,
         # ...and centring the lying-down parts, for the same reason.
         if _MID_FIRED[0]:
             _extra.append({"bdwide": 1, "snapcol": 1, "midlat": 0})
+        # ...and an op amp's inverting-input shunt column moved in front of
+        # it (`inpfirst`, see columns()), where one exists.
+        if str(os.environ.get("AC_INPFIRST", "1")) == "1" and any(
+                d.sym in N.BLOCKS and "IN-" in d.pins for d in c.devices):
+            _extra.append({"bdwide": 1, "snapcol": 1, "inpfirst": 1})
         for _r in par([((_gr,), {"start": dict(_st, ltrunk=_lt)})
                        for _st in _extra for _gr in _starts
                        for _lt in (1, 0)]):
