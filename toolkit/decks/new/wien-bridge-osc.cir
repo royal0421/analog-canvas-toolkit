@@ -1,0 +1,20 @@
+* hand-written deck, not exported from any drawing
+.title Wien-bridge oscillator
+.subckt Wien out
+.iodir out=output
+.name out V_out
+RS out a
+.name RS R_1
+CS a p
+.name CS C_1
+RP p 0
+.name RP R_2
+CP p 0
+.name CP C_2
+RG x 0
+.name RG R_3
+RF x out
+.name RF R_4
+XOA p x out opamp
+.alias XOA OA
+.ends

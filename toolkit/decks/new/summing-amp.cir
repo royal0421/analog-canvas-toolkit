@@ -1,0 +1,16 @@
+* hand-written deck, not exported from any drawing
+.title Inverting summing amplifier
+.subckt Sum in1 in2 out
+.iodir in1=input in2=input out=output
+.name in1 V_1
+.name in2 V_2
+.name out V_out
+R1 in1 x
+.name R1 R_1
+R2 in2 x
+.name R2 R_2
+RF x out
+.name RF R_F
+XOA 0 x out opamp
+.alias XOA OA
+.ends

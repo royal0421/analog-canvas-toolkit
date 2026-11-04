@@ -1,0 +1,16 @@
+* hand-written deck, not exported from any drawing
+.title CMOS transmission gate
+.subckt TG a y clk clkb
+.iodir a=input y=output clk=input clkb=input
+.name a V_in
+.name y V_out
+.name clk CK
+.name clkb CKb
+MN y clk a 0 nmos
+.name MN M_N
+MP y clkb a VDD pmos
+.name MP M_P
+.global VDD
+CL y 0
+.name CL C_L
+.ends

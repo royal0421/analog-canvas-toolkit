@@ -1,0 +1,18 @@
+* hand-written deck, not exported from any drawing
+.title Op-amp difference amplifier
+.subckt Diff in1 in2 out
+.iodir in1=input in2=input out=output
+.name in1 V_1
+.name in2 V_2
+.name out V_out
+R1 in1 x
+.name R1 R_1
+R2 x out
+.name R2 R_2
+R3 in2 p
+.name R3 R_3
+R4 p 0
+.name R4 R_4
+XOA p x out opamp
+.alias XOA OA
+.ends

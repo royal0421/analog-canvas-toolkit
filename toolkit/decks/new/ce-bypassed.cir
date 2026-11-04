@@ -1,0 +1,24 @@
+* hand-written deck, not exported from any drawing
+.title Common-emitter amplifier with bypassed emitter resistor
+.global VCC
+.subckt CE in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+CIN in b
+.name CIN C_1
+R1 VCC b
+.name R1 R_1
+R2 b 0
+.name R2 R_2
+RC VCC c
+.name RC R_C
+Q1 c b e npn
+.name Q1 Q_1
+RE e 0
+.name RE R_E
+CE e 0
+.name CE C_E
+COUT c out
+.name COUT C_2
+.ends

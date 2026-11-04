@@ -578,6 +578,14 @@ class Placer(object):
                     # the pull-down network are separate columns, never one
                     # chain through the output node
                     cand = [d for d in cand if d.sym == ch[-1].sym]
+                if os.environ.get("AC_NOCYCLE", "1") == "1":
+                    # a part whose far end is a node the chain already
+                    # passed through closes a LOOP, not a stack: the
+                    # transmission gate's pmos (y-a) after its nmos (a-y)
+                    # was emitted on the same column AND row, on top of it
+                    seen = {ch[0].pins[ch[0].top]} | {
+                        e.pins[e.bot] for e in ch}
+                    cand = [d for d in cand if d.pins[d.bot] not in seen]
                 if not cand:
                     break
                 # the leg that reaches ground keeps the column going --
@@ -1913,6 +1921,19 @@ class Placer(object):
             for t in self.netterms.get(nd2, []):
                 if t in self.pinxy:
                     self._pinnet.setdefault(self.pinxy[t], set()).add(nd2)
+        if os.environ.get("AC_BULKPIN", "1") == "1":
+            # a MOS bulk is bound, not wired (SOP 6), so it is not in
+            # pinxy -- but the net still owns a terminal at that point and
+            # the pin audit sees a wire across it (the transmission gate's
+            # V_in riser ran over M_N's bulk at gate height)
+            for d in self.c.devices:
+                if d.sym in ("nmos", "pmos") and "B" in d.pins \
+                        and d.ref in self.f.placed:
+                    try:
+                        xy = self.f.pin(d.ref, "B")
+                    except KeyError:
+                        continue
+                    self._pinnet.setdefault(xy, set()).add(d.pins["B"])
         taken += self._power_segments()
         self._inks = inks
         self._member = member

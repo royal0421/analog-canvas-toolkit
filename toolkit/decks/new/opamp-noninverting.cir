@@ -1,0 +1,13 @@
+* hand-written deck, not exported from any drawing
+.title Non-inverting amplifier
+.subckt NonInv in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+XOA in x out opamp
+.alias XOA OA
+R1 x 0
+.name R1 R_1
+R2 x out
+.name R2 R_2
+.ends

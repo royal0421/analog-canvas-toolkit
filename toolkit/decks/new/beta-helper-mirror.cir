@@ -1,0 +1,15 @@
+* hand-written deck, not exported from any drawing
+.title Bipolar mirror with beta helper
+.global VCC
+.subckt Beta iout
+.iodir iout=output
+.name iout I_out
+IREF VCC a
+.name IREF I_REF
+Q1 a b 0 npn
+.name Q1 Q_1
+Q2 iout b 0 npn
+.name Q2 Q_2
+Q3 VCC a b npn
+.name Q3 Q_3
+.ends
