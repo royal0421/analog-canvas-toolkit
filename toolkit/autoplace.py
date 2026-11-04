@@ -3281,6 +3281,11 @@ class Placer(object):
         self.netterms[nd].append(("VDDP", "P"))
         self.f.rail_end = "VDDP"
         self.supply_marker = "VDDP"
+        # name it: a rail carries a label, and so does a negative supply's
+        # marker -- a lone positive tap was the one bar drawn with no name
+        if str(os.environ.get("AC_TAPLABEL", "1")) == "1":
+            self.f.power_label("label-vdd", self.netid[nd], "VDDP", 12, 6,
+                               self._supply_label())
 
     def _settle_ports(self):
         """A port marks the end of its bus, so it follows the row the bus
