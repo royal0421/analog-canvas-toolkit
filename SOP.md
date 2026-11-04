@@ -1961,11 +1961,11 @@ route-marker 留給「真的需要跟著走線自動重排」的情況；靜態�
 | `fetch_symbols.py` | 同步符號庫（缺符號時先跑這支） |
 | `refresh_model.py` | 網站改版時重抓 schema（會告訴你新的 schemaVersion） |
 | `python -m toolkit regress` | 改共用程式後必跑：全部產生器在暫存目錄重建、驗 schema、與 `out/` 逐位元比對（`regress.py` 只是轉呼叫它） |
-| `publish_to_repo.py` | 發佈到私有 repo（`--dry-run` 只檢查） |
+| `publish_to_repo.py` | 發佈到私有 repo（`--dry-run` 只檢查）；**不隨本 repo 發佈**，只在作者本機 |
 | `render_project.py` | 任何 `.icproj.json`（含網站匯出檔）→ SVG＋PNG，不跑稽核 |
 | `netlist_io.py` | 路線二：專案 ⇄ SPICE deck（§3J） |
 | `autoplace.py` | 路線二：deck → 版面（§3J） |
-| `netlist_bench.py` | 路線二：拿 23 張手排圖打分（§3J） |
+| `netlist_bench.py` | 路線二：拿手排圖打分（§3J；目前 29 張，`bench_par.py` 平行跑） |
 | `validate.mjs` / `check_labels.mjs` / `model.mjs` | 網站自己的 schema 與標籤產生器，`build()` 會自動呼叫 |
 | `sym\*.json` | 符號腳位與外觀（**有檔案 ≠ 可以放，見 §2**） |
 
