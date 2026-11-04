@@ -138,6 +138,7 @@
 - 11-04 推廣 deck +11（非反相、差動、加法、Wien、三級環振、AB 類二極體偏壓、regulated cascode、傳輸閘、半波整流、CE 旁路、β helper）。傳輸閘查出兩個通用缺陷：(a) 串鏈把 M_P 接在 M_N 下成環、兩顆同格重疊 → 串鏈不收「遠端已在鏈上」的件（`AC_NOCYCLE`）；(b) MOS 基極腳不在 pinxy，繞線壓過它 → 加進 `_pinnet` 當障礙（`AC_BULKPIN`）。傳輸閘 labels 4 → 1（剩 M_N 名字壓 V_in 立線＋1 交叉：M_N/M_P 的 D/S 方向相反，留待後續）。bench 29 張逐位元不變；gen 68 張 0 變差、two-stage-miller crossings 1→0；baseline 更新。(`a1d7748`, `bf276fa`)
 - 11-04 傳輸閘最後 1 個 audit（M_N 名字壓 V_in 接腳跨步）：先試 `_seg_clear` 全面把固定名字當障礙 → bench crossings 8→9、HW2/LC-load 外觀變、folded-cascode bends 23.5→26.5，**退回**；改成只在 `_cross_detour` 候選加 `_lbl_clear`，跨步放寬到 ±60（`AC_SEGLBL`）。bench 29 張逐位元不變、7m31s；gen 68/68 乾淨、0 變差；baseline 更新，`test_stored_baseline_is_all_clean` 回綠。(`f95c6b7` 退, `ce5725d`, `ca0c789`)
 - 11-04 `_col_boxes` 用 `cols[x]` 而非欄線為鍵 → 任何含 MOS 的圖 `compact=1/40` 候選都 KeyError、被當 999 丟掉（從沒生效）。修鍵後：bench place 49→47%、bends 0.96→0.97x（wire 0.94→0.91x），14 張已核可圖外觀改變；gen folded-cascode crossings 3→2。**退回**（`d6ef160` → `7aaa242`），列入待決；退回後 bench 逐位元回到基線。
+- 11-04 已知限制（未改）：`ring-osc-3` 稽核 0、crossings 3。電晶體級環形回授必須跨過 V_DD 匯流排或地線其中之一；現行 trunk 只在圖內選列，回授線走中線切過兩條汲極立線，且第一級反相器被鏡射。要真修需新增「繞到外框」的走線模式，風險大，先記錄不動。
 
 ## 待使用者決定
 
