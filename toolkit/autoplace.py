@@ -130,10 +130,10 @@ class Placer(object):
     def env(self, name, default=None):
         """os.environ.get, read once per drawing (see `_envc`)."""
         try:
-            return self._envc[name]
+            v = self._envc[name]
         except KeyError:
-            v = self._envc[name] = os.environ.get(name, default)
-            return v
+            v = self._envc[name] = os.environ.get(name)
+        return default if v is None else v
 
     def opt(self, name, default):
         """One discrete layout choice.
@@ -145,7 +145,7 @@ class Placer(object):
         """
         if name in self.style:
             return self.style[name]
-        return os.environ.get("AC_" + name.upper(), default)
+        return self.env("AC_" + name.upper(), default)
 
     # ------------------------------------------------------------ topology
     def _graph(self):
