@@ -1756,6 +1756,8 @@ class Placer(object):
         cx = self._cond_x(d)
         ys = [self.ynode[d.pins[p]] for p in pins if d.pins[p] in self.ynode]
         cy = int(round((sum(ys) / float(len(ys)) if ys else 200) / 10.0)) * 10
+        # the search may hang an amplifier lower (`vdrop`, see place_deck)
+        cy += dict(self.opt("vdrop", ()) or ()).get(d.ref, 0)
         f.place(d.ref, self._block_sym(d), cx, cy, extra={
             "schematicReference": d.ref, "schematicName": name(d.label)})
         self._record(d)
@@ -5508,7 +5510,7 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True,
                 for ref in _droppable:
                     if any(r[0] == ref for r in drops):
                         continue
-                    for dy in (20, 40, 60):
+                    for dy in _drop_steps.get(ref, (20, 40, 60)):
                         cand = dict(style)
                         cand["vdrop"] = tuple(drops + [(ref, dy)])
                         sc = sc_of(grid, cand, formir)
@@ -5591,6 +5593,25 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True,
                 if len(_ns) == 2 and sum(1 for _n in _ns
                                          if c.is_ground(_n)) == 1:
                     _droppable.append(_d.ref)
+        # ...and an op amp fed from another one's output through a single
+        # lying part: dropping it one step puts its inverting input level
+        # with that output, and the part runs straight across (14.36(b)'s
+        # R_2 from X into OA3; Razavi draws the stages as a staircase).
+        _drop_steps = {}
+        if str(os.environ.get("AC_ADROP", "1")) == "1":
+            _outs = set(_d.pins["OUT"] for _d in c.devices
+                        if _d.sym in N.BLOCKS and "OUT" in _d.pins)
+            for _d in c.devices:
+                if _d.sym not in N.BLOCKS or "IN-" not in _d.pins:
+                    continue
+                _n = _d.pins["IN-"]
+                if any(_e.sym not in N.BLOCKS and len(_e.pins) == 2
+                       and _n in _e.pins.values()
+                       and any(_m in _outs for _m in _e.pins.values()
+                               if _m != _n)
+                       for _e in c.devices):
+                    _droppable.append(_d.ref)
+                    _drop_steps[_d.ref] = (10, 20)
         _g = {}
         for _d in c.devices:
             if _d.sym in CTRL:
