@@ -108,3 +108,5 @@ audits: legs 0 | labels 0 | on-wire 0 | tees 0   (all must be 0)
 | `shorts N` | 兩 net 共線 | §5 |
 | `schema: FAILED` | 網站改版 | `python -m toolkit setup`，再看 §2C |
 | `label X differs` | 標籤不是 builder 格式 | §2C 三類才可進 expect_differ |
+| `X sticks out of the viewbox` | 零件或標籤超出預覽範圍（字寬照 DejaVu 量） | 依印出的超出量放大 `viewbox` |
+| `~ X has both pins on net-…` | 兩端元件兩腳同一條 net＝網表把它短路（畫面看不出來） | 通常是串聯元件兩端該分兩條 net；照原稿刻意如此才保留 |

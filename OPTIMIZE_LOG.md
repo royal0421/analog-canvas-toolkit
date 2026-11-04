@@ -98,3 +98,4 @@
 - 2026-11-04｜tests/test_netlist_io.py（新檔）：LC-load 匯出無問題（L_2 不再短路）、重名元件的名字有匯出（兩個 R／L_2／C_1／C_2）、係數名 2L_1 的拆法與一般名照編輯器｜測試，不影響 bench｜unittest 41/41｜5f032ec
 - 2026-11-04｜**未採用**：對稱電路成對的躺放元件，第二顆的 top 照第一顆的鏡像定（AC_LATMIRROR）｜預期：LC-load 左邊 L_2 不再往上繞｜top 已一致（兩顆都以汲極節點為 top、層級相同），但同一起點畫出仍差 40（y=240 對 200），分數不變（wire 1.41x、bends 16）：不對稱另有來源（躺放元件置中／匯流排列分配），待查｜—
 - 2026-11-04｜**未採用**：_place_horiz 在對稱電路左半改取外側腳的節點列（AC_LATSIDE）｜預期：LC-load 兩顆 L_2 同列｜分數不變。查到：dl／dr／outn／outp 的 ynode 都是 280，但單一起點畫出 L2L=240、L2R=200，差異來自之後的避讓（躺放元件撞段往上讓），不是取哪隻腳。線索留給下次：查 _clear_x 之後的 cy 調整與 latup｜—
+- 2026-11-04｜icproj.build：兩端元件兩腳同一條 net 時印警告（~ X has both pins on net-… -- the netlist shorts it），不算錯誤；SOP_QUICK 失敗對照表補 viewbox 與此警告兩列；新增單元測試｜預期：LC-load 那種畫面正確、網表短路的錯誤以後當場看得到｜35 支產生器只有 two-stage BJT 的 I_2（照原稿刻意）報警告；舊版 LC 產生器（5b7522e）會報 L2L、L2R；out/ 0 變動、regress 36/36、unittest OK；bench 驗證中｜(本 commit)

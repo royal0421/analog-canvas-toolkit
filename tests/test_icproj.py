@@ -71,6 +71,17 @@ class SchematicTests(unittest.TestCase):
         self.assertFalse(any("unrouted terminal M1.B" in error
                              for error in errors), errors)
 
+    def test_a_part_with_both_pins_on_one_net_is_reported(self):
+        icproj._SYMS["two"] = symbol(("1", 0, -20, "north"),
+                                     ("2", 0, 20, "south"))
+        self.figure.place("L1", "two", 100, 100)
+        self.figure.place("L2", "two", 200, 100)
+        self.figure.net("net-a", [("L1", "1"), ("L1", "2"), ("L2", "1")])
+        self.figure.net("net-b", [("L2", "2")])
+        warned = self.figure._shorted_parts()
+        self.assertEqual(1, len(warned))
+        self.assertIn("L1 has both pins on net-a", warned[0])
+
     def test_unrelated_parts_may_not_touch(self):
         # the ink box is 10 wide, 16 tall: 4 units apart along a 10-unit
         # face is the HW4 Fig. (c) ground jammed onto R_S

@@ -998,6 +998,8 @@ class Schematic(object):
         print("self-check errors:", len(errs))
         for e in errs:
             print("  !", e)
+        for w in self._shorted_parts():
+            print("  ~", w)
         if strict and errs:
             raise BuildValidationError(["self-check=%d" % len(errs)])
 
@@ -1069,6 +1071,28 @@ class Schematic(object):
         return project
 
     # ---------------------------------------------------------- checks
+    def _shorted_parts(self):
+        """A two-terminal part whose two pins sit on ONE net does nothing:
+        the netlist shorts it.  The drawing looks right either way, so no
+        audit saw it -- the LC-load figure shipped with both L_2 shorted
+        (2026-11-04).  A warning, not an error: a hand-drawn page can
+        really draw it so (the two-stage BJT sketch's I_2), and that is
+        copied faithfully on purpose."""
+        net_of = {}
+        for n in self.nets:
+            for t in n["terminals"]:
+                net_of.setdefault(t["instanceId"], []).append(
+                    (t["pinName"], n["id"]))
+        out = []
+        for i in self.instances:
+            pins = [p["name"] for p in sym(i["symbolId"]).get("pins", [])]
+            got = net_of.get(i["id"], [])
+            if len(pins) == 2 and len(got) == 2 and got[0][1] == got[1][1] \
+                    and got[0][0] != got[1][0]:
+                out.append("%s has both pins on %s -- the netlist shorts it"
+                           % (i["id"], got[0][1]))
+        return out
+
     def _viewbox_audit(self, vb, margin=1.0):
         """Every part and every label must lie inside the preview viewBox.
 
