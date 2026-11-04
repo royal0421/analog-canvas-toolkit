@@ -107,6 +107,7 @@
 - 2026-11-04｜**未採用**：起點欄距 80→70（AC_PITCH=70；SOP §3A 寫欄距 50–70，搜尋卻從 80 起只往寬試）｜預期：NAND2 照手排 60 的欄距，wire 1.4x 下降｜NAND2 1.4→1.3x、HW4 Fig-c 1.1→1.0x、9.26c 0.7→0.6x 變好，但 LC-load wire 1.4→1.6x、bends 16→17、place 8→0%；14.36b bends 22→25、place 27→9%；5.170 place 18→9% → 整體 place 49→48%，撤回。改成「多一個 70 的起點讓搜尋挑」需把 descent 跑兩倍，超過牆鐘 10% 限制｜—
 - 2026-11-04｜autoplace：CMOS 邏輯閘（輸入已拆成每閘一個埠的 NAND／NOR）起點欄距 70（AC_GATEPITCH=0 關閉）｜預期：NAND2 照手排的緊欄距｜29 figures | 29 clean | place 49% | wire 0.94x | bends 0.96x | crossings 8 (over hand 2) | 稽核錯誤 0；只有 NAND2 變：wire 1.4→1.3x（1.32x）；NOR2 不變，其餘 27 張逐行相同；牆鐘 514 s（上輪 468 s，今日同程式浮動 441–486 s）；regress 36/36、unittest OK｜6c94bbb
 - 2026-11-04｜SOP §3J 補「2026-11-04 新增的規則」表（重名匯出、係數名、inpfirst、op-amp vdrop、被動輸出往外、邏輯閘欄距，各附關閉開關）與 shorted 判定說明｜文件，不影響 bench｜bbacd8d
+- 2026-11-04｜**未採用**：coldrop——NPN／NMOS 隨耦器（集極／汲極在軌上）整欄下移 40–200 當搜尋移動｜預期：5.170 的 Q_2 基極與 X 同列、少 2 個彎折｜分數不變：移欄發生在 ynode（節點列）決定之後，走線仍照原列拉、分數更差，搜尋不採用；要做成需在 levels 階段讓隨耦器依基極節點定列。5.170 子問題連 2 次未改善｜—
 
 ## 待使用者決定
 
