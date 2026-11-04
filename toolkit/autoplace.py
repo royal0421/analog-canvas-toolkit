@@ -3083,13 +3083,8 @@ class Placer(object):
             if d is not None and sid in CTRL:
                 dx = LBL_DX.get(sid, 13)
                 first = -dx if mir == "x" else dx
-                # keyed by the COLUMN LINE like the ink above: a MOS is
-                # emitted 10 off its column, so `cols[x]` was a KeyError and
-                # every `compact` candidate on a MOS figure scored itself
-                # out (999) without a word
-                cols[self._colline(iid)].append(
-                    label_box(name(d.label), x + first, y + 5,
-                              "start" if first > 0 else "end"))
+                cols[x].append(label_box(name(d.label), x + first, y + 5,
+                                         "start" if first > 0 else "end"))
         for nd, (pid, nm, _di) in self.ports_placed.items():
             if pid not in self.f.placed:
                 continue
