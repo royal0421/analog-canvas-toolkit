@@ -109,7 +109,7 @@
 - 2026-11-04｜SOP §3J 補「2026-11-04 新增的規則」表（重名匯出、係數名、inpfirst、op-amp vdrop、被動輸出往外、邏輯閘欄距，各附關閉開關）與 shorted 判定說明｜文件，不影響 bench｜bbacd8d
 - 2026-11-04｜**未採用**：coldrop——NPN／NMOS 隨耦器（集極／汲極在軌上）整欄下移 40–200 當搜尋移動｜預期：5.170 的 Q_2 基極與 X 同列、少 2 個彎折｜分數不變：移欄發生在 ynode（節點列）決定之後，走線仍照原列拉、分數更差，搜尋不採用；要做成需在 levels 階段讓隨耦器依基極節點定列。5.170 子問題連 2 次未改善｜—
 - 2026-11-04｜**撤回**：levels 對 NPN／NMOS 隨耦器加約束「射極層 ≥ 基極層＋1」（AC_FOLLOW）｜預期：5.170 的 Q_2 依基極節點定列｜5.170 更差：wire 1.00→1.05x、place 18→9%，bends 9 不變 → 撤回。5.170 子問題連 3 次未改善（vdrop 推廣、coldrop、levels 約束），停手｜—
-- 2026-11-04｜netlist 覆蓋率逐張查（29/38 之外的 9 張）：全部是正確拒絕——方塊元件 6 張（CMP_TB×2 的比較器框、BJT 電流鏡的 Circuit 框、CDR 的 FF／VCO、ESD-LNA 的 Input ESD 虛線框〔IN、V_DD、地、L_g 都接在框上〕、RC-clamp 用剖面畫的 SCR〔接 V_DD、V_SS、V_TRIG〕）、construction-line 2 張（19T、SR latch 的交叉耦合是斜線，網表沒有這條連接）、照原稿刻意短路 1 張（two-stage BJT 的 I_2）。netlist_io 的矩形規則改精確：有 junction 落在邊框上才是方塊元件，沒有線碰到的框視為裝飾（目前 38 張判定不變，29/38 即正確上限）；新增 2 個單元測試｜預期：判定不變、以後純裝飾框不再擋匯出｜decks 不變、bench 不受影響；unittest 全過｜(本 commit)
+- 2026-11-04｜netlist 覆蓋率逐張查（29/38 之外的 9 張）：全部是正確拒絕——方塊元件 6 張（CMP_TB×2 的比較器框、BJT 電流鏡的 Circuit 框、CDR 的 FF／VCO、ESD-LNA 的 Input ESD 虛線框〔IN、V_DD、地、L_g 都接在框上〕、RC-clamp 用剖面畫的 SCR〔接 V_DD、V_SS、V_TRIG〕）、construction-line 2 張（19T、SR latch 的交叉耦合是斜線，網表沒有這條連接）、照原稿刻意短路 1 張（two-stage BJT 的 I_2）。netlist_io 的矩形規則改精確：有 junction 落在邊框上才是方塊元件，沒有線碰到的框視為裝飾（目前 38 張判定不變，29/38 即正確上限）；新增 2 個單元測試｜預期：判定不變、以後純裝飾框不再擋匯出｜decks 不變、bench 不受影響；unittest 全過｜20ddef8
 
 ## 待使用者決定
 
