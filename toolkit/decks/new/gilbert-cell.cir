@@ -1,0 +1,30 @@
+* hand-written deck, not exported from any drawing
+.title Gilbert cell mixer
+.global VCC
+.subckt Gilbert lo1 lo2 rf1 rf2 out1 out2
+.iodir lo1=input lo2=input rf1=input rf2=input out1=output out2=output
+.name lo1 V_LO1
+.name lo2 V_LO2
+.name rf1 V_RF1
+.name rf2 V_RF2
+.name out1 V_out1
+.name out2 V_out2
+RL1 VCC out1
+.name RL1 R_L
+RL2 VCC out2
+.name RL2 R_L
+Q3 out1 lo1 a npn
+.name Q3 Q_3
+Q4 out2 lo2 a npn
+.name Q4 Q_4
+Q5 out1 lo2 b npn
+.name Q5 Q_5
+Q6 out2 lo1 b npn
+.name Q6 Q_6
+Q1 a rf1 e npn
+.name Q1 Q_1
+Q2 b rf2 e npn
+.name Q2 Q_2
+IEE e 0
+.name IEE I_EE
+.ends

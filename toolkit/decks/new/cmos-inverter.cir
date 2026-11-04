@@ -1,0 +1,14 @@
+* hand-written deck, not exported from any drawing
+.title CMOS inverter with load capacitor
+.global VDD
+.subckt Inv in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+M2 out in VDD VDD pmos
+.name M2 M_2
+M1 out in 0 0 nmos
+.name M1 M_1
+CL out 0
+.name CL C_L
+.ends
