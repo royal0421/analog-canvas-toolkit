@@ -131,15 +131,15 @@ python -m toolkit regress
 ```bash
 cd toolkit
 
-# 1. 把 out/ 的 29 張參考圖匯出成 deck（只留拓樸；21 張 netlist 是乾淨的）
+# 1. 把 out/ 的 38 張參考圖匯出成 deck（只留拓樸；29 張 netlist 是乾淨的）
 python netlist_io.py
 
 # 2. 畫其中一張：deck -> auto/<名稱>.icproj.json（含 SVG 與 PNG 預覽）
 python autoplace.py decks/Razavi_Fig_9_34_pnp-current-mirror.cir
 
-# 3. 拿 21 張手排圖當標準答案打分
-python netlist_bench.py          # 一次一張圖，約 14 分鐘（4 核；每張圖的 descent 會平行跑）
-python bench_par.py              # 同樣的數字，一張圖一核，約 12 分鐘（4 核）
+# 3. 拿 29 張手排圖當標準答案打分
+python netlist_bench.py          # 一次一張圖，約 10 分鐘（4 核；每張圖的 descent 會平行跑）
+python bench_par.py              # 同樣的數字，一張圖一核，約 8 分鐘（4 核）
 # AC_SERIAL=1 讓 descent 依序跑（結果相同，只是比較慢）
 ```
 
@@ -147,18 +147,24 @@ python bench_par.py              # 同樣的數字，一張圖一核，約 12 �
 不在版控裡。`decks/razavi/` 與 `decks/new/` 底下另有手寫的 deck，那些是
 訓練集以外、用來測泛化的題目。
 
-### 目前的成績（2026-09-04）
+### 目前的成績（2026-11-04）
 
 ```
-21 figures | 21 fully clean | place 37% | wire 1.20x | bends 1.18x | crossings 6
+29 figures | 29 fully clean | place 49% | order 82% | wire 0.94x | bends 0.96x | crossings 8 (over hand 2)
 ```
 
 - `fully clean` — 七道稽核全 0（短路、走線進入元件本體、標籤重疊、
-  輸出不在最右、走線繞過電源軌…）。**這一欄不是 21/21 就是有東西壞了。**
+  輸出不在最右、走線繞過電源軌…）。**這一欄不是 29/29 就是有東西壞了。**
+  張數跟著 `netlist_io.py` 匯出的乾淨網表走（目前 38 份裡 29 份；其餘是方塊圖、
+  剖面圖、construction-line 這類網表表達不了的圖，或照原稿刻意畫成兩端同節點的元件）。
+- `place` / `order` — 元件位置跟手排一致的比例：`place` 要欄序、列序完全相同，
+  `order` 只比每兩顆元件的左右、上下關係。
 - `wire` / `bends` — 總走線長度與轉角數對「手排那張」的比值，1.00x 代表
-  跟人畫的一樣。`bends` 剔掉 NAND／NOR 之後是 1.01x（那類圖有腳位重合的
-  特例，轉角數不可比，見 `SOP.md` §3J）。
-- `crossings` — 全庫沒接在一起的交叉總數。
+  跟人畫的一樣。
+- `crossings` — 全庫沒接在一起的交叉總數；括號是比手排多出的數量
+  （手排本身就有 6 個，例如鎖存器的交叉耦合）。
+
+每一輪改動的前後數字記在 [`OPTIMIZE_LOG.md`](OPTIMIZE_LOG.md)（`cloud-optimize` 分支）。
 
 ### 看轉角畫在哪裡
 
