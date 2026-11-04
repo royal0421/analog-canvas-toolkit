@@ -140,6 +140,7 @@
 - 11-04 `_col_boxes` 用 `cols[x]` 而非欄線為鍵 → 任何含 MOS 的圖 `compact=1/40` 候選都 KeyError、被當 999 丟掉（從沒生效）。修鍵後：bench place 49→47%、bends 0.96→0.97x（wire 0.94→0.91x），14 張已核可圖外觀改變；gen folded-cascode crossings 3→2。**退回**（`d6ef160` → `7aaa242`），列入待決；退回後 bench 逐位元回到基線。
 - 11-04 已知限制（未改）：`ring-osc-3` 稽核 0、crossings 3。電晶體級環形回授必須跨過 V_DD 匯流排或地線其中之一；現行 trunk 只在圖內選列，回授線走中線切過兩條汲極立線，且第一級反相器被鏡射。要真修需新增「繞到外框」的走線模式，風險大，先記錄不動。
 - 11-04 效能：cProfile（AC_SERIAL）bandgap-core 顯示 `os.environ.get` 1100 萬次、約 5%。trunk 搜尋內 6 個 AC_* 開關改成 `Placer.env()` 每張圖讀一次。bench 逐位元不變 7m31s→7m09s；gen 68/68、0 變差、wall 466→453 s。(`e9472a7`)
+- 11-04 效能（續）：`opt()` 的 AC_* 後備也走 `Placer.env()`；快取改存「有沒有設」，不同預設值互不污染。bench 逐位元不變、7m09s 持平；gen 0 變差、453→447 s。收益小但無害，保留。(`ad6554c`)
 
 ## 待使用者決定
 
