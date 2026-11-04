@@ -1,3 +1,5 @@
+import contextlib
+import io
 import os
 import sys
 import tempfile
@@ -81,6 +83,15 @@ class SchematicTests(unittest.TestCase):
         warned = self.figure._shorted_parts()
         self.assertEqual(1, len(warned))
         self.assertIn("L1 has both pins on net-a", warned[0])
+
+    def test_viewbox_audit_reports_what_sticks_out(self):
+        icproj._SYMS["blob"] = tall_blob()
+        self.figure.place("A", "blob", 100, 100)        # ink 95..105, 92..108
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(0, self.figure._viewbox_audit((80, 80, 40, 40)))
+            self.assertEqual(1, self.figure._viewbox_audit((98, 80, 40, 40)))
+        self.assertIn("A sticks out of the viewbox: left by 3.0",
+                      out.getvalue())
 
     def test_unrelated_parts_may_not_touch(self):
         # the ink box is 10 wide, 16 tall: 4 units apart along a 10-unit

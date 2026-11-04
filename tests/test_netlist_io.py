@@ -53,6 +53,36 @@ class RectangleTests(unittest.TestCase):
         self.assertTrue(any("rectangle" in p for p in problems), problems)
 
 
+class DeckTests(unittest.TestCase):
+    def test_deck_round_trips(self):
+        c, _p = netlist_io.export_project(str(LC))
+        text = netlist_io.deck_text(c)
+        again = netlist_io.parse(text)
+        self.assertEqual(text, netlist_io.deck_text(again))
+        self.assertEqual(sorted(d.ref for d in c.devices),
+                         sorted(d.ref for d in again.devices))
+
+    def test_mirror_map_pairs_the_two_halves(self):
+        deck = (ROOT / "toolkit" / "decks" / "razavi"
+                / "fig10-6b_mos-diffpair.cir").read_text(encoding="utf-8")
+        nmap, dmap = autoplace._mirror_map(netlist_io.parse(deck))
+        self.assertEqual("M2", dmap["M1"])
+        self.assertEqual("RDR", dmap["RDL"])
+        self.assertEqual("ISS", dmap["ISS"])           # the middle one
+        self.assertEqual("y", nmap["x"])
+
+    def test_an_active_load_is_not_mirror_symmetric(self):
+        # 5T OTA: M_3 is diode-connected, M_4 is not
+        deck = (ROOT / "toolkit" / "decks" / "new"
+                / "5T-OTA.cir").read_text(encoding="utf-8")
+        self.assertIsNone(autoplace._mirror_map(netlist_io.parse(deck)))
+
+    def test_no_pair_of_ports_means_no_symmetry(self):
+        deck = (ROOT / "toolkit" / "decks" / "new"
+                / "darlington-follower.cir").read_text(encoding="utf-8")
+        self.assertIsNone(autoplace._mirror_map(netlist_io.parse(deck)))
+
+
 class CoefficientNameTests(unittest.TestCase):
     def test_coefficient_keeps_its_letter(self):
         runs = icproj.flat(autoplace.name("2L_1"))
