@@ -66,10 +66,12 @@ def main():
         xov.append(r.get("cross_over", 0))
         pls.append(r["place"])
         print("%-46s wire %4.1fx  bends %4.2fx (%5.1f/%5.1f)  X %2d/%d  %s"
+              "  place %3.0f%%"
               % (r["stem"][:46], r["wire"], r.get("bend", 0),
                  r.get("bend_got", 0), r.get("bend_ref", 0),
                  r.get("cross", -1), r.get("cross_ref", 0),
-                 "/".join(str(r.get(k, -1)) for k in keys)))
+                 "/".join(str(r.get(k, -1)) for k in keys),
+                 100 * r["place"]))
     n = max(1, len(wrs))
     print("\n%d figures | %d fully clean | place %.0f%% | wire %.2fx | "
           "bends %.2fx | crossings %d (over hand %d) | %s | errors %d"
