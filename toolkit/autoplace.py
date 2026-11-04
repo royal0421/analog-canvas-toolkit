@@ -122,6 +122,18 @@ class Placer(object):
         self.out_proj, self.out_svg = out_proj, out_svg
         self.pid = project_id or ("project-" + circuit.name.lower())
         self.log = []
+        # the A/B switches read inside the trunk search are looked up
+        # millions of times per figure (os.environ.get was ~5% of a run);
+        # they cannot change while one drawing is made, so read them once
+        self._envc = {}
+
+    def env(self, name, default=None):
+        """os.environ.get, read once per drawing (see `_envc`)."""
+        try:
+            return self._envc[name]
+        except KeyError:
+            v = self._envc[name] = os.environ.get(name, default)
+            return v
 
     def opt(self, name, default):
         """One discrete layout choice.
@@ -477,7 +489,7 @@ class Placer(object):
         cache = getattr(self, "_diode_cache", None)
         if cache is None:
             cache = self._diode_cache = {}
-            if os.environ.get("AC_DIODETIE", "1") == "1":
+            if self.env("AC_DIODETIE", "1") == "1":
                 for d in self.c.devices:
                     if d.sym in CTRL and d.sym in FIXED_VERT:
                         g = d.pins[CTRL[d.sym]]
@@ -1855,7 +1867,7 @@ class Placer(object):
         # A diode-connected device's net goes first: its tie has to sit
         # right under the drain, above any long bus that crosses the column
         # (12.57(c): X took that row and the tie had nowhere to go).
-        need.sort(reverse=True, key=lambda t: (os.environ.get("AC_DIODEFIRST", "1") == "1" and bool(self._diode_refs(t[1])),
+        need.sort(reverse=True, key=lambda t: (self.env("AC_DIODEFIRST", "1") == "1" and bool(self._diode_refs(t[1])),
                                                t[0], t[1]))
         taken = []                      # every segment already committed
         inks = [(iid, self.f.ink(iid)) for iid in self.f.placed]
@@ -1977,7 +1989,7 @@ class Placer(object):
             # the one with fewest gate risers wins before wire length.
             _mir = getattr(self.c, "mirror", None)
             _dm = _mir[1] if _mir else {}
-            if (os.environ.get("AC_GATEMAIN", "1") == "1"
+            if (self.env("AC_GATEMAIN", "1") == "1"
                     and any(_dm.get(r) not in (None, r)
                             for r in self._diode_refs(nd))):
                 def _gr(t, _pts=pts):
@@ -2293,7 +2305,7 @@ class Placer(object):
         """
         M = 8
         TIGHT = 5                 # half a grid: closer than this is shaving
-        SHAVE_W = int(os.environ.get("AC_SHAVEW", "40"))   # enough to move a trunk one row
+        SHAVE_W = int(self.env("AC_SHAVEW", "40"))   # enough to move a trunk one row
         spec = (axis, c, spur)
         segs = self._spec_segments(spec, pts)
         if segs is None:
@@ -2317,7 +2329,7 @@ class Placer(object):
                 uy0 = y0_
             if y1_ > uy1:
                 uy1 = y1_
-        sep = int(os.environ.get("AC_SEP", 30))
+        sep = int(self.env("AC_SEP", 30))
         shorted = overlap = cross = 0
         for onet, oax, oc, o0, o1 in taken:
             if onet == nd:
@@ -2541,7 +2553,7 @@ class Placer(object):
                 continue
             if any(near(s, bb) for s in rsegs):
                 risers += 1
-        if os.environ.get("AC_HARDDBG") == nd:
+        if self.env("AC_HARDDBG") == nd:
             blockers = [i for i, bb in inks
                         if any(inside(s, bb) for s in trunks)]
             print("      HARD %s %s c=%-4d spur=%s short=%d pintouch=%d "
