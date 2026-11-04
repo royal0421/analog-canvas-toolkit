@@ -48,6 +48,14 @@ class GenerateCliTests(unittest.TestCase):
         one = cli.resolve_projects(["AIC-HW2_CMP_OFFSET_TB"], projects)
         self.assertEqual([("offset",)], [p.args for p in one])
 
+    def test_only_a_build_that_validated_skips_the_second_check(self):
+        ok = "self-check errors: 0\n  schema: VALID (v58)\n  labels: OK\n"
+        self.assertTrue(cli.SCHEMA_OK.search(ok))
+        for log in ("  external checks: SKIPPED (AC_FAST=1)\n",
+                    "  schema: FAILED\n",
+                    "  ! label x says schema: VALID (v58) in passing\n"):
+            self.assertIsNone(cli.SCHEMA_OK.search(log), log)
+
     def test_unknown_selector_is_refused(self):
         with self.assertRaises(SystemExit):
             cli.resolve_projects(["gen_nope"], cli.discover_projects())
