@@ -726,7 +726,7 @@ scale: 2.680 px/unit  (body 67 px = channel bar 25 units)
   照頁面走。
 
 **這條路線要不要跟前面分家？不用**（2026-08-30 討論）。
-會互相污染的只有共用引擎 `icproj.py`，而 `regress.py` 就是為此存在：
+會互相污染的只有共用引擎 `icproj.py`，而 `python -m toolkit regress` 就是為此存在：
 26 張逐位元比對，改壞哪一張當場現形。**規則本來就是分節管轄的**——
 §3A 共用、§3E 管 3a、§3I-b 管 3b；衝突的條目（接地要不要對齊、要不要照原圖形狀）
 各自寫在自己那節。**分開程式只會讓共用的修正要改兩份。**
@@ -995,7 +995,7 @@ hard > bodies > risers > wire > overlap      預設 hbrwo
 `shorts`、`crossings`、「標籤不可以互相重疊」、「標籤不可以壓在別的元件上」
 這四道是**路線二自己逼出來的**，共用引擎裡用 `Schematic.lane2_audits` 關著，
 只有 `autoplace.py` 會打開。手排的 29 張仍然只跑原本六道，
-輸出逐位元不變（`regress.py` 守著）。
+輸出逐位元不變（`python -m toolkit regress` 守著）。
 
 ### 電晶體的標籤：一個位置，不准移（2026-09-02 使用者裁示）
 
@@ -1960,7 +1960,7 @@ route-marker 留給「真的需要跟著走線自動重排」的情況；靜態�
 | `scan_figure.py` | ⓪ 截圖 → 拓樸／鏡射／scale／密度基準（§3C） |
 | `fetch_symbols.py` | 同步符號庫（缺符號時先跑這支） |
 | `refresh_model.py` | 網站改版時重抓 schema（會告訴你新的 schemaVersion） |
-| `regress.py` | 改共用程式後必跑：23 張逐位元比對（`--accept` 換基準） |
+| `python -m toolkit regress` | 改共用程式後必跑：全部產生器在暫存目錄重建、驗 schema、與 `out/` 逐位元比對（`regress.py` 只是轉呼叫它） |
 | `publish_to_repo.py` | 發佈到私有 repo（`--dry-run` 只檢查） |
 | `render_project.py` | 任何 `.icproj.json`（含網站匯出檔）→ SVG＋PNG，不跑稽核 |
 | `netlist_io.py` | 路線二：專案 ⇄ SPICE deck（§3J） |
