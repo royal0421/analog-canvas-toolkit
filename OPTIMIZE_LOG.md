@@ -84,3 +84,4 @@
 - 2026-11-03｜收尾（使用者指示，credit 約 $7）｜—｜—｜—
 - 2026-11-03｜autoplace：「同分時閘極直接在主幹上」只在二極體接法元件屬對稱鏡像配對、平直主幹需 ≥2 條閘極立線、替代者為 L 形時才換（AC_GATEMAIN 可關）；另加 AC_DIODEFIRST 開關｜預期：Constant-gm 無電阻版回到 13 bends、12.57c 不變｜28 figures | 28 clean | place 49% | wire 0.93x | bends 0.96→0.95x | crossings 8 (over hand 2) | 稽核錯誤 0；Constant-gm 無電阻版 bends 15→13；HW2 constant-gm bends 18→16、wire 0.8→0.7x；12.57c 維持 14.5；對 item26 基準每張持平或較好；牆鐘 524 s；regress 逐位元相同、unittest 35/35、generate all out/ 0 變動｜8f3194b
 - 2026-11-03｜收尾（使用者指示）｜—｜—｜—
+- 2026-11-04｜開工 2026-11-04T16:10:58Z｜billing=seven_day（allowed_warning，get_session 的 rate_limit_info；resetsAt 2026-11-04T09:00Z 已過但值未更新）→ 不是 ccr_promotional，依規則記完即停，未改任何程式｜—｜—
