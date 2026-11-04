@@ -133,7 +133,7 @@
 - 2026-11-04｜量測（未改程式）：單張產生器 gen_fig848 不含 PNG 約 0.45 s，其中 schema 與標籤兩次 node 各約 0.17 s；合併成一次 node 最多省約 0.15 s，而正常生圖的 Chrome 渲染約 2 s，不值得增加複雜度｜—｜—｜—
 - 2026-11-04｜render_project.py：PNG 原本只找 Windows 的 Chrome 路徑（Linux／macOS 永遠跳過），file URI 在 Linux 會變 file:////；改用 icproj 新抽出的 find_chrome()（CHROME_PATH → PATH → Windows／macOS 常見位置，build() 也改用它）與 pathlib 產生 URI；新增 render_project 冒煙測試與 find_chrome 測試｜預期：路線二的重畫工具在三個平台都能出 PNG｜Linux 上重畫 9.34 產出 PNG（2020x1012）；gen_fig848 含 PNG 照常；regress 36/36、unittest 全過｜733f482
 - 2026-11-04｜ring_corners.py 與 cli doctor 的 Chrome 搜尋也改用 icproj.find_chrome()（兩份各缺 macOS 路徑等，doctor 在 Mac 會說找不到、build 卻找得到）；ring_corners 刪掉用不到的 shutil；.gitignore 加 toolkit/corners_*.png｜預期：全工具一套 Chrome 搜尋｜doctor 8 項 OK；ring_corners 9.34 照常出圖；bench 29 張每行相同、牆鐘 471 s；unittest 全過｜3159e6e
-- 2026-11-04｜toolkit/regress.py（舊回歸腳本）改成轉呼叫 python -m toolkit regress：舊版找不到 _regress_baseline.json，每張列為 new 卻印「all byte-identical」，且漏跑 gen_aic_hw2_tb 的 offset 專案；--accept 改為說明 git 追蹤的 out/ 就是基準；SOP 三處改指向新指令（含過時的「23 張」）｜預期：舊指令也得到正確結果｜python toolkit/regress.py：36/36 regression clean；unittest 全過｜(本 commit)
+- 2026-11-04｜toolkit/regress.py（舊回歸腳本）改成轉呼叫 python -m toolkit regress：舊版找不到 _regress_baseline.json，每張列為 new 卻印「all byte-identical」，且漏跑 gen_aic_hw2_tb 的 offset 專案；--accept 改為說明 git 追蹤的 out/ 就是基準；SOP 三處改指向新指令（含過時的「23 張」）｜預期：舊指令也得到正確結果｜python toolkit/regress.py：36/36 regression clean；unittest 全過｜93857f4
 
 ## 待使用者決定
 
