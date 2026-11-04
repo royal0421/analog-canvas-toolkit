@@ -3,6 +3,11 @@
 
 Iteration tool only -- `netlist_bench.py` stays the official scorer.
 Run from the toolkit directory:  python bench_par.py [stem ...]
+
+    python bench_par.py --gen     the generalisation decks instead
+                                  (decks/new, decks/razavi: no hand-drawn
+                                  reference, so audits / crossings / bends
+                                  only -- what a change must not break)
 """
 import glob
 import multiprocessing as mp
@@ -21,7 +26,65 @@ def one(stem):
     return r
 
 
+def gen_one(path):
+    """Draw one generalisation deck into a private temp dir; report the
+    audit counts the way the build log prints them."""
+    import contextlib
+    import io
+    import shutil
+    import tempfile
+    import time
+    import autoplace as A
+    import ring_corners as RC
+    os.environ["AC_FAST"] = "1"
+    tmp = tempfile.mkdtemp(prefix="gen-")
+    stem = os.path.basename(path)[:-4]
+    buf, t0 = io.StringIO(), time.time()
+    try:
+        with contextlib.redirect_stdout(buf):
+            p = A.place_deck(path, out_proj=os.path.join(tmp, stem + ".json"),
+                             out_svg=os.path.join(tmp, stem + ".svg"),
+                             verbose=True)
+        pts, gates, _x = RC.corners(p.f)
+        log = buf.getvalue()
+        errs = A._audit_count(log)
+        cross = A._cross_from(log)
+        return (stem, errs, cross, len(pts) + 2.5 * len(gates),
+                time.time() - t0, None)
+    except Exception as e:                       # noqa: BLE001
+        return (stem, None, None, None, time.time() - t0,
+                "%s: %s" % (type(e).__name__, e))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def main_gen():
+    import time
+    paths = sorted(glob.glob(os.path.join(NB.HERE, "decks", "new", "*.cir"))
+                   + glob.glob(os.path.join(NB.HERE, "decks", "razavi",
+                                            "*.cir")))
+    t0 = time.time()
+    pool = mp.Pool(min(len(paths), max(1, mp.cpu_count())))
+    rows = pool.map(gen_one, paths, chunksize=1)
+    pool.close()
+    pool.join()
+    clean = cross = 0
+    for stem, errs, x, bends, secs, err in rows:
+        if err:
+            print("%-40s ERROR %s" % (stem[:40], err[:80]))
+            continue
+        clean += errs == 0
+        cross += x
+        print("%-40s audit errors %2d  crossings %2d  bends %5.1f  %4.0f s"
+              % (stem[:40], errs, x, bends, secs))
+    print("\n%d decks | %d clean | crossings %d | errors %d\nwall %.0f s"
+          % (len(rows), clean, cross, sum(1 for r in rows if r[5]),
+             time.time() - t0))
+
+
 def main():
+    if "--gen" in sys.argv:
+        return main_gen()
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     if args:
         stems = args

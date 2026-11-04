@@ -141,6 +141,7 @@ python autoplace.py decks/Razavi_Fig_9_34_pnp-current-mirror.cir
 python netlist_bench.py          # 一次一張圖，約 10 分鐘（4 核；每張圖的 descent 會平行跑）
 python bench_par.py              # 同樣的數字，一張圖一核，約 8 分鐘（4 核）
 # AC_SERIAL=1 讓 descent 依序跑（結果相同，只是比較慢）
+python bench_par.py --gen        # decks/new、decks/razavi 的推廣測試（沒有手排可比，只看稽核、交叉、轉角），約 7 分鐘
 ```
 
 `netlist_io.py` 必須先跑——`decks/*.cir` 是從 `out/` 的專案匯出的產物，
