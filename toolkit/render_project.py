@@ -78,17 +78,21 @@ def viewbox(f, pad=20):
 
 def _png(f):
     """Same headless-Chrome shot `build()` takes, without the audits."""
+    import pathlib
     import subprocess
-    chrome = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+    from icproj import find_chrome
+    # it used to look only at the Windows install path, so on Linux and
+    # macOS it never rendered (and built a file://// URI besides)
+    chrome = find_chrome()
     png = os.path.splitext(f.out_svg)[0] + ".png"
-    if not os.path.isfile(chrome):
-        print("  png: no Chrome at", chrome)
+    if not chrome:
+        print("  png: no Chrome/Chromium found (set CHROME_PATH)")
         return
     w, h = f.preview_px[0] + 20, f.preview_px[1] + 20
     subprocess.run([chrome, "--headless=new", "--screenshot=" + png,
                     "--window-size=%d,%d" % (w, h),
                     "--default-background-color=FFFFFFFF",
-                    "file:///" + f.out_svg.replace("\\", "/")],
+                    pathlib.Path(f.out_svg).resolve().as_uri()],
                    capture_output=True, timeout=120)
     print("  png: %s (%dx%d)" % (png, w, h))
 

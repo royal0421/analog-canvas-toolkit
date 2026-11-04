@@ -468,6 +468,23 @@ def _box_gap_box(a, b):
     return math.hypot(dx, dy)
 
 
+def find_chrome():
+    """CHROME_PATH, then Chrome/Chromium on PATH, then the usual Windows and
+    macOS install locations; None when there is none."""
+    import shutil
+    candidates = [os.environ.get("CHROME_PATH")]
+    candidates.extend(shutil.which(name) for name in (
+        "google-chrome", "google-chrome-stable", "chromium",
+        "chromium-browser", "chrome", "chrome.exe"))
+    candidates.extend((
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    ))
+    return next((path for path in candidates
+                 if path and os.path.isfile(path)), None)
+
+
 class BuildValidationError(RuntimeError):
     """Raised when a project fails a hard validation gate.
 
@@ -1917,17 +1934,7 @@ class Schematic(object):
             print("  png: SKIPPED (AC_NO_RENDER=1)")
             return failures
 
-        candidates = [os.environ.get("CHROME_PATH")]
-        candidates.extend(shutil.which(name) for name in (
-            "google-chrome", "google-chrome-stable", "chromium",
-            "chromium-browser", "chrome", "chrome.exe"))
-        candidates.extend((
-            r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-            r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-        ))
-        chrome = next((path for path in candidates
-                       if path and os.path.isfile(path)), None)
+        chrome = find_chrome()
         if not chrome:
             print("  png: FAILED (Chrome/Chromium not found; set CHROME_PATH or"
                   " AC_NO_RENDER=1)")

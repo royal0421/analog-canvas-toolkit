@@ -108,5 +108,31 @@ class GenBaselineTests(unittest.TestCase):
         self.assertEqual([], [k for k, v in base.items() if v["errors"]])
 
 
+class RenderProjectTests(unittest.TestCase):
+    def test_an_existing_project_redraws(self):
+        import contextlib
+        import io
+        import icproj
+        import render_project
+        if not list(Path(icproj.SYMDIR).glob("*.json")):
+            self.skipTest("run `python -m toolkit setup` first")
+        src = ROOT / "out" / "Razavi_Fig_9_34_pnp-current-mirror.icproj.json"
+        with tempfile.TemporaryDirectory() as tmp:
+            svg = str(Path(tmp) / "x.svg")
+            with contextlib.redirect_stdout(io.StringIO()):
+                f = render_project.load(str(src), svg)
+                f._preview(render_project.viewbox(f))
+            self.assertIn("<svg", Path(svg).read_text(encoding="utf-8"))
+            self.assertEqual(6, len(f.instances) - sum(
+                1 for i in f.instances
+                if i["symbolId"] in ("ground", "port", "vdd-port")))
+
+    def test_chrome_is_looked_up_on_every_platform(self):
+        import icproj
+        with unittest.mock.patch.dict("os.environ",
+                                      {"CHROME_PATH": __file__}):
+            self.assertEqual(__file__, icproj.find_chrome())
+
+
 if __name__ == "__main__":
     unittest.main()
