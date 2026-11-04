@@ -310,5 +310,26 @@ class MinBoxGapTests(unittest.TestCase):
             self.assertEqual(want, autoplace._min_box_gap(box, segs))
 
 
+@unittest.skipUnless(HAVE_SYMBOLS, "run `python -m toolkit setup` first")
+class GateOrderTests(unittest.TestCase):
+    def test_three_input_nand_reads_a_b_c(self):
+        deck = ROOT / "toolkit" / "decks" / "new" / "nand3-cmos.cir"
+        c = autoplace._split_gate_inputs(
+            netlist_io.parse(deck.read_text(encoding="utf-8")))
+        autoplace._sink_negatives(c)
+        c.mirror = autoplace._mirror_map(c)
+        autoplace._read_hints(c, None)
+        autoplace._analyze(c)
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.dict(os.environ, {"AC_FAST": "1"}), \
+                contextlib.redirect_stdout(io.StringIO()):
+            p = autoplace.Placer(c, os.path.join(tmp, "n.icproj.json"),
+                                 os.path.join(tmp, "n.svg"),
+                                 style=dict(autoplace.STYLE0))
+            p.run(verbose=False)
+        xs = [p.f.placed[r][1] for r in ("MP1", "MP2", "MP3")]
+        self.assertEqual(sorted(xs), xs)
+
+
 if __name__ == "__main__":
     unittest.main()
