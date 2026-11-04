@@ -103,6 +103,7 @@
 - 2026-11-04｜全量驗證（d5719c6 之後）：unittest 全過、regress 36/36、`generate all --no-render` 重產 36 個專案 out/ 0 變動；官方 netlist_bench.py：29 figures | 29 clean | place 49% | order 82% | col 63% | row 61% | mirror 95% | wire 0.94x | bends 0.96x | crossings 8 (over hand 2) | 稽核錯誤 0；auto/ 與 bench_par 逐位元相同；9 min 34 s｜—｜—｜—
 - 2026-11-04｜**撤回**：_sym_columns——對稱電路的鏡像欄對取兩邊到中心距離的較大值（只往外推）｜預期：LC-load 左邊 C_2｜C_1 間距由 70 補到 80，L_2 不再往上讓｜查到真正來源：標籤一律在元件右側，「標籤太擠就往右插空間」讓兩半加寬量不同。但強制對稱更差：shunt-peak wire 1.27→1.91x、place 50→8%；LC-load wire 1.41→1.49x；10.35a、12.57c 不變 → 撤回。LC-load 左 L_2 這個子問題連 3 次未改善，換方向｜—
 - 2026-11-04｜README：路線二成績更新為 11-04 實測（29 figures、place 49%、order 82%、wire 0.94x、bends 0.96x、crossings 8 (over hand 2)），說明張數、place／order、比手排多出的交叉；指令註解的張數與時間改為實測（38→29 張、netlist_bench 約 10 分、bench_par 約 8 分）｜文件，不影響 bench｜109244f
+- 2026-11-04｜tests/test_autoplace.py：op-amp 的 vdrop 單元測試（兩級反相放大器，vdrop OA2=10 時 OA2 剛好下移 10）｜測試，不影響 bench｜unittest 全過｜(本 commit)
 
 ## 待使用者決定
 

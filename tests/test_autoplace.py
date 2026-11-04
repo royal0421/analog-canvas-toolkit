@@ -227,5 +227,42 @@ class InpFirstTests(unittest.TestCase):
         self.assertGreater(x["R2"], x["OA"])
 
 
+TWO_STAGES = """.title two inverting stages
+.subckt S out
+.iodir out=output
+XOA1 0 a x opamp
+.alias XOA1 OA1
+XOA2 0 b out opamp
+.alias XOA2 OA2
+VIN in 0
+R1 in a
+RF1 a x
+R2 x b
+RF2 b out
+.ends
+"""
+
+
+@unittest.skipUnless(HAVE_SYMBOLS, "run `python -m toolkit setup` first")
+class AmpDropTests(unittest.TestCase):
+    def y_of(self, **style):
+        c = netlist_io.parse(TWO_STAGES)
+        c.mirror = autoplace._mirror_map(c)
+        autoplace._read_hints(c, None)
+        autoplace._analyze(c)
+        st = dict(autoplace.STYLE0, **style)
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.dict(os.environ, {"AC_FAST": "1"}), \
+                contextlib.redirect_stdout(io.StringIO()):
+            p = autoplace.Placer(c, os.path.join(tmp, "t.icproj.json"),
+                                 os.path.join(tmp, "t.svg"), style=st)
+            p.run(verbose=False)
+        return p.f.placed["OA2"][2]
+
+    def test_an_amplifier_can_hang_one_step_lower(self):
+        self.assertEqual(self.y_of() + 10,
+                         self.y_of(vdrop=(("OA2", 10),)))
+
+
 if __name__ == "__main__":
     unittest.main()
