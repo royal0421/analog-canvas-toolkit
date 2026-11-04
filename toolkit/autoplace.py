@@ -20,6 +20,7 @@ Layout model
 * A node with three or more pins gets a BUS ROW 10 outside the pin row and a
   riser per pin, because a junction may not sit on a terminal (SOP 6).
 """
+import math
 import os
 import re
 import sys
@@ -4492,7 +4493,7 @@ class Placer(object):
         segs, inkof = self._ann_geom()
         x, y = f.placed[iid][1] + dx, f.placed[iid][2] + dy
         box = label_box(rt, x, y, align)
-        wire = min([_box_gap(box, s) for s in segs] or [999])
+        wire = _min_box_gap(box, segs)
         kind = f.placed[iid][0]
         near = 999
         for jid in f.placed:
@@ -4677,7 +4678,7 @@ class Placer(object):
             segs, inkof = self._ann_geom()
             for x, y, al in cands:
                 box = label_box(rt, x, y, al)
-                wire = min([_box_gap(box, sg) for sg in segs] or [999])
+                wire = _min_box_gap(box, segs)
                 ink = min([_box_gap_box(box, inkof[i])
                            for i in f.placed] or [999])
                 other = min([_box_gap_box(box, b)
@@ -4771,6 +4772,36 @@ class Placer(object):
             if "_" not in nm and len(nm) > 1:
                 out.add("instance-label-" + pid)
         return out
+
+
+def _min_box_gap(b, segs):
+    """min(_box_gap(b, s) for s in segs), or 999 for none -- the same number.
+
+    The label search asks this tens of millions of times per figure.  A
+    segment whose gap along x or y alone already reaches the best so far
+    cannot be closer (the gap is hypot(dx, dy) >= max(dx, dy)), so it is
+    skipped without the hypot; every value that can win is still computed
+    exactly as _box_gap computes it.
+    """
+    best = None
+    b0, b1, b2, b3 = b
+    for s in segs:
+        if s[0] <= s[2]:
+            sx0, sx1 = s[0], s[2]
+        else:
+            sx0, sx1 = s[2], s[0]
+        if s[1] <= s[3]:
+            sy0, sy1 = s[1], s[3]
+        else:
+            sy0, sy1 = s[3], s[1]
+        dx = max(b0 - sx1, sx0 - b2, 0.0)
+        dy = max(b1 - sy1, sy0 - b3, 0.0)
+        if best is not None and (dx >= best or dy >= best):
+            continue
+        g = math.hypot(dx, dy)
+        if best is None or g < best:
+            best = g
+    return 999 if best is None else best
 
 
 AUDIT_KEYS = ("self-check errors:", "audits:")

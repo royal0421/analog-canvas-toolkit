@@ -293,5 +293,22 @@ class NegativeSupplyTests(unittest.TestCase):
         self.assertTrue(c.is_negative("VEE"))
 
 
+class MinBoxGapTests(unittest.TestCase):
+    def test_same_number_as_the_plain_minimum(self):
+        import random
+        rnd = random.Random(7)
+        for _ in range(20000):
+            xs = sorted(rnd.uniform(0, 100) for _ in range(2))
+            ys = sorted(rnd.uniform(0, 100) for _ in range(2))
+            box = (xs[0], ys[0], xs[1], ys[1])
+            segs = []
+            for _ in range(rnd.randint(0, 6)):
+                c = rnd.choice([10, 20, 35.5, 50, 80])
+                a, b = rnd.uniform(0, 100), rnd.uniform(0, 100)
+                segs.append((c, a, c, b) if rnd.random() < .5 else (a, c, b, c))
+            want = min([icproj._box_gap(box, sg) for sg in segs] or [999])
+            self.assertEqual(want, autoplace._min_box_gap(box, segs))
+
+
 if __name__ == "__main__":
     unittest.main()
