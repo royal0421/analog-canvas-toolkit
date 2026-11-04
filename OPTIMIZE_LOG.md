@@ -115,7 +115,7 @@
 - 2026-11-04｜負電源支援：netlist_io 新增 is_negative（.global 裡的 VEE／VSS／VNEG），不再算正電源；autoplace 版面上把它當成底部匯點（像地），每段接腳下方放一個倒置的 vdd-port＋V_EE 標籤，並補 V_EE 的電源名稱宣告；_add_grounds 改成對每個匯點節點做｜預期：推挽輸出級（decks/new）從失敗變乾淨，其餘不變｜推挽輸出級：self-check 3／on-wire 5／shorts 5 → 全 0，bends 5，schema VALID、labels 全同 builder，畫面為課本推挽級（Q_1 接 V_CC、Q_2 往下接 V_EE）；bench 29 張每行相同、auto/ 全部逐位元相同；牆鐘 468 s（中間一次 570 s 是背景 profile 搶 CPU）；regress 36/36、unittest 全過（+2）｜b0eda63
 - 2026-11-04｜decks/new 新增 2 份負電源 deck（BJT 差動對尾電流接 V_EE、V_EE 偏壓射極隨耦器）；SOP §3J 規則表補負電源一列｜預期：驗證負電源路徑｜兩份全乾淨、schema VALID，畫面為課本畫法；發現單一接腳的正電源 vdd-port 沒有標籤（V_EE 有），下一項處理｜—｜a81af2b
 - 2026-11-04｜autoplace：電源只接一隻腳時放的 vdd-port 也加上電源標籤（V_DD／V_CC，AC_TAPLABEL=0 關閉）｜預期：跟電源軌、V_EE 一樣有名字｜bench 29 張每行相同（6 張有單一接腳電源：HW4 a/b/c、NOR2、8.69、9.26c，分數不變）；9.26c 完整驗證 schema VALID、labels OK；牆鐘 475 s；regress 36/36、unittest 全過｜4334d06
-- 2026-11-04｜decks/new 新增 6 份壓力測試（Schmitt trigger、三運放儀表放大器、Gilbert cell、bandgap 核心、CMOS 反相器、PMOS 疊接負載的疊接放大器）｜預期：找稽核錯誤與明顯缺陷｜6 份稽核全乾淨。明顯缺陷（屬結構辨識，同 HW2 一類，未改）：Gilbert cell 的 Q_3–Q_6 排列亂、交叉 4（課本約 1–2，其 4 個輸入埠不成對，對稱偵測抓不到）；儀表放大器三顆運放排成一列、電阻網路繞行，課本是兩顆輸入級上下、差動級在右。其餘四份合理｜—｜(本 commit)
+- 2026-11-04｜decks/new 新增 6 份壓力測試（Schmitt trigger、三運放儀表放大器、Gilbert cell、bandgap 核心、CMOS 反相器、PMOS 疊接負載的疊接放大器）｜預期：找稽核錯誤與明顯缺陷｜6 份稽核全乾淨。明顯缺陷（屬結構辨識，同 HW2 一類，未改）：Gilbert cell 的 Q_3–Q_6 排列亂、交叉 4（課本約 1–2，其 4 個輸入埠不成對，對稱偵測抓不到）；儀表放大器三顆運放排成一列、電阻網路繞行，課本是兩顆輸入級上下、差動級在右。其餘四份合理｜—｜4ea353d
 
 ## 待使用者決定
 
