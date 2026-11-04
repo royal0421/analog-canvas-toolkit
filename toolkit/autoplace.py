@@ -3888,6 +3888,21 @@ class Placer(object):
                     return False
             elif b[0] + 1 < c < b[2] - 1 and lo < b[3] - 1 and hi > b[1] + 1:
                 return False
+        if os.environ.get("AC_SEGLBL", "1") == "1":
+            # a transistor's / port's name has one legal spot and is in
+            # `_inks` already: a detour that walks through it trades one
+            # audit error for another (transmission gate: the V_in riser
+            # stepped round M_N's drain straight across "M_N")
+            for tag, b in getattr(self, "_inks", ()):
+                if not tag.startswith("lbl:"):
+                    continue
+                if axis == "h":
+                    if b[1] - 2 < c < b[3] + 2 and lo < b[2] + 2 \
+                            and hi > b[0] - 2:
+                        return False
+                elif b[0] - 2 < c < b[2] + 2 and lo < b[3] + 2 \
+                        and hi > b[1] - 2:
+                    return False
         for (px, py), owners in getattr(self, "_pinnet", {}).items():
             if nd in owners:
                 continue
@@ -3954,7 +3969,12 @@ class Placer(object):
         if self._seg_clear(nd, other, k, v, c):
             return None
         best, bestk = None, None
-        for dk in (10, -10, 20, -20, 30, -30):
+        # the far steps only matter once a fixed name blocks the near ones
+        # (AC_SEGLBL): ranked by |dk|, so a jog that fit before is unchanged
+        steps = (10, -10, 20, -20, 30, -30)
+        if os.environ.get("AC_SEGLBL", "1") == "1":
+            steps += (40, -40, 50, -50, 60, -60)
+        for dk in steps:
             k2 = k + dk
             if not (self._seg_clear(nd, other, k2, v, c)
                     and self._seg_clear(nd, axis, v, k, k2)
