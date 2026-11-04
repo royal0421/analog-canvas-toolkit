@@ -1,0 +1,13 @@
+* hand-written deck, not exported from any drawing
+.title Inverting integrator
+.subckt Integ in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+R1 in x
+.name R1 R_1
+C1 x out
+.name C1 C_1
+XOA 0 x out opamp
+.alias XOA OA
+.ends

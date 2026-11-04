@@ -1,0 +1,14 @@
+* hand-written deck, not exported from any drawing
+.title Source follower with current-source bias
+.global VDD
+.subckt SF in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+M1 VDD in out 0 nmos
+.name M1 M_1
+I1 out 0
+.name I1 I_1
+CL out 0
+.name CL C_L
+.ends
