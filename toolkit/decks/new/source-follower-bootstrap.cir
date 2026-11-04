@@ -1,0 +1,14 @@
+* hand-written deck, not exported from any drawing
+.title Bootstrapped source follower
+.global VDD
+.subckt Boot in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+M1 VDD in out 0 nmos
+.name M1 M_1
+CB in out
+.name CB C_B
+RS out 0
+.name RS R_S
+.ends

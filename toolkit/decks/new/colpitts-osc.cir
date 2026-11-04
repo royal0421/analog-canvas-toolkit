@@ -1,0 +1,23 @@
+* hand-written deck, not exported from any drawing
+.title Colpitts oscillator (common base)
+.global VCC
+.subckt Colpitts out
+.iodir out=output
+.name out V_out
+L1 VCC out inductor
+.name L1 L_1
+C1 out e
+.name C1 C_1
+C2 e 0
+.name C2 C_2
+RE e 0
+.name RE R_E
+Q1 out b e npn
+.name Q1 Q_1
+CB b 0
+.name CB C_B
+R1 VCC b
+.name R1 R_1
+R2 b 0
+.name R2 R_2
+.ends

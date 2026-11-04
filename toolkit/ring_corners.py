@@ -218,6 +218,32 @@ def block_shaves(f, tight=BLOCK_TIGHT):
     return out
 
 
+def edge_runs(f):
+    """Wires laid ALONG a block's straight back edge.
+
+    `block_shaves` skips a segment that starts on the block's own pin --
+    a lead has to touch the ink -- and `_body_audit` allows the boundary,
+    so a lead that leaves IN- and runs up the op amp's back edge to the
+    corner passed everything (precision rectifier, 2026-11-04): on paper
+    the wire and the triangle's edge are one line.
+    """
+    import netlist_io as _N
+    out = []
+    for iid in sorted(f.placed):
+        if f.placed[iid][0] not in _N.BLOCKS:
+            continue
+        x0, y0, x1, y1 = f.ink(iid)
+        for _rid, ax0, ay0, ax1, ay1 in f.segments():
+            if ax0 != ax1:
+                continue
+            if ax0 not in (x0, x1):
+                continue
+            lo, hi = max(min(ay0, ay1), y0), min(max(ay0, ay1), y1)
+            if hi > lo:
+                out.append((iid, ax0, lo, hi))
+    return out
+
+
 def gate_crossings(f):
     return _cross_points(f, True) + body_passes(f)
 

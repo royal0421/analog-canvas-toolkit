@@ -1,0 +1,13 @@
+* hand-written deck, not exported from any drawing
+.title Precision half-wave rectifier
+.subckt PRect in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+XOA in out x opamp
+.alias XOA OA
+D1 x out diode
+.name D1 D_1
+RL out 0
+.name RL R_L
+.ends
