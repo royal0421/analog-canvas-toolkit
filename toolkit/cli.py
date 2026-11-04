@@ -70,8 +70,13 @@ def resolve_projects(selectors, projects):
         return projects
     by_key = {}
     for project in projects:
+        # `Path.stem` drops only `.json`: "X.icproj.json" -> "X.icproj", so
+        # the bare name the README tells people to type never matched
+        bare = project.output.name[:-len(".icproj.json")] \
+            if project.output.name.endswith(".icproj.json") \
+            else project.output.stem
         for key in (project.name, project.generator.stem,
-                    project.output.name, project.output.stem):
+                    project.output.name, project.output.stem, bare):
             by_key.setdefault(key.lower(), [])
             if project not in by_key[key.lower()]:
                 by_key[key.lower()].append(project)

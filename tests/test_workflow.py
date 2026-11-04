@@ -1,6 +1,7 @@
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 
@@ -36,6 +37,46 @@ class WorkflowTests(unittest.TestCase):
 
     def test_runs_keeps_segment_at_end_of_vector(self):
         self.assertEqual([(1, 3)], scan_figure.runs([False, True, True, True], 3))
+
+
+class GenerateCliTests(unittest.TestCase):
+    def test_generator_name_selects_every_mode(self):
+        projects = cli.discover_projects()
+        got = cli.resolve_projects(["gen_aic_hw2_tb"], projects)
+        self.assertEqual(["gen_aic_hw2_tb:pattern", "gen_aic_hw2_tb:offset"],
+                         [p.name for p in got])
+        one = cli.resolve_projects(["AIC-HW2_CMP_OFFSET_TB"], projects)
+        self.assertEqual([("offset",)], [p.args for p in one])
+
+    def test_unknown_selector_is_refused(self):
+        with self.assertRaises(SystemExit):
+            cli.resolve_projects(["gen_nope"], cli.discover_projects())
+
+    def test_example_is_refreshed_only_when_its_svg_changed(self):
+        import hashlib
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            ex, tk = tmp / "examples", tmp / "toolkit"
+            ex.mkdir()
+            tk.mkdir()
+            (ex / "Fig.png").write_bytes(b"old")
+            (tk / "preview_fig.svg").write_text("<svg/>", encoding="utf-8")
+            (tk / "preview_fig.png").write_bytes(b"new")
+            project = cli.Project(tk / "gen_fig.py", tmp / "Fig.icproj.json")
+            out = "  png: preview_fig.png (10x10)\n"
+            with unittest.mock.patch.object(cli, "EXAMPLES", ex), \
+                    unittest.mock.patch.object(cli, "TOOLKIT", tk):
+                manifest = {}
+                self.assertTrue(cli.publish_example(project, out, manifest))
+                self.assertEqual(b"new", (ex / "Fig.png").read_bytes())
+                self.assertEqual(hashlib.sha256(b"<svg/>").hexdigest(),
+                                 manifest["Fig.png"])
+                (tk / "preview_fig.png").write_bytes(b"newer")
+                self.assertFalse(cli.publish_example(project, out, manifest))
+                self.assertEqual(b"new", (ex / "Fig.png").read_bytes())
+                # no gallery image yet: nothing is added
+                other = cli.Project(tk / "gen_x.py", tmp / "X.icproj.json")
+                self.assertIsNone(cli.publish_example(other, out, manifest))
 
 
 if __name__ == "__main__":
