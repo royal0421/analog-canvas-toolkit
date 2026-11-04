@@ -249,8 +249,26 @@ def export_project(path):
     if any(o.get("kind") == "construction-line"
            for o in doc.get("drafting", {}).get("objects", [])):
         problems.append("construction-line: a connection the netlist loses")
+    # A rectangle a wire runs INTO is a block -- a flip-flop, a VCO, a
+    # comparator drawn as a box -- and that part is missing from the
+    # netlist.  One no wire touches is art beside the circuit: the ESD
+    # input stage's dashed "protection network" outline, the RC clamp's
+    # layer cross-section.  The circuit itself is complete there.
+    junctions = [j["position"] for j in doc.get("junctions", [])]
+
+    def is_block(o):
+        cx, cy = o["center"]["x"], o["center"]["y"]
+        hw, hh = o["width"] / 2.0, o["height"] / 2.0
+        for p in junctions:
+            dx, dy = abs(p["x"] - cx), abs(p["y"] - cy)
+            on_v = abs(dx - hw) <= 1 and dy <= hh + 1
+            on_h = abs(dy - hh) <= 1 and dx <= hw + 1
+            if on_v or on_h:
+                return True
+        return False
+
     boxes = [o for o in doc.get("drafting", {}).get("objects", [])
-             if o.get("kind") == "rectangle"]
+             if o.get("kind") == "rectangle" and is_block(o)]
     if boxes:
         problems.append("%d drafting rectangle(s): block/cross-section art "
                         "the netlist has no room for" % len(boxes))
