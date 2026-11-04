@@ -317,7 +317,7 @@
  "transmission-gate": {
   "bends": 13.5,
   "crossings": 1,
-  "errors": 1
+  "errors": 0
  },
  "two-stage-miller": {
   "bends": 22.0,

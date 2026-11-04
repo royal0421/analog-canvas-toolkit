@@ -136,6 +136,7 @@
 - 2026-11-04｜toolkit/regress.py（舊回歸腳本）改成轉呼叫 python -m toolkit regress：舊版找不到 _regress_baseline.json，每張列為 new 卻印「all byte-identical」，且漏跑 gen_aic_hw2_tb 的 offset 專案；--accept 改為說明 git 追蹤的 out/ 就是基準；SOP 三處改指向新指令（含過時的「23 張」）｜預期：舊指令也得到正確結果｜python toolkit/regress.py：36/36 regression clean；unittest 全過｜93857f4
 - 11-04 文件：SOP 工具表 `publish_to_repo.py` 註明不隨 repo 發佈；`netlist_bench.py` 張數 23→29。只改文件，unittest 62 OK。(`96ec97b`)
 - 11-04 推廣 deck +11（非反相、差動、加法、Wien、三級環振、AB 類二極體偏壓、regulated cascode、傳輸閘、半波整流、CE 旁路、β helper）。傳輸閘查出兩個通用缺陷：(a) 串鏈把 M_P 接在 M_N 下成環、兩顆同格重疊 → 串鏈不收「遠端已在鏈上」的件（`AC_NOCYCLE`）；(b) MOS 基極腳不在 pinxy，繞線壓過它 → 加進 `_pinnet` 當障礙（`AC_BULKPIN`）。傳輸閘 labels 4 → 1（剩 M_N 名字壓 V_in 立線＋1 交叉：M_N/M_P 的 D/S 方向相反，留待後續）。bench 29 張逐位元不變；gen 68 張 0 變差、two-stage-miller crossings 1→0；baseline 更新。(`a1d7748`, `bf276fa`)
+- 11-04 傳輸閘最後 1 個 audit（M_N 名字壓 V_in 接腳跨步）：先試 `_seg_clear` 全面把固定名字當障礙 → bench crossings 8→9、HW2/LC-load 外觀變、folded-cascode bends 23.5→26.5，**退回**；改成只在 `_cross_detour` 候選加 `_lbl_clear`，跨步放寬到 ±60（`AC_SEGLBL`）。bench 29 張逐位元不變、7m31s；gen 68/68 乾淨、0 變差；baseline 更新，`test_stored_baseline_is_all_clean` 回綠。(`f95c6b7` 退, `ce5725d`, 本 commit)
 
 ## 待使用者決定
 
