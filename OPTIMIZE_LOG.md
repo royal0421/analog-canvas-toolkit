@@ -114,7 +114,7 @@
 - 2026-11-04｜cli：輸出檔名不帶 .icproj.json 也能選到專案（Path.stem 只去掉 .json，README 說可用輸出檔名選，實際打不到）；新增測試：cli 選取／--examples 發佈邏輯、viewbox 稽核、deck 寫出讀回、_mirror_map（差動對成對、5T OTA 主動負載不對稱）｜預期：補測試時順便抓 bug｜unittest 共 53 個全過；out/ 0 變動；bench 不受影響｜c3c4ec3 80d307e
 - 2026-11-04｜負電源支援：netlist_io 新增 is_negative（.global 裡的 VEE／VSS／VNEG），不再算正電源；autoplace 版面上把它當成底部匯點（像地），每段接腳下方放一個倒置的 vdd-port＋V_EE 標籤，並補 V_EE 的電源名稱宣告；_add_grounds 改成對每個匯點節點做｜預期：推挽輸出級（decks/new）從失敗變乾淨，其餘不變｜推挽輸出級：self-check 3／on-wire 5／shorts 5 → 全 0，bends 5，schema VALID、labels 全同 builder，畫面為課本推挽級（Q_1 接 V_CC、Q_2 往下接 V_EE）；bench 29 張每行相同、auto/ 全部逐位元相同；牆鐘 468 s（中間一次 570 s 是背景 profile 搶 CPU）；regress 36/36、unittest 全過（+2）｜b0eda63
 - 2026-11-04｜decks/new 新增 2 份負電源 deck（BJT 差動對尾電流接 V_EE、V_EE 偏壓射極隨耦器）；SOP §3J 規則表補負電源一列｜預期：驗證負電源路徑｜兩份全乾淨、schema VALID，畫面為課本畫法；發現單一接腳的正電源 vdd-port 沒有標籤（V_EE 有），下一項處理｜—｜a81af2b
-- 2026-11-04｜autoplace：電源只接一隻腳時放的 vdd-port 也加上電源標籤（V_DD／V_CC，AC_TAPLABEL=0 關閉）｜預期：跟電源軌、V_EE 一樣有名字｜bench 29 張每行相同（6 張有單一接腳電源：HW4 a/b/c、NOR2、8.69、9.26c，分數不變）；9.26c 完整驗證 schema VALID、labels OK；牆鐘 475 s；regress 36/36、unittest 全過｜(本 commit)
+- 2026-11-04｜autoplace：電源只接一隻腳時放的 vdd-port 也加上電源標籤（V_DD／V_CC，AC_TAPLABEL=0 關閉）｜預期：跟電源軌、V_EE 一樣有名字｜bench 29 張每行相同（6 張有單一接腳電源：HW4 a/b/c、NOR2、8.69、9.26c，分數不變）；9.26c 完整驗證 schema VALID、labels OK；牆鐘 475 s；regress 36/36、unittest 全過｜4334d06
 
 ## 待使用者決定
 
