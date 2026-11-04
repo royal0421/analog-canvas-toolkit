@@ -79,5 +79,26 @@ class GenerateCliTests(unittest.TestCase):
                 self.assertIsNone(cli.publish_example(other, out, manifest))
 
 
+class GenBaselineTests(unittest.TestCase):
+    def test_compare_flags_any_column_that_got_worse(self):
+        import bench_par
+        base = {"a": {"errors": 0, "crossings": 1, "bends": 4.0},
+                "b": {"errors": 0, "crossings": 0, "bends": 3.0}}
+        now = {"a": {"errors": 0, "crossings": 2, "bends": 3.5},
+               "b": {"errors": 0, "crossings": 0, "bends": 3.0},
+               "c": {"errors": 0, "crossings": 0, "bends": 1.0}}
+        worse, better, new = bench_par.compare_gen(now, base)
+        self.assertEqual(["a crossings 1 -> 2"], worse)
+        self.assertEqual(["a bends 4.0 -> 3.5"], better)
+        self.assertEqual(["c"], new)
+
+    def test_stored_baseline_is_all_clean(self):
+        import json
+        base = json.loads((ROOT / "toolkit" / "gen_baseline.json")
+                          .read_text(encoding="utf-8"))
+        self.assertGreaterEqual(len(base), 57)
+        self.assertEqual([], [k for k, v in base.items() if v["errors"]])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -63,6 +63,24 @@ def gen_one(path):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def compare_gen(now, base):
+    """(worse, better, new) between two {deck: {errors, crossings, bends}}
+    tables.  A deck missing from `now` is not judged here: a deck that
+    fails to draw is reported by the caller."""
+    worse, better, new = [], [], []
+    for stem, v in sorted(now.items()):
+        b = base.get(stem)
+        if b is None:
+            new.append(stem)
+            continue
+        for k in ("errors", "crossings", "bends"):
+            if v[k] > b[k]:
+                worse.append("%s %s %s -> %s" % (stem, k, b[k], v[k]))
+            elif v[k] < b[k]:
+                better.append("%s %s %s -> %s" % (stem, k, b[k], v[k]))
+    return worse, better, new
+
+
 def main_gen():
     import time
     paths = sorted(glob.glob(os.path.join(NB.HERE, "decks", "new", "*.cir"))
@@ -98,17 +116,9 @@ def main_gen():
         print("no gen_baseline.json yet (run with --accept)")
         return 0
     base = json.load(open(base_path, encoding="utf-8"))
-    worse, better = [], []
-    for stem, v in sorted(now.items()):
-        b = base.get(stem)
-        if b is None:
-            print("  + new   %s" % stem)
-            continue
-        for k in ("errors", "crossings", "bends"):
-            if v[k] > b[k]:
-                worse.append("%s %s %s -> %s" % (stem, k, b[k], v[k]))
-            elif v[k] < b[k]:
-                better.append("%s %s %s -> %s" % (stem, k, b[k], v[k]))
+    worse, better, new = compare_gen(now, base)
+    for stem in new:
+        print("  + new   %s" % stem)
     for w in better:
         print("  better  " + w)
     for w in worse:
