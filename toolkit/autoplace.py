@@ -2842,9 +2842,17 @@ class Placer(object):
         # the middle.  Two outputs that stay in their own halves face each
         # other in the middle instead (Diff-amp's V_o, 10.35(a)'s V_out):
         # moving those outside cost Diff-amp wire 1.3x -> 1.9x.
-        return any(p == CTRL.get(d.sym) and (d.ref, p) in self.pinxy
-                   and self.pinxy[(d.ref, p)][0] > mid
-                   for d, p in self.c.pins_on(nd))
+        if any(p == CTRL.get(d.sym) and (d.ref, p) in self.pinxy
+               and self.pinxy[(d.ref, p)][0] > mid
+               for d, p in self.c.pins_on(nd)):
+            return True
+        # ...or an output that no transistor touches at all: it is reached
+        # through a series part (the LC load's L_2 from the drain out to
+        # V_out), so it already lies OUTSIDE its half, and a port facing in
+        # put V_out+ between C_2 and C_1 and folded L_2 up over it.
+        return (str(os.environ.get("AC_PASSIVEOUT", "1")) == "1"
+                and all(d.sym not in CTRL and d.sym not in N.BLOCKS
+                        for d, _p in self.c.pins_on(nd)))
 
     def _add_ports(self):
         f = self.f
