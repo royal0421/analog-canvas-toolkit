@@ -102,7 +102,7 @@
 - 2026-11-04｜autoplace：vdrop 開放給 op-amp——反相端經一顆兩端元件接到某顆 op-amp 輸出時，可整顆下移 10／20（只往下，樓梯狀；AC_ADROP=0 關閉）｜預期：14.36(b) 的 R_2 從 X 直線進 OA3（手排三級一級比一級低）｜29 figures | 29 clean | place 48%→49% | wire 0.95→0.94x | bends 0.96x | crossings 8 (over hand 2) | 稽核錯誤 0；14.36b bends 23→22、place 18→27%（wire 1.23→1.24x，四捨五入同）；8.57 wire 1.3→1.2x（二極體回授接自己的反相端，同條件）；其餘 27 張逐行相同。第一版允許 ±10／±20 時 OA3 被往上移、place 掉到 0%，改為只往下；牆鐘 468 s；regress 36/36、unittest OK｜e6c6f90
 - 2026-11-04｜全量驗證（d5719c6 之後）：unittest 全過、regress 36/36、`generate all --no-render` 重產 36 個專案 out/ 0 變動；官方 netlist_bench.py：29 figures | 29 clean | place 49% | order 82% | col 63% | row 61% | mirror 95% | wire 0.94x | bends 0.96x | crossings 8 (over hand 2) | 稽核錯誤 0；auto/ 與 bench_par 逐位元相同；9 min 34 s｜—｜—｜—
 - 2026-11-04｜**撤回**：_sym_columns——對稱電路的鏡像欄對取兩邊到中心距離的較大值（只往外推）｜預期：LC-load 左邊 C_2｜C_1 間距由 70 補到 80，L_2 不再往上讓｜查到真正來源：標籤一律在元件右側，「標籤太擠就往右插空間」讓兩半加寬量不同。但強制對稱更差：shunt-peak wire 1.27→1.91x、place 50→8%；LC-load wire 1.41→1.49x；10.35a、12.57c 不變 → 撤回。LC-load 左 L_2 這個子問題連 3 次未改善，換方向｜—
-- 2026-11-04｜README：路線二成績更新為 11-04 實測（29 figures、place 49%、order 82%、wire 0.94x、bends 0.96x、crossings 8 (over hand 2)），說明張數、place／order、比手排多出的交叉；指令註解的張數與時間改為實測（38→29 張、netlist_bench 約 10 分、bench_par 約 8 分）｜文件，不影響 bench｜(本 commit)
+- 2026-11-04｜README：路線二成績更新為 11-04 實測（29 figures、place 49%、order 82%、wire 0.94x、bends 0.96x、crossings 8 (over hand 2)），說明張數、place／order、比手排多出的交叉；指令註解的張數與時間改為實測（38→29 張、netlist_bench 約 10 分、bench_par 約 8 分）｜文件，不影響 bench｜109244f
 
 ## 待使用者決定
 
