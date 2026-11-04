@@ -3888,21 +3888,6 @@ class Placer(object):
                     return False
             elif b[0] + 1 < c < b[2] - 1 and lo < b[3] - 1 and hi > b[1] + 1:
                 return False
-        if os.environ.get("AC_SEGLBL", "1") == "1":
-            # a transistor's / port's name has one legal spot and is in
-            # `_inks` already: a detour that walks through it trades one
-            # audit error for another (transmission gate: the V_in riser
-            # stepped round M_N's drain straight across "M_N")
-            for tag, b in getattr(self, "_inks", ()):
-                if not tag.startswith("lbl:"):
-                    continue
-                if axis == "h":
-                    if b[1] - 2 < c < b[3] + 2 and lo < b[2] + 2 \
-                            and hi > b[0] - 2:
-                        return False
-                elif b[0] - 2 < c < b[2] + 2 and lo < b[3] + 2 \
-                        and hi > b[1] - 2:
-                    return False
         for (px, py), owners in getattr(self, "_pinnet", {}).items():
             if nd in owners:
                 continue
@@ -3956,6 +3941,27 @@ class Placer(object):
                         n += 1
         return n
 
+    def _lbl_clear(self, axis, c, a0, a1):
+        """Is this straight run off every fixed name (transistor / port)?
+
+        Only the pin-to-trunk jog asks this: a name has one legal spot, so
+        a jog that steps through it trades one audit error for another
+        (transmission gate: the V_in leg stepped round M_N's drain straight
+        across "M_N").  `_seg_clear` itself does not, because every other
+        caller already prices names in the trunk cost (tried: bench
+        crossings 8 -> 9).
+        """
+        lo, hi = min(a0, a1), max(a0, a1)
+        for tag, b in getattr(self, "_inks", ()):
+            if not tag.startswith("lbl:"):
+                continue
+            if axis == "h":
+                if b[1] - 2 < c < b[3] + 2 and lo < b[2] + 2 and hi > b[0] - 2:
+                    return False
+            elif b[0] - 2 < c < b[2] + 2 and lo < b[3] + 2 and hi > b[1] - 2:
+                return False
+        return True
+
     def _cross_detour(self, nd, axis, k, v, c):
         """A jog for the leg that joins a pin to its trunk.
 
@@ -3972,13 +3978,18 @@ class Placer(object):
         # the far steps only matter once a fixed name blocks the near ones
         # (AC_SEGLBL): ranked by |dk|, so a jog that fit before is unchanged
         steps = (10, -10, 20, -20, 30, -30)
-        if os.environ.get("AC_SEGLBL", "1") == "1":
+        lbl = os.environ.get("AC_SEGLBL", "1") == "1"
+        if lbl:
             steps += (40, -40, 50, -50, 60, -60)
         for dk in steps:
             k2 = k + dk
             if not (self._seg_clear(nd, other, k2, v, c)
                     and self._seg_clear(nd, axis, v, k, k2)
                     and self._seg_clear(nd, axis, c, k, k2)):
+                continue
+            if lbl and not (self._lbl_clear(other, k2, v, c)
+                            and self._lbl_clear(axis, v, k, k2)
+                            and self._lbl_clear(axis, c, k, k2)):
                 continue
             pts = [self._xy(axis, k, v), self._xy(axis, k2, v),
                    self._xy(axis, k2, c), self._xy(axis, k, c)]
