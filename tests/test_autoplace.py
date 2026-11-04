@@ -363,5 +363,34 @@ class TransmissionGateTests(unittest.TestCase):
         self.assertIn("0", p._pinnet.get(xy, set()))
 
 
+class EnvCacheTests(unittest.TestCase):
+    def _placer(self):
+        c = netlist_io.parse(".subckt T a\nR1 a 0\n.ends\n")
+        return autoplace.Placer(c, "x.json", "x.svg")
+
+    def test_unset_name_keeps_each_callers_default(self):
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("AC_ZZTEST", None)
+            p = self._placer()
+            self.assertEqual(p.env("AC_ZZTEST", "1"), "1")
+            self.assertEqual(p.env("AC_ZZTEST", "0"), "0")
+            self.assertIsNone(p.env("AC_ZZTEST"))
+
+    def test_value_is_read_once_per_drawing(self):
+        with mock.patch.dict(os.environ, {"AC_ZZTEST": "a"}):
+            p = self._placer()
+            self.assertEqual(p.env("AC_ZZTEST", "x"), "a")
+            os.environ["AC_ZZTEST"] = "b"
+            self.assertEqual(p.env("AC_ZZTEST", "x"), "a")
+            self.assertEqual(self._placer().env("AC_ZZTEST", "x"), "b")
+
+    def test_style_overrides_env(self):
+        with mock.patch.dict(os.environ, {"AC_SHAVE": "hard"}):
+            p = self._placer()
+            self.assertEqual(p.opt("shave", "off"), "hard")
+            p.style["shave"] = "soft"
+            self.assertEqual(p.opt("shave", "off"), "soft")
+
+
 if __name__ == "__main__":
     unittest.main()
