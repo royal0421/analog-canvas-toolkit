@@ -726,9 +726,18 @@ class Placer(object):
                 sides = sorted((i for i, ch in enumerate(chains)
                                 if len(ch) == 1 and ch[0].sym != chains[st][0].sym),
                                key=lambda i: decl[chains[i][0].ref])
-                if len(sides) == 2:
-                    gate_cols = {st: None, sides[0]: None, sides[1]: None}
-                    gate_seq = [("c", sides[0]), ("c", st), ("c", sides[1])]
+                if len(sides) == 2 or (
+                        len(sides) > 2
+                        and str(os.environ.get("AC_GATEN", "1")) == "1"):
+                    # N inputs: the parallel devices in the order the deck
+                    # declares them (A, B, C ...), the series stack in the
+                    # middle -- for two inputs exactly the Lab 2 layout.  A
+                    # three-input NAND came out M_P1 M_P3 M_P2 with the
+                    # stack hanging off the last one (2026-11-04).
+                    half = len(sides) // 2
+                    gate_cols = dict((i, None) for i in sides + [st])
+                    gate_seq = ([("c", i) for i in sides[:half]] + [("c", st)]
+                                + [("c", i) for i in sides[half:]])
         # Ordering constraints go round in circles whenever the circuit does
         # -- a self-biased mirror (each branch drives the other's gate), an
         # op-amp whose input comes back from a later stage.  Collapse every

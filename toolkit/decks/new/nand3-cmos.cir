@@ -1,0 +1,22 @@
+* hand-written deck, not exported from any drawing
+.title Three-input CMOS NAND
+.global VDD
+.subckt NAND3 a b c y
+.iodir a=input b=input c=input y=output
+.name a A
+.name b B
+.name c C
+.name y Out
+MP1 y a VDD VDD pmos
+.name MP1 M_P1
+MP2 y b VDD VDD pmos
+.name MP2 M_P2
+MP3 y c VDD VDD pmos
+.name MP3 M_P3
+MN1 y a n1 0 nmos
+.name MN1 M_N1
+MN2 n1 b n2 0 nmos
+.name MN2 M_N2
+MN3 n2 c 0 0 nmos
+.name MN3 M_N3
+.ends
