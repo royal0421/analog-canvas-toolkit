@@ -21,6 +21,7 @@ Layout model
   riser per pin, because a junction may not sit on a terminal (SOP 6).
 """
 import os
+import re
 import sys
 import io
 import json
@@ -32,9 +33,23 @@ import tempfile
 
 import netlist_io as N
 from icproj import ink_box
-from icproj import (Schematic, name, plain, LABEL_PORT, dy_above,
+from icproj import (Schematic, plain, LABEL_PORT, dy_above,
                     dy_below, label_box, _box_gap, _box_gap_box,
                     NEIGHBOUR_GAP, LABEL_INK_GAP, CROWD_MIN)
+from icproj import name as _kd_name, split_name
+
+# A coefficient in front of a name (`2L_1`: twice L_1) is printed the way the
+# page prints it -- 2L with subscript 1 -- not the editor's first-letter split
+# (2 with subscript L1).  SOP §4: a declared expect_differ.
+_COEF_RE = re.compile(r"^\d+[A-Za-z].*_.+$")
+
+
+def coef_name(label):
+    return bool(label) and bool(_COEF_RE.match(label))
+
+
+def name(label):
+    return split_name(label) if coef_name(label) else _kd_name(label)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, os.pardir, "out")
@@ -4689,6 +4704,9 @@ class Placer(object):
         does not: the rail label, and any port whose name is a bare word
         (`Vout`, `CK`) rather than base plus subscript."""
         out = set(getattr(self, "_plain_nodes", ()))
+        for d in self.c.devices:
+            if coef_name(getattr(d, "label", None)) and d.ref in self.f.placed:
+                out.add("instance-label-" + d.ref)
         for _nd, (pid, nm, _di) in self.ports_placed.items():
             if "_" not in nm and len(nm) > 1:
                 out.add("instance-label-" + pid)
