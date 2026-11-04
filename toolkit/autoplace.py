@@ -5291,7 +5291,7 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True,
         # and it loses every time (9.26(c): forced on 4 corners / 0
         # crossings, forced off 14.5 / 1, yet the descent chose off).
         def descend(gr, drop=(), start=None):
-            style, grid = dict(STYLE0, gaterow=gr), (COL_PITCH, 60, 20)
+            style, grid = dict(STYLE0, gaterow=gr), (_pitch0, 60, 20)
             if start:
                 style.update(start)
             formir = {}
@@ -5583,6 +5583,15 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True,
             return best, style, grid
 
         _swappable = [d.ref for d in c.devices if d.sym in Placer.SWAP_SYM]
+        # A CMOS gate (its inputs were split into one port per gate above)
+        # starts from the tighter pitch SOP 3A asks for (50-70): the
+        # hand-drawn NAND2 is 60, and 80 left its pull-up pair floating
+        # apart.  Only here: as a global start, 70 reshuffled 14.36(b) and
+        # the LC load (2026-11-04), and as a second start for every figure
+        # it would double the search.
+        _pitch0 = (70 if getattr(c, "alias", None)
+                   and str(os.environ.get("AC_GATEPITCH", "1")) == "1"
+                   else COL_PITCH)
         # independent voltage sources with one end on ground (`vdrop`)
         _droppable = []
         if str(os.environ.get("AC_VDROP", "1")) == "1":
