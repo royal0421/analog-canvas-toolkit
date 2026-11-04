@@ -183,6 +183,17 @@ def export_project(path):
         b = a.get("binding", {})
         if b.get("kind") == "instance-reference" and "formatOverride" in a:
             printed[b["instanceId"]] = _flat_name(a["formatOverride"])
+    # Two parts printed with the SAME name (a differential circuit's two R's)
+    # cannot both carry it as a reference, so icproj draws the second one's
+    # name as drafting text `instance-label-<id>` (the `unbound` parts).
+    # That text is still the part's printed name; without it the deck said
+    # RR, L2R, C1R where the page says R, L_2, C_1.
+    for o in doc.get("drafting", {}).get("objects", []):
+        oid = o.get("id", "")
+        if (o.get("kind") == "text" and oid.startswith("instance-label-")
+                and oid[len("instance-label-"):] in inst):
+            printed.setdefault(oid[len("instance-label-"):],
+                               _flat_name(o.get("content")))
 
     c = Circuit(doc["netlist"]["name"])
     c.title = proj.get("name", c.name)
