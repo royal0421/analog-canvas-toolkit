@@ -1643,6 +1643,7 @@ ew\`。
 | op-amp `vdrop` | 反相端經一顆兩端元件接到某顆運放輸出時，可整顆下移 10／20（只往下），畫成課本的樓梯狀（14.36(b)、8.57） | `AC_ADROP=0` |
 | 被動輸出往外 | 對稱電路中沒有電晶體碰到的輸出節點（經 L_2 才到的 V_out），各從自己那半外側出去 | `AC_PASSIVEOUT=0` |
 | 邏輯閘欄距 | NAND／NOR 起點欄距 70（其他圖仍從 80 起；全域改 70 會打亂 14.36(b) 與 LC-load） | `AC_GATEPITCH=0` |
+| 負電源 | `.global VCC VEE` 的 VEE／VSS／VNEG 畫在底部：每段接腳下方一個倒置的 `vdd-port`＋V_EE 標籤，自成一條 net | — |
 
 **`netlist_io` 判成「X is shorted」時先查原圖**：可能是產生器把串聯元件兩端放進同一條 net
 （LC-load 的 L_2 就是這樣，2026-11-04 修正），也可能是原稿刻意如此（two-stage BJT 的 I_2）。

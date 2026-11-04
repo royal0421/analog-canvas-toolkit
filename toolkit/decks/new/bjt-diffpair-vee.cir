@@ -1,0 +1,20 @@
+* hand-written deck, not exported from any drawing
+.title Bipolar differential pair, resistive loads, tail to V_EE
+.global VCC VEE
+.subckt BjtDiffVee in1 in2 out1 out2
+.iodir in1=input in2=input out1=output out2=output
+.name in1 V_in1
+.name in2 V_in2
+.name out1 V_out1
+.name out2 V_out2
+RC1 VCC out1
+.name RC1 R_C
+RC2 VCC out2
+.name RC2 R_C
+Q1 out1 in1 e npn
+.name Q1 Q_1
+Q2 out2 in2 e npn
+.name Q2 Q_2
+IEE e VEE
+.name IEE I_EE
+.ends
