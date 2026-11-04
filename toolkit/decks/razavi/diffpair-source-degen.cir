@@ -1,0 +1,24 @@
+* hand-written deck (textbook topology), not exported from any drawing
+.title MOS differential pair with source degeneration
+.global VDD
+.subckt DiffDegen in1 in2 out1 out2
+.iodir in1=input in2=input out1=output out2=output
+.name in1 V_in1
+.name in2 V_in2
+.name out1 V_out1
+.name out2 V_out2
+RD1 VDD out1
+.name RD1 R_D
+RD2 VDD out2
+.name RD2 R_D
+M1 out1 in1 s1 0 nmos
+.name M1 M_1
+M2 out2 in2 s2 0 nmos
+.name M2 M_2
+RS1 s1 p
+.name RS1 R_S
+RS2 s2 p
+.name RS2 R_S
+ISS p 0
+.name ISS I_SS
+.ends

@@ -1,0 +1,15 @@
+* hand-written deck (textbook topology), not exported from any drawing
+.title Widlar current source
+.global VCC
+.subckt Widlar iout
+.iodir iout=output
+.name iout I_out
+IREF VCC b
+.name IREF I_REF
+Q1 b b 0 npn
+.name Q1 Q_1
+Q2 iout b e npn
+.name Q2 Q_2
+RE e 0
+.name RE R_E
+.ends

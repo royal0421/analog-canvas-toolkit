@@ -1,0 +1,14 @@
+* hand-written deck (textbook topology), not exported from any drawing
+.title Common-emitter stage with emitter degeneration
+.global VCC
+.subckt CeDegen in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+RC VCC out
+.name RC R_C
+Q1 out in e npn
+.name Q1 Q_1
+RE e 0
+.name RE R_E
+.ends

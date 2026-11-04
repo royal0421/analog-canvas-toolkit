@@ -1,0 +1,16 @@
+* hand-written deck (textbook topology), not exported from any drawing
+.title Emitter follower driving a common-emitter stage
+.global VCC
+.subckt CcCe in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+Q1 VCC in x npn
+.name Q1 Q_1
+I1 x 0
+.name I1 I_1
+RC VCC out
+.name RC R_C
+Q2 out x 0 npn
+.name Q2 Q_2
+.ends

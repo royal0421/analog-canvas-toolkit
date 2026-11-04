@@ -1,0 +1,15 @@
+* hand-written deck (textbook topology), not exported from any drawing
+.title Bipolar cascode amplifier
+.global VCC
+.subckt BjtCasc in vb out
+.iodir in=input vb=input out=output
+.name in V_in
+.name vb V_b
+.name out V_out
+RC VCC out
+.name RC R_C
+Q2 out vb x npn
+.name Q2 Q_2
+Q1 x in 0 npn
+.name Q1 Q_1
+.ends
