@@ -104,6 +104,7 @@
 - 2026-11-04｜**撤回**：_sym_columns——對稱電路的鏡像欄對取兩邊到中心距離的較大值（只往外推）｜預期：LC-load 左邊 C_2｜C_1 間距由 70 補到 80，L_2 不再往上讓｜查到真正來源：標籤一律在元件右側，「標籤太擠就往右插空間」讓兩半加寬量不同。但強制對稱更差：shunt-peak wire 1.27→1.91x、place 50→8%；LC-load wire 1.41→1.49x；10.35a、12.57c 不變 → 撤回。LC-load 左 L_2 這個子問題連 3 次未改善，換方向｜—
 - 2026-11-04｜README：路線二成績更新為 11-04 實測（29 figures、place 49%、order 82%、wire 0.94x、bends 0.96x、crossings 8 (over hand 2)），說明張數、place／order、比手排多出的交叉；指令註解的張數與時間改為實測（38→29 張、netlist_bench 約 10 分、bench_par 約 8 分）｜文件，不影響 bench｜109244f
 - 2026-11-04｜tests/test_autoplace.py：op-amp 的 vdrop 單元測試（兩級反相放大器，vdrop OA2=10 時 OA2 剛好下移 10）｜測試，不影響 bench｜unittest 全過｜caf3cf3
+- 2026-11-04｜**未採用**：起點欄距 80→70（AC_PITCH=70；SOP §3A 寫欄距 50–70，搜尋卻從 80 起只往寬試）｜預期：NAND2 照手排 60 的欄距，wire 1.4x 下降｜NAND2 1.4→1.3x、HW4 Fig-c 1.1→1.0x、9.26c 0.7→0.6x 變好，但 LC-load wire 1.4→1.6x、bends 16→17、place 8→0%；14.36b bends 22→25、place 27→9%；5.170 place 18→9% → 整體 place 49→48%，撤回。改成「多一個 70 的起點讓搜尋挑」需把 descent 跑兩倍，超過牆鐘 10% 限制｜—
 
 ## 待使用者決定
 
