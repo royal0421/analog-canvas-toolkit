@@ -188,5 +188,44 @@ class AnalyzeTests(unittest.TestCase):
             netlist_io.parse(same_stack)))
 
 
+T_FEEDBACK = """.title non-inverting amplifier with T feedback (Razavi 8.48)
+.subckt T out
+.iodir out=output
+XOA in a out opamp-inputs-swapped
+.alias XOA OA
+VIN in 0
+R1 out b
+R2 a 0
+R3 b a
+R4 b 0
+.ends
+"""
+
+
+@unittest.skipUnless(HAVE_SYMBOLS, "run `python -m toolkit setup` first")
+class InpFirstTests(unittest.TestCase):
+    def column_x(self, inpfirst):
+        c = netlist_io.parse(T_FEEDBACK)
+        c.mirror = autoplace._mirror_map(c)
+        autoplace._read_hints(c, None)
+        autoplace._analyze(c)
+        style = dict(autoplace.STYLE0, inpfirst=inpfirst)
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.dict(os.environ, {"AC_FAST": "1"}), \
+                contextlib.redirect_stdout(io.StringIO()):
+            p = autoplace.Placer(c, os.path.join(tmp, "t.icproj.json"),
+                                 os.path.join(tmp, "t.svg"), style=style)
+            p.run(verbose=False)
+        return dict((k, v[1]) for k, v in p.f.placed.items())
+
+    def test_inverting_input_shunt_moves_in_front_of_the_op_amp(self):
+        x = self.column_x(1)
+        self.assertLess(x["R2"], x["OA"])
+
+    def test_off_by_default(self):
+        x = self.column_x(0)
+        self.assertGreater(x["R2"], x["OA"])
+
+
 if __name__ == "__main__":
     unittest.main()
