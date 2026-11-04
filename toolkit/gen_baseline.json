@@ -1,0 +1,272 @@
+{
+ "5T-OTA": {
+  "bends": 7.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "bandgap-core": {
+  "bends": 11.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "bjt-cascode-amp": {
+  "bends": 1.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "bjt-diffpair-mirror-load": {
+  "bends": 7.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "bjt-diffpair-vee": {
+  "bends": 5.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "cascode-current-mirror": {
+  "bends": 9.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "cascode-mirror-wide-swing": {
+  "bends": 12.5,
+  "crossings": 1,
+  "errors": 0
+ },
+ "cascode-nmos": {
+  "bends": 1.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "cc-ce-two-stage": {
+  "bends": 4.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "ce-emitter-degen": {
+  "bends": 1.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "cg-stage-current-load": {
+  "bends": 2.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "cmos-inverter": {
+  "bends": 5.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "cmos-inverter-chain": {
+  "bends": 9.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "cs-cascode-pmos-load": {
+  "bends": 1.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "cs-degen-cascode": {
+  "bends": 2.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "cs-diode-load-pmos": {
+  "bends": 3.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "cs-resistive-load": {
+  "bends": 1.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "darlington-follower": {
+  "bends": 4.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "diffpair-source-degen": {
+  "bends": 5.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "emitter-follower-vee": {
+  "bends": 2.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "esd-2stage-clamp": {
+  "bends": 12.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig10-34a_diffpair-mirror": {
+  "bends": 7.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig10-6a_bjt-diffpair": {
+  "bends": 3.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig10-6b_mos-diffpair": {
+  "bends": 3.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig15-32a_series-pmos": {
+  "bends": 1.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig15-32b_cmos-nor": {
+  "bends": 3.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig3-57_voltage-doubler": {
+  "bends": 3.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig5-20_divider-bias-CE": {
+  "bends": 1.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig5-43a_CE-with-RB": {
+  "bends": 1.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig7-32_CS-coupled": {
+  "bends": 2.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig7-36a_CS-pmos-in": {
+  "bends": 1.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig7-36b_CG-stage": {
+  "bends": 2.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig7-45_feedback-bias": {
+  "bends": 3.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig7-46_divider-bias-RP": {
+  "bends": 5.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig7-47_bias-network": {
+  "bends": 5.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig7-60d_diode-load": {
+  "bends": 4.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig7-60e_off-device": {
+  "bends": 3.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig7-60f_fed-back-load": {
+  "bends": 3.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "fig9-30_bjt-mirror": {
+  "bends": 4.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "folded-cascode-pmos-in": {
+  "bends": 23.5,
+  "crossings": 3,
+  "errors": 0
+ },
+ "gilbert-cell": {
+  "bends": 20.0,
+  "crossings": 4,
+  "errors": 0
+ },
+ "instrumentation-amp": {
+  "bends": 15.0,
+  "crossings": 1,
+  "errors": 0
+ },
+ "lc-oscillator-xcoupled": {
+  "bends": 13.5,
+  "crossings": 1,
+  "errors": 0
+ },
+ "opamp-integrator": {
+  "bends": 5.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "opamp-inverting": {
+  "bends": 5.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "push-pull-output": {
+  "bends": 5.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "sallen-key-lp": {
+  "bends": 8.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "schmitt-trigger": {
+  "bends": 4.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "source-follower-isrc": {
+  "bends": 2.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "strongarm-latch": {
+  "bends": 31.5,
+  "crossings": 5,
+  "errors": 0
+ },
+ "telescopic-cascode": {
+  "bends": 8.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "two-stage-miller": {
+  "bends": 22.5,
+  "crossings": 1,
+  "errors": 0
+ },
+ "widlar-source": {
+  "bends": 4.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "wilson-mirror-bjt": {
+  "bends": 7.0,
+  "crossings": 0,
+  "errors": 0
+ }
+}

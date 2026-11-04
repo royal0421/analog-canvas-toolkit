@@ -122,6 +122,7 @@
 - 2026-11-04｜bench_par.py 新增 --gen：一鍵跑 decks/new、decks/razavi 的推廣測試（每張私有暫存目錄，回報稽核錯誤／交叉／轉角／時間）；README 補指令｜預期：改動後可快速確認推廣測試沒壞｜推廣測試基準：48 decks | 48 clean | crossings 16 | errors 0，牆鐘 425 s（4 核）｜f770b80
 - 2026-11-04｜量測（未改程式）：(a) 快取命中率——8.57 一張的 _spec_corners 呼叫 86 萬次中 27% 重複（輸入相同），但它只占約 11% 時間，全快取最多省約 3%，且結果依賴版面中途可能變動的腳位方向表，不做；_trunk_cost 的輸入幾乎不重複，快取無用。(b) CI 用 Python 3.8：toolkit／tests 全部檔案以 3.8 文法解析無錯，也未用到 3.9+ 的 API（write_text(newline=)、is_relative_to、dict 合併運算、list[...] 型別）｜—｜—｜—
 - 2026-11-04｜decks/razavi 新增 6 份課本常見電路（Widlar 電流源、BJT 疊接放大器、射極退化共射級、源極退化差動對、CC＋CE 兩級、PMOS 二極體負載共源級）｜預期：找缺陷｜6 份稽核全乾淨、0 交叉，看圖皆為課本畫法，未發現缺陷。推廣測試共 54 份｜—｜0cab319
+- 2026-11-04｜bench_par --gen 加基準比對：toolkit/gen_baseline.json 存每份推廣 deck 的稽核錯誤／交叉／轉角，--gen 自動比對、任何一份變差就列出 WORSE 並回傳 1，--accept 存新基準；README 補說明｜預期：推廣測試也能像 regress 一樣把關｜基準 54 decks | 54 clean | crossings 16；同程式再跑一次 0 worse / 0 better（確定性），exit 0｜(本 commit)
 
 ## 待使用者決定
 

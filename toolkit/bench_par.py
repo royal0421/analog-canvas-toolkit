@@ -8,6 +8,11 @@ Run from the toolkit directory:  python bench_par.py [stem ...]
                                   (decks/new, decks/razavi: no hand-drawn
                                   reference, so audits / crossings / bends
                                   only -- what a change must not break)
+    python bench_par.py --gen --accept
+                                  store this run as gen_baseline.json
+
+Without --accept, --gen compares against gen_baseline.json and exits 1 if
+any deck got more audit errors, crossings or bends.
 """
 import glob
 import multiprocessing as mp
@@ -80,11 +85,44 @@ def main_gen():
     print("\n%d decks | %d clean | crossings %d | errors %d\nwall %.0f s"
           % (len(rows), clean, cross, sum(1 for r in rows if r[5]),
              time.time() - t0))
+    import json
+    base_path = os.path.join(NB.HERE, "gen_baseline.json")
+    now = dict((r[0], {"errors": r[1], "crossings": r[2], "bends": r[3]})
+               for r in rows if not r[5])
+    if "--accept" in sys.argv:
+        with open(base_path, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(json.dumps(now, indent=1, sort_keys=True) + "\n")
+        print("baseline stored: %d decks" % len(now))
+        return 0
+    if not os.path.exists(base_path):
+        print("no gen_baseline.json yet (run with --accept)")
+        return 0
+    base = json.load(open(base_path, encoding="utf-8"))
+    worse, better = [], []
+    for stem, v in sorted(now.items()):
+        b = base.get(stem)
+        if b is None:
+            print("  + new   %s" % stem)
+            continue
+        for k in ("errors", "crossings", "bends"):
+            if v[k] > b[k]:
+                worse.append("%s %s %s -> %s" % (stem, k, b[k], v[k]))
+            elif v[k] < b[k]:
+                better.append("%s %s %s -> %s" % (stem, k, b[k], v[k]))
+    for w in better:
+        print("  better  " + w)
+    for w in worse:
+        print("  WORSE   " + w)
+    failed = [r[0] for r in rows if r[5]]
+    for stem in failed:
+        print("  FAILED  " + stem)
+    print("vs baseline: %d worse, %d better" % (len(worse), len(better)))
+    return 1 if worse or failed else 0
 
 
 def main():
     if "--gen" in sys.argv:
-        return main_gen()
+        sys.exit(main_gen())
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     if args:
         stems = args
