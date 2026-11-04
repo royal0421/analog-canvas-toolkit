@@ -20,7 +20,6 @@ import io
 import os
 import pathlib
 import re
-import shutil
 import subprocess
 import sys
 
@@ -277,12 +276,8 @@ def corners(f):
 
 
 def _chrome():
-    cands = [os.environ.get("CHROME_PATH")]
-    cands += [shutil.which(n) for n in ("chrome", "chrome.exe", "chromium",
-                                        "google-chrome")]
-    cands += [r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-              r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"]
-    return next((c for c in cands if c and os.path.isfile(c)), None)
+    # one lookup for the whole toolkit (this copy had no macOS path)
+    return icproj.find_chrome()
 
 
 def render(json_path, tag):

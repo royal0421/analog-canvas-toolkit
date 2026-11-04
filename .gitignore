@@ -19,3 +19,5 @@ __pycache__/
 # and autoplace write auto/.  Hand-written decks live in decks/razavi|new.
 toolkit/decks/*.cir
 toolkit/auto/
+# ring_corners.py renders here
+toolkit/corners_*.png

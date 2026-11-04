@@ -135,12 +135,11 @@ def command_doctor(_args):
         "generated" if (TOOLKIT / "model-adapter.mjs").is_file()
         else "run `python -m toolkit setup`")
 
-    chrome = os.environ.get("CHROME_PATH") or next(
-        (shutil.which(name) for name in ("google-chrome", "chromium", "chrome")
-         if shutil.which(name)), None)
-    if not chrome and os.name == "nt":
-        known = Path(r"C:\Program Files\Google\Chrome\Application\chrome.exe")
-        chrome = str(known) if known.is_file() else None
+    # the same lookup build() renders with, so doctor and build agree
+    # (this copy missed macOS's /Applications install)
+    sys.path.insert(0, str(TOOLKIT))
+    from icproj import find_chrome
+    chrome = find_chrome()
     print("%s %-18s %s" % ("OK" if chrome else "OPTIONAL", "Chrome",
                            chrome or "set CHROME_PATH, or use --no-render"))
     return 0 if all(checks) else 1
