@@ -4,6 +4,11 @@
   "crossings": 0,
   "errors": 0
  },
+ "aoi21-cmos": {
+  "bends": 5.0,
+  "crossings": 0,
+  "errors": 0
+ },
  "bandgap-core": {
   "bends": 11.0,
   "crossings": 0,
@@ -212,6 +217,16 @@
  "lc-oscillator-xcoupled": {
   "bends": 13.5,
   "crossings": 1,
+  "errors": 0
+ },
+ "nand3-cmos": {
+  "bends": 4.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "nor3-cmos": {
+  "bends": 4.0,
+  "crossings": 0,
   "errors": 0
  },
  "opamp-integrator": {
