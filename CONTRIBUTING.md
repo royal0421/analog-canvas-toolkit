@@ -49,6 +49,25 @@ python -m toolkit regress
 - 寫正式成品必須維持暫存檔驗證後再 `os.replace` 的原子流程。
 - 新增 correctness 修正時，請在 `tests/` 加最小重現案例。
 
+## 修改自動排版（路線二：`autoplace.py`）
+
+autoplace 的改動會影響兩組圖，兩組都要驗：
+
+```bash
+cd toolkit
+python netlist_io.py              # 先從 out/ 匯出 decks/*.cir
+python bench_par.py               # 29 張有手排的圖：clean／place／wire／bends／crossings
+python bench_par.py --gen         # 54 份推廣測試 deck：與 gen_baseline.json 比，變差就 exit 1
+```
+
+- `bench_par.py` 每張一行；任何一欄變差都要有理由，不然就撤回。
+- `--gen` 沒有手排可比，只看稽核錯誤、交叉、轉角。刻意接受變化時用
+  `python bench_par.py --gen --accept` 存新基準，並在 commit 說明原因。
+- 新增規則一律附環境變數開關（例如 `AC_INPFIRST=0`），並記在 `SOP.md` §3J 的規則表。
+- 新的推廣測試 deck 放 `toolkit/decks/new/`（自編電路）或 `toolkit/decks/razavi/`
+  （課本電路），格式照現有 deck；加完跑一次 `--gen --accept`。
+- 視覺上的判斷（「這樣比較像課本」）分數看不到：附 before／after 圖讓人決定，不要只憑分數。
+
 ## 上游同步
 
 `python -m toolkit setup` 會下載並執行 Analog Canvas 正式站的 JavaScript 以辨識 schema（符號則是從上游 TypeScript 原始碼以 tokenizer 解析，不執行）。請勿把 `toolkit/model*.mjs` 或 `toolkit/sym/` 加入 Git；它們是可重建的第三方 cache。
