@@ -45,8 +45,8 @@ f.port("VOUTP", 690, 210, mirror="x")
 for jid, net, x, y in (("JL1", "net-top", 300, 100), ("JC1", "net-top", 300, 130),
                        ("JL2", "net-top2", 480, 100),
                        ("JC2", "net-top2", 480, 130),
-                       ("JD1", "net-dl", 300, 210), ("JO1", "net-dl", 140, 210),
-                       ("JD2", "net-dr", 480, 210), ("JO2", "net-dr", 640, 210),
+                       ("JD1", "net-dl", 300, 210), ("JO1", "net-outn", 140, 210),
+                       ("JD2", "net-dr", 480, 210), ("JO2", "net-outp", 640, 210),
                        ("JS", "net-src", 390, 290)):
     f.junction(jid, net, x, y)
 
@@ -55,10 +55,13 @@ for jid, net, x, y in (("JL1", "net-top", 300, 100), ("JC1", "net-top", 300, 130
 # straight through the coil / between the plates.
 f.net("net-top", [("L1", "2"), ("CB", "2"), ("RL", "1")])
 f.net("net-top2", [("L1", "1"), ("CB", "1"), ("RR", "1")])
-f.net("net-dl", [("RL", "2"), ("L2L", "1"), ("M1", "D"), ("C1L", "1"),
-                 ("L2L", "2"), ("C2L", "1"), ("VOUTN", "P")])
-f.net("net-dr", [("RR", "2"), ("L2R", "2"), ("M2", "D"), ("C1R", "1"),
-                 ("L2R", "1"), ("C2R", "1"), ("VOUTP", "P")])
+# L_2 runs from the drain node out to V_out: two nets, or the netlist
+# shorts the inductor (it did until 2026-11-04 -- the drawing was right,
+# both ends of each L_2 were declared on the drain net)
+f.net("net-dl", [("RL", "2"), ("L2L", "1"), ("M1", "D"), ("C1L", "1")])
+f.net("net-outn", [("L2L", "2"), ("C2L", "1"), ("VOUTN", "P")])
+f.net("net-dr", [("RR", "2"), ("L2R", "2"), ("M2", "D"), ("C1R", "1")])
+f.net("net-outp", [("L2R", "1"), ("C2R", "1"), ("VOUTP", "P")])
 f.net("net-src", [("M1", "S"), ("M2", "S"), ("IIN", "+")])
 f.net("net-inp", [("VINP", "P"), ("M1", "G")])
 f.net("net-inn", [("VINN", "P"), ("M2", "G")])
@@ -86,9 +89,10 @@ for side, R, JD, JO, L2, L2in, L2out, C2, C1, M, cx in (
     f.route("r-%s-m" % side, "net-d%s" % side, Jn(JD), [("to", T(M, "D"))])
     f.route("r-%s-c1" % side, "net-d%s" % side, Jn(JD),
             [("bend", cx, 210), ("to", T(C1, "1"))])
-    f.route("r-%s-o" % side, "net-d%s" % side, T(L2, L2out), [("to", Jn(JO))])
-    f.route("r-%s-c2" % side, "net-d%s" % side, Jn(JO), [("to", T(C2, "1"))])
-    f.route("r-%s-p" % side, "net-d%s" % side, Jn(JO), [("to", T("V" + (
+    on = "net-out" + ("n" if side == "l" else "p")
+    f.route("r-%s-o" % side, on, T(L2, L2out), [("to", Jn(JO))])
+    f.route("r-%s-c2" % side, on, Jn(JO), [("to", T(C2, "1"))])
+    f.route("r-%s-p" % side, on, Jn(JO), [("to", T("V" + (
         "OUTN" if side == "l" else "OUTP"), "P"))])
 
 f.route("r-s1", "net-src", T("M1", "S"), [("to", Jn("JS"))])
@@ -100,8 +104,8 @@ f.route("r-in2", "net-inn", T("VINN", "P"), [("to", T("M2", "G"))])
 
 for tid, nm, net, ports in (("t-inp", "V_in+", "net-inp", ["VINP"]),
                             ("t-inn", "V_in-", "net-inn", ["VINN"]),
-                            ("t-on", "V_out-", "net-dl", ["VOUTN"]),
-                            ("t-op", "V_out+", "net-dr", ["VOUTP"])):
+                            ("t-on", "V_out-", "net-outn", ["VOUTN"]),
+                            ("t-op", "V_out+", "net-outp", ["VOUTP"])):
     f.terminal(tid, nm, net, "input" if "in" in tid else "output", ports)
 
 f.inst_label("L1", 0, -14, "middle")

@@ -1277,7 +1277,7 @@
         },
         {
           "id": "JO1",
-          "netId": "net-dl",
+          "netId": "net-outn",
           "position": {
             "x": 140,
             "y": 210
@@ -1295,7 +1295,7 @@
         },
         {
           "id": "JO2",
-          "netId": "net-dr",
+          "netId": "net-outp",
           "position": {
             "x": 640,
             "y": 210
@@ -1342,7 +1342,7 @@
           {
             "id": "t-on",
             "name": "Vout-",
-            "netId": "net-dl",
+            "netId": "net-outn",
             "direction": "output",
             "interfaceInstanceIds": [
               "VOUTN"
@@ -1351,7 +1351,7 @@
           {
             "id": "t-op",
             "name": "Vout+",
-            "netId": "net-dr",
+            "netId": "net-outp",
             "direction": "output",
             "interfaceInstanceIds": [
               "VOUTP"
@@ -1412,7 +1412,12 @@
             {
               "instanceId": "C1L",
               "pinName": "1"
-            },
+            }
+          ]
+        },
+        {
+          "id": "net-outn",
+          "terminals": [
             {
               "instanceId": "L2L",
               "pinName": "2"
@@ -1445,7 +1450,12 @@
             {
               "instanceId": "C1R",
               "pinName": "1"
-            },
+            }
+          ]
+        },
+        {
+          "id": "net-outp",
+          "terminals": [
             {
               "instanceId": "L2R",
               "pinName": "1"
@@ -1848,7 +1858,7 @@
         },
         {
           "id": "r-l-o",
-          "netId": "net-dl",
+          "netId": "net-outn",
           "start": {
             "kind": "terminal",
             "instanceId": "L2L",
@@ -1870,7 +1880,7 @@
         },
         {
           "id": "r-l-c2",
-          "netId": "net-dl",
+          "netId": "net-outn",
           "start": {
             "kind": "junction",
             "junctionId": "JO1"
@@ -1892,7 +1902,7 @@
         },
         {
           "id": "r-l-p",
-          "netId": "net-dl",
+          "netId": "net-outn",
           "start": {
             "kind": "junction",
             "junctionId": "JO1"
@@ -2014,7 +2024,7 @@
         },
         {
           "id": "r-r-o",
-          "netId": "net-dr",
+          "netId": "net-outp",
           "start": {
             "kind": "terminal",
             "instanceId": "L2R",
@@ -2036,7 +2046,7 @@
         },
         {
           "id": "r-r-c2",
-          "netId": "net-dr",
+          "netId": "net-outp",
           "start": {
             "kind": "junction",
             "junctionId": "JO2"
@@ -2058,7 +2068,7 @@
         },
         {
           "id": "r-r-p",
-          "netId": "net-dr",
+          "netId": "net-outp",
           "start": {
             "kind": "junction",
             "junctionId": "JO2"
