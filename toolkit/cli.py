@@ -19,6 +19,7 @@ ROOT = TOOLKIT.parent
 OUT = ROOT / "out"
 EXAMPLES = ROOT / "examples"
 MANIFEST = EXAMPLES / ".render-manifest.json"
+SCHEMA_OK = re.compile(r"^\s*schema: VALID \(v\d+\)\s*$", re.M)
 PNG_RE = re.compile(r"^\s*png: (preview_[^\s()]+\.png) \(", re.M)
 OUTPUT_RE = re.compile(
     r'(?:out_proj|OUT_PROJ|OUT)\s*=\s*os\.path\.join\(\s*(?:OUT|ROOT),\s*'
@@ -217,18 +218,23 @@ def command_generate(args):
         print("\n[%d/%d] %s" % (index, len(projects), project.name),
               flush=True)
         previous = project.output.read_bytes() if project.output.is_file() else None
-        if args.examples:
-            result = subprocess.run(
-                [str(a) for a in [sys.executable] + project.command],
-                cwd=str(ROOT), env=env, stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT, text=True, encoding="utf-8",
-                errors="replace")
-            print(result.stdout, end="", flush=True)
-        else:
-            result = run([sys.executable] + project.command, env=env)
+        result = subprocess.run(
+            [str(a) for a in [sys.executable] + project.command],
+            cwd=str(ROOT), env=env, stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, text=True, encoding="utf-8",
+            errors="replace")
+        print(result.stdout, end="", flush=True)
         validation = None
         if result.returncode == 0 and project.output.is_file():
-            validation = validate_file(project.output)
+            # build() already ran the site's schema on the staged file and
+            # only then replaced the output; its own report says so.  Ask
+            # node again only when it did not (AC_FAST, a script that does
+            # not go through build()) -- a second node start per figure was
+            # a quarter of `generate all`.
+            if SCHEMA_OK.search(result.stdout or ""):
+                validation = subprocess.CompletedProcess([], 0, "", "")
+            else:
+                validation = validate_file(project.output)
         if result.returncode or validation is None or validation.returncode:
             # Shared generators already write atomically.  This restoration is
             # the fail-closed adapter for the two standalone legacy scripts.

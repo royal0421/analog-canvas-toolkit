@@ -128,6 +128,7 @@
 - 2026-11-04｜全量驗證（0c2f136 之後）：unittest 全過、`generate all --no-render` 重產 36 個專案 out/ 0 變動；官方 netlist_bench.py：29 figures | 29 clean | place 49% | order 82% | col 63% | row 61% | mirror 95% | wire 0.94x | bends 0.96x | crossings 8 (over hand 2) | 稽核錯誤 0；auto/ 與 bench_par 逐位元相同；推廣測試 54 decks | 54 clean | crossings 16（gen_baseline.json）｜—｜—｜—
 - 2026-11-04｜autoplace：CMOS 邏輯閘的專用擺法從「剛好兩顆並聯管」推廣到 N 顆——並聯管照宣告順序（A、B、C…），串聯堆疊插在中間（AC_GATEN=0 關閉）；decks/new 新增 NAND3、NOR3、AOI21｜預期：3 輸入閘不再排成 A、C、B｜NAND3／NOR3 由 A C B 變 A B C、稽核全乾淨、bends 4 不變；AOI21 有兩條串聯堆疊、不走此規則；bench 29 張每行相同、auto/ 全部逐位元相同（N=2 與原規則相同）；牆鐘 461 s；推廣測試 57 decks | 57 clean | crossings 16，原 54 份 0 worse / 0 better，基準加入 3 份新 deck｜5e46dad
 - 2026-11-04｜看圖檢查 decks/razavi 原有 20 份（以目前程式重畫）：全部稽核乾淨，看圖皆為課本畫法（疊接、差動對、偏壓網路、倍壓器、CMOS NOR…），未發現缺陷｜—｜—｜—
+- 2026-11-04｜cli generate：產生器輸出已有「schema: VALID (vN)」就不再跑第二次 node 驗證（AC_FAST 或不經 build() 的腳本仍會驗）；產生器輸出一律擷取後即時印出｜預期：generate all 少一次 node 啟動 ×36｜同機 generate all --no-render 21→15 s（−29%）；out/ 0 變動；AC_FAST 路徑照舊驗證；unittest 全過｜(本 commit)
 
 ## 待使用者決定
 
