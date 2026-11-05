@@ -149,7 +149,7 @@
 - 11-05 量測工具：`bench_par.py` 每張圖印秒數、結尾列最慢三張（14.36(b) 212 s、Diff-amp LC-load 185 s、Midterm 143 s）。退回電流鏡同列後 bench 29 張逐位元回到基線，8m13s。(`3287f76`)
 - 11-05 效能：`_trunk_cost` 內 `any(inside/near(s, bb) for s in …)` 改成逐框一次的迴圈（條件逐項相同）。14.36(b) 單跑 CPU 373→351 s、輸出相同；bench 29 張逐位元不變、8m13s→7m48s；gen 79 張 0 變差。(`9aabea3`)
 - 11-05 效能：`_spec_corners` 的 any(genexpr) 改迴圈、`p in pts`（list）改集合。bench 逐位元不變 7m48s→7m33s；gen 0 變差、546→531 s。(`27c6015`)
-- 11-05 推廣測試（邊界 deck：單一電阻、無地、懸空節點、op amp 跟隨器、跨電源的雙端件）：autoplace 全不崩、稽核 0。但懸空節點（只有一個端點）完全沒警告 → 新增 `netlist_io.dangling_nodes()`，`place_deck` 印 `~ node x has a single terminal`（只警告，不進 `export_project` 的 problems，以免把有意開路的圖踢出 bench）。掃描結果：`decks/new/5T-OTA`、`cs-degen-cascode` 的 `vb` 閘極偏壓沒宣告成 port（原作者 deck，未改，以免動到 gen 基準）；匯出 deck 中 AIC-HW2_CMP(_OFFSET)_TB、Comparator 19T（x9/x10）、bridge rectifier（in2）、CDR、ESD-LNA、BJT mirror block、Lab2 SR latch 也有單端點節點，屬使用者圖，僅記錄。(本 commit)
+- 11-05 推廣測試（邊界 deck：單一電阻、無地、懸空節點、op amp 跟隨器、跨電源的雙端件）：autoplace 全不崩、稽核 0。但懸空節點（只有一個端點）完全沒警告 → 新增 `netlist_io.dangling_nodes()`，`place_deck` 印 `~ node x has a single terminal`（只警告，不進 `export_project` 的 problems，以免把有意開路的圖踢出 bench）。掃描結果：`decks/new/5T-OTA`、`cs-degen-cascode` 的 `vb` 閘極偏壓沒宣告成 port（原作者 deck，未改，以免動到 gen 基準）；匯出 deck 中 AIC-HW2_CMP(_OFFSET)_TB、Comparator 19T（x9/x10）、bridge rectifier（in2）、CDR、ESD-LNA、BJT mirror block、Lab2 SR latch 也有單端點節點，屬使用者圖，僅記錄。(`7d5b680`)
 
 ## 待使用者決定
 
