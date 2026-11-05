@@ -95,5 +95,33 @@ class CoefficientNameTests(unittest.TestCase):
         self.assertTrue(autoplace.coef_name("2L_1"))
 
 
+class DeckLibraryTests(unittest.TestCase):
+    """Every generalisation deck is a well-formed netlist (11-05)."""
+
+    def _decks(self):
+        root = Path(netlist_io.__file__).resolve().parent / "decks"
+        out = sorted(root.glob("new/*.cir")) + sorted(root.glob("razavi/*.cir"))
+        self.assertGreater(len(out), 50)
+        return out
+
+    def test_every_deck_parses_round_trips_and_has_no_short(self):
+        for path in self._decks():
+            with self.subTest(deck=path.name):
+                c = netlist_io.parse(path.read_text(encoding="utf-8"))
+                self.assertTrue(c.devices)
+                self.assertEqual([], netlist_io.topology_defects(c))
+                text = netlist_io.deck_text(c)
+                self.assertEqual(text, netlist_io.deck_text(
+                    netlist_io.parse(text)))
+
+    def test_every_port_node_is_used_by_a_device(self):
+        for path in self._decks():
+            with self.subTest(deck=path.name):
+                c = netlist_io.parse(path.read_text(encoding="utf-8"))
+                used = {n for d in c.devices for n in d.pins.values()}
+                for nd, _nm, _di in c.ports:
+                    self.assertIn(nd, used)
+
+
 if __name__ == "__main__":
     unittest.main()
