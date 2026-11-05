@@ -155,6 +155,8 @@
 - 11-05 測試覆蓋：官方評分器 `netlist_bench` 原本零測試，新增 `tests/test_netlist_bench.py`（換欄距不扣分、兩欄互換被看到、翻一顆電晶體只扣 mirror、無共同元件為 0、手排圖對自己滿分且 bends 3／crossings 0）。bench 讀檔改 `_load_json`（with 關檔）。bench 29 張分數相同、逐位元不變。(`208b7b6`)
 - 11-05 `corner_kinds.py`：沒有 `__main__` 守衛，import 就把 sys.argv 當檔名跑（測試一 import 就炸）→ 加守衛、讀檔改 with。docstring 說與 `bend_count`「同定義」只對一半：bench 的 bends ＝ 這裡的轉角數＋每個穿 gate net／穿元件的交叉 2.5，新增測試對 out/ 每張圖核對這個關係（差值 ≥0 且為 2.5 的倍數）並更正 docstring。命令列用法不變。(`890ea54`)
 - 11-05 測試覆蓋：`doctor` 補測試（8 項各一行、狀態只有 OK／MISSING／OPTIONAL、找不到 Chrome 只是 OPTIONAL 不算失敗）；CLI 六個指令現在都有測試。`python -m toolkit regress` 36/36 乾淨（4 s）。
+- 11-05 效能：`_junc_hits_pin` 先查是否為 pin 再數腳。bench 29 張逐位元不變 7m33s→7m29s；gen 79 張 0 變差 → 保留。(`3a47121`)
+- 11-05 **收尾**（使用者指示，credit 將盡）：最終狀態 bench 29/29 乾淨、place 49%、wire 0.94x、bends 0.96x、crossings 8（多於手排 2）、7m29s；gen 79/79 乾淨、0 變差；regress 36/36；unittest 全過。待使用者決定項見下。
 
 ## 待使用者決定
 
