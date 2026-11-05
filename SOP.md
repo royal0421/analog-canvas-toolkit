@@ -1647,6 +1647,17 @@ ew\`。
 | 單一接腳電源標籤 | 電源只接一隻腳時放的 `vdd-port` 也標 V_DD／V_CC | `AC_TAPLABEL=0` |
 | 負電源 | `.global VCC VEE` 的 VEE／VSS／VNEG 畫在底部：每段接腳下方一個倒置的 `vdd-port`＋V_EE 標籤，自成一條 net | — |
 
+### 2026-11-04／05 新增的規則與工具
+
+| 規則 | 做什麼 | 關閉 |
+|---|---|---|
+| 串鏈不成環 | 串聯鏈不收「遠端節點已在鏈上」的元件：兩端接同一對節點的 pmos／nmos（傳輸閘）是並聯、各自一欄，不疊在同一格 | `AC_NOCYCLE=0` |
+| MOS 基極腳是障礙 | 基極是綁定不是接線（§6），但仍佔一個腳位；繞線不得壓過它 | `AC_BULKPIN=0` |
+| 接腳跨步避開名字 | 接腳到 trunk 的那一段要側移時，不得穿過電晶體／port 的固定名字，側移最遠到 ±60。只用在這一步：全面套到 `_seg_clear` 量過會讓 bench 變差 | `AC_SEGLBL=0` |
+| 懸空節點警告 | 只有一個端點碰到的節點（port 也算端點），`place_deck` 印 `~ node x has a single terminal`；只警告，不擋 | — |
+| `validate` 預設範圍 | 不帶參數時只驗產生器輸出；`out/` 裡沒有產生器的手排參考（Q1d／Q2f，網站 v48 匯出）列 SKIP | — |
+| bench 逐張秒數 | `bench_par.py` 每行多一欄秒數，結尾列最慢三張 | — |
+
 **`netlist_io` 判成「X is shorted」時先查原圖**：可能是產生器把串聯元件兩端放進同一條 net
 （LC-load 的 L_2 就是這樣，2026-11-04 修正），也可能是原稿刻意如此（two-stage BJT 的 I_2）。
 `build()` 現在會對這種元件印 `~ X has both pins on net-…` 警告。
