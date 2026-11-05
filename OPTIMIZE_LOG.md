@@ -151,7 +151,7 @@
 - 11-05 效能：`_spec_corners` 的 any(genexpr) 改迴圈、`p in pts`（list）改集合。bench 逐位元不變 7m48s→7m33s；gen 0 變差、546→531 s。(`27c6015`)
 - 11-05 推廣測試（邊界 deck：單一電阻、無地、懸空節點、op amp 跟隨器、跨電源的雙端件）：autoplace 全不崩、稽核 0。但懸空節點（只有一個端點）完全沒警告 → 新增 `netlist_io.dangling_nodes()`，`place_deck` 印 `~ node x has a single terminal`（只警告，不進 `export_project` 的 problems，以免把有意開路的圖踢出 bench）。掃描結果：`decks/new/5T-OTA`、`cs-degen-cascode` 的 `vb` 閘極偏壓沒宣告成 port（原作者 deck，未改，以免動到 gen 基準）；匯出 deck 中 AIC-HW2_CMP(_OFFSET)_TB、Comparator 19T（x9/x10）、bridge rectifier（in2）、CDR、ESD-LNA、BJT mirror block、Lab2 SR latch 也有單端點節點，屬使用者圖，僅記錄。(`7d5b680`)
 - 11-05 檢查 `folded-cascode-pmos-in`（crossings 3）：`_mirror_map` 有正確找到左右對稱（M3↔M4、M9↔M10、M1↔M2），但搜尋選了不鏡像的版面，所以 V_b1／V_b2 閘極匯流排要繞過 M3／M9 欄，另 fr 匯流排橫越 fl 欄。屬「分數看不到結構慣例」那一項，併入待決的例子，不自行改權重。
-- 11-05 測試覆蓋：`ring_corners` 原本零測試，新增 `tests/test_ring_corners.py`，用 4 張手排圖（7.94、Midterm、HW2 比較器、10.35a）核對 bench 的參考值（bends 3／17.5／29／15、crossings 0／2／2／1）。順帶釐清：`ring_corners.crossings` 只算「不經 gate net」的交叉（經 gate net 的另算 2.5 轉角），`Schematic._cross_count` 全算——兩者在手排圖上看似不同（Midterm 1 vs 2、HW2 0 vs 2）不是 bug，測試把兩種量法的關係寫死。`render_project.load` 開檔沒關（ResourceWarning）改 with。(本 commit)
+- 11-05 測試覆蓋：`ring_corners` 原本零測試，新增 `tests/test_ring_corners.py`，用 4 張手排圖（7.94、Midterm、HW2 比較器、10.35a）核對 bench 的參考值（bends 3／17.5／29／15、crossings 0／2／2／1）。順帶釐清：`ring_corners.crossings` 只算「不經 gate net」的交叉（經 gate net 的另算 2.5 轉角），`Schematic._cross_count` 全算——兩者在手排圖上看似不同（Midterm 1 vs 2、HW2 0 vs 2）不是 bug，測試把兩種量法的關係寫死。`render_project.load` 開檔沒關（ResourceWarning）改 with。(`c964e7a`)
 
 ## 待使用者決定
 
