@@ -145,6 +145,7 @@
 - 11-05 退回後確認：bench 29 張逐位元回到基線；gen 74 張 0 變差，baseline 納入 6 張新 deck。容器重啟後同一份程式 bench 7m09s→8m15s（機器差異，下輪再量）。測試：`DeckLibraryTests` 檢查全部 deck 可解析、往返、無短路、port 有接。
 - 11-05 測試覆蓋：補 `list`／`validate` CLI 測試，順帶查出 `python -m toolkit validate`（無參數）回報 36 OK／2 FAIL——失敗的是 `out/` 裡兩個沒有產生器的手排參考（AIC-HW1 Q1d／Q2f，網站 v48 匯出，bench 的對照），不得改寫。預設改為只驗產生器輸出，參考檔列 SKIP；README、help 同步。現在 36 valid、0 failed。
 - 11-05 推廣 deck +5（LDO、CS 主動負載、BJT 射極退化鏡、NOR SR latch、charge pump）：稽核全 0；SR latch crossings 3（交叉耦合本身需要跨線，S/R port 複本屬 NOR 允許範圍）。gen 79 張、0 變差，baseline 更新。bench 逐位元不變 8m20s：autoplace/icproj/netlist_io/bench_par 自 `ad6554c`（7m09s）起未改，差異是容器重啟後的機器（4 核同數）。(`7e63b13`, `044dd4a`)
+- 11-05 電流鏡配對同列（同 sym、同閘、同源的兩顆，汲極層級拉齊，`AC_MIRROW`）：bench place 49→50%、wire 0.94→0.95x、bends 0.96→0.97x、crossings 8 不變；Constant-gm resistorless、9.83 兩張已核可圖外觀變（9.83 M_2 掉到底、長回繞線，明顯較差）；gen cascode-current-mirror bends 9→7、two-stage-miller bends 22→18.5 但 crossings 0→1、wide-swing 結構對了但 bends +1。**退回**（`22fac09` 退），列入待決。
 
 ## 待使用者決定
 
@@ -153,3 +154,4 @@
 - 2026-11-04｜**LC-load 左邊 L_2 仍往上繞一段**，對照圖 `optimize/2026-11-04_LC-load_auto.png`（已比原本好：V_out- 在最左、wire 1.6→1.4x）。原因已查到：兩半的欄距不對稱，左邊 L_2 撞到 C_1／C_2 而往上讓。修法會動到欄距分配，可能影響其他對稱圖。
 - 2026-11-04｜**搜尋評分看不到結構慣例**，對照圖 `optimize/2026-11-04_stress-decks_auto.png`（Gilbert cell、儀表放大器等 6 份壓力測試）：Gilbert cell 課本是兩對差動對各自並排（Q_3 Q_4｜Q_5 Q_6），但評分（交叉×80＋轉角×60＋線長/10）偏好交錯的排法，因為線比較短；儀表放大器課本是兩顆輸入級上下、差動級在右，自動版排成一列。給搜尋「差動對並排」的起點也沒被選。要畫對需在評分裡加結構項（例如「差動對不相鄰扣分」），會牽動其他圖，請決定方向。
 - **compact 在 MOS 圖上是否啟用**（11-04）：`_col_boxes` 的 KeyError 讓 compact 從沒在 MOS 圖上生效。修好會讓 14 張已核可圖變窄（NAND2 下拉管翻到右邊、R_G 標籤擠），wire 0.91x 但 place/bends 略差。對照 `optimize/compact-mos_before-after.png`。目前保留舊行為（不修）。
+- **電流鏡兩顆是否強制同列**（11-05）：wide-swing cascode 變成教科書排法（M1/M2、M3/M4 各同列），但 9.83 的 M_2 被拉到底、多出長繞線；Constant-gm resistorless 的 N_2 移上去。對照 `optimize/mirror-row_before-after.png`。若要，可改成只在「鏡像對兩邊都接地、且不在差動對」時套用再量。

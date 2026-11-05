@@ -451,41 +451,6 @@ class Placer(object):
                     break
             lo = min(alap.values()) if alap else 0
             roots = {n: v - lo for n, v in alap.items()}
-        if self.env("AC_MIRROW", "1") == "1":
-            # A current mirror's two transistors share gate AND source, and
-            # the textbook draws them side by side on one row.  ASAP hangs
-            # each drain from whatever is above it, so the output side
-            # (fed only by a port) floats up a row and the pair comes out
-            # staggered (wide-swing cascode: M_2 level with M_3, M_1 two
-            # rows down).  Lower the shallower drain to the deeper one and
-            # let everything under it follow.
-            byk = {}
-            for d in self.vert:
-                if d.sym not in CTRL or d.sym not in FIXED_VERT:
-                    continue
-                g = d.pins[CTRL[d.sym]]
-                byk.setdefault((d.sym, g, d.pins[d.bot]), []).append(d)
-            for _ in range(len(roots) + 2):
-                changed = False
-                for ds in byk.values():
-                    tops = [find(d.pins[d.top]) for d in ds
-                            if find(d.pins[d.top]) in roots]
-                    if len(set(tops)) < 2:
-                        continue
-                    deep = max(roots[t] for t in tops)
-                    for t in tops:
-                        if roots[t] < deep:
-                            roots[t] = deep
-                            changed = True
-                for a, outs in succ.items():
-                    if a not in roots:
-                        continue
-                    for b, _d in outs:
-                        if b in roots and roots[b] < roots[a] + 1:
-                            roots[b] = roots[a] + 1
-                            changed = True
-                if not changed:
-                    break
         lvl = {n: roots[find(n)] for n in self.c.nodes()
                if not self.c.is_ground(n) and find(n) in roots}
         if any(self.c.is_supply(n) for n in lvl):
