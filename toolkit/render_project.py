@@ -16,7 +16,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def load(path, out_svg=None):
-    proj = json.load(open(path, encoding="utf-8"))
+    with open(path, encoding="utf-8") as fh:
+        proj = json.load(fh)
     doc = proj["documents"][0]
     stem = os.path.splitext(os.path.basename(path))[0].replace(" ", "_")
     out_svg = out_svg or os.path.join(HERE, "auto", "render_" + stem + ".svg")
