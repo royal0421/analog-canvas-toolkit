@@ -39,6 +39,11 @@
   "crossings": 0,
   "errors": 0
  },
+ "bjt-mirror-degen": {
+  "bends": 4.0,
+  "crossings": 0,
+  "errors": 0
+ },
  "cascode-current-mirror": {
   "bends": 9.0,
   "crossings": 0,
@@ -74,6 +79,11 @@
   "crossings": 0,
   "errors": 0
  },
+ "charge-pump": {
+  "bends": 2.0,
+  "crossings": 0,
+  "errors": 0
+ },
  "class-ab-diode-bias": {
   "bends": 7.0,
   "crossings": 0,
@@ -91,6 +101,11 @@
  },
  "colpitts-osc": {
   "bends": 6.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "cs-active-load": {
+  "bends": 1.0,
   "crossings": 0,
   "errors": 0
  },
@@ -254,6 +269,11 @@
   "crossings": 1,
   "errors": 0
  },
+ "ldo-regulator": {
+  "bends": 9.0,
+  "crossings": 0,
+  "errors": 0
+ },
  "nand3-cmos": {
   "bends": 4.0,
   "crossings": 0,
@@ -327,6 +347,11 @@
  "source-follower-isrc": {
   "bends": 2.0,
   "crossings": 0,
+  "errors": 0
+ },
+ "sr-latch-nor": {
+  "bends": 21.5,
+  "crossings": 3,
   "errors": 0
  },
  "strongarm-latch": {
