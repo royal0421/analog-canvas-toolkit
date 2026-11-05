@@ -1,0 +1,19 @@
+* hand-written deck, not exported from any drawing
+.title Charge pump with up/down switches
+.global VDD
+.subckt CP up dn out
+.iodir up=input dn=input out=output
+.name up UP
+.name dn DN
+.name out V_out
+I1 VDD a
+.name I1 I_1
+MS1 out up a VDD pmos
+.name MS1 S_1
+MS2 out dn b 0 nmos
+.name MS2 S_2
+I2 b 0
+.name I2 I_2
+CP out 0
+.name CP C_P
+.ends

@@ -1,0 +1,26 @@
+* hand-written deck, not exported from any drawing
+.title SR latch from two cross-coupled NOR gates
+.global VDD
+.subckt SR s r q qb
+.iodir s=input r=input q=output qb=output
+.name s S
+.name r R
+.name q Q
+.name qb Qb
+MPA1 x1 r VDD VDD pmos
+.name MPA1 M_1
+MPA2 q qb x1 VDD pmos
+.name MPA2 M_2
+MNA1 q r 0 0 nmos
+.name MNA1 M_3
+MNA2 q qb 0 0 nmos
+.name MNA2 M_4
+MPB1 x2 s VDD VDD pmos
+.name MPB1 M_5
+MPB2 qb q x2 VDD pmos
+.name MPB2 M_6
+MNB1 qb s 0 0 nmos
+.name MNB1 M_7
+MNB2 qb q 0 0 nmos
+.name MNB2 M_8
+.ends
