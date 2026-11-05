@@ -24,6 +24,11 @@
   "crossings": 0,
   "errors": 0
  },
+ "bjt-cascode-mirror": {
+  "bends": 7.0,
+  "crossings": 0,
+  "errors": 0
+ },
  "bjt-diffpair-mirror-load": {
   "bends": 7.0,
   "crossings": 0,
@@ -81,6 +86,11 @@
  },
  "cmos-inverter-chain": {
   "bends": 9.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "colpitts-osc": {
+  "bends": 6.0,
   "crossings": 0,
   "errors": 0
  },
@@ -249,6 +259,11 @@
   "crossings": 0,
   "errors": 0
  },
+ "nmos-diffpair-resistor": {
+  "bends": 5.0,
+  "crossings": 0,
+  "errors": 0
+ },
  "nor3-cmos": {
   "bends": 4.0,
   "crossings": 0,
@@ -265,6 +280,11 @@
   "errors": 0
  },
  "opamp-noninverting": {
+  "bends": 4.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "precision-rectifier": {
   "bends": 4.0,
   "crossings": 0,
   "errors": 0
@@ -289,8 +309,18 @@
   "crossings": 0,
   "errors": 0
  },
+ "sample-hold": {
+  "bends": 6.0,
+  "crossings": 0,
+  "errors": 0
+ },
  "schmitt-trigger": {
   "bends": 4.0,
+  "crossings": 0,
+  "errors": 0
+ },
+ "source-follower-bootstrap": {
+  "bends": 3.0,
   "crossings": 0,
   "errors": 0
  },
