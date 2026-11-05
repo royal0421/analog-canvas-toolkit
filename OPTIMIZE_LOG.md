@@ -148,6 +148,7 @@
 - 11-05 電流鏡配對同列（同 sym、同閘、同源的兩顆，汲極層級拉齊，`AC_MIRROW`）：bench place 49→50%、wire 0.94→0.95x、bends 0.96→0.97x、crossings 8 不變；Constant-gm resistorless、9.83 兩張已核可圖外觀變（9.83 M_2 掉到底、長回繞線，明顯較差）；gen cascode-current-mirror bends 9→7、two-stage-miller bends 22→18.5 但 crossings 0→1、wide-swing 結構對了但 bends +1。**退回**（`22fac09` 退），列入待決。
 - 11-05 量測工具：`bench_par.py` 每張圖印秒數、結尾列最慢三張（14.36(b) 212 s、Diff-amp LC-load 185 s、Midterm 143 s）。退回電流鏡同列後 bench 29 張逐位元回到基線，8m13s。(`3287f76`)
 - 11-05 效能：`_trunk_cost` 內 `any(inside/near(s, bb) for s in …)` 改成逐框一次的迴圈（條件逐項相同）。14.36(b) 單跑 CPU 373→351 s、輸出相同；bench 29 張逐位元不變、8m13s→7m48s；gen 79 張 0 變差。(`9aabea3`)
+- 11-05 效能：`_spec_corners` 的 any(genexpr) 改迴圈、`p in pts`（list）改集合。bench 逐位元不變 7m48s→7m33s；gen 0 變差、546→531 s。(`27c6015`)
 
 ## 待使用者決定
 
