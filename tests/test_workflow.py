@@ -176,5 +176,33 @@ class ListValidateCliTests(unittest.TestCase):
         self.assertIn("SKIP AIC-HW1_Q1d_PNP_hybrid-pi.icproj.json", text)
 
 
+class DoctorCliTests(unittest.TestCase):
+    def _run(self):
+        import contextlib
+        import io
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = cli.command_doctor(None)
+        return code, buf.getvalue()
+
+    def test_every_check_reports_one_line(self):
+        code, text = self._run()
+        names = ("Python", "Node.js", "NumPy", "Pillow", "symbol cache",
+                 "model", "model adapter", "Chrome")
+        lines = text.strip().splitlines()
+        self.assertEqual(len(lines), len(names), text)
+        for line, nm in zip(lines, names):
+            self.assertRegex(line, r"^(OK|MISSING|OPTIONAL) ")
+            self.assertIn(nm, line)
+        self.assertEqual(code, 0 if "MISSING" not in text else 1)
+
+    def test_missing_chrome_is_optional_not_a_failure(self):
+        with unittest.mock.patch("icproj.find_chrome", return_value=None):
+            code, text = self._run()
+        self.assertIn("OPTIONAL Chrome", text)
+        if "MISSING" not in text:
+            self.assertEqual(code, 0)
+
+
 if __name__ == "__main__":
     unittest.main()
