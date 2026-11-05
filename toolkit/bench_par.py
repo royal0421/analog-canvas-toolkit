@@ -26,7 +26,10 @@ import netlist_io as N       # noqa: E402
 
 
 def one(stem):
+    import time
+    t0 = time.time()
     r = NB.run_one(stem)
+    r["secs"] = time.time() - t0
     r.pop("log", None)
     return r
 
@@ -177,12 +180,12 @@ def main():
         xov.append(r.get("cross_over", 0))
         pls.append(r["place"])
         print("%-46s wire %4.1fx  bends %4.2fx (%5.1f/%5.1f)  X %2d/%d  %s"
-              "  place %3.0f%%"
+              "  place %3.0f%%  %4.0f s"
               % (r["stem"][:46], r["wire"], r.get("bend", 0),
                  r.get("bend_got", 0), r.get("bend_ref", 0),
                  r.get("cross", -1), r.get("cross_ref", 0),
                  "/".join(str(r.get(k, -1)) for k in keys),
-                 100 * r["place"]))
+                 100 * r["place"], r.get("secs", 0)))
     n = max(1, len(wrs))
     print("\n%d figures | %d fully clean | place %.0f%% | wire %.2fx | "
           "bends %.2fx | crossings %d (over hand %d) | %s | errors %d"
@@ -190,6 +193,10 @@ def main():
              sum(bds) / n, sum(xrs), sum(xov),
              " ".join("%s=%d" % kv for kv in sorted(tot.items())), nerr))
     print("wall %.0f s on %d workers" % (elapsed, pool._processes))
+    slow = sorted((r for r in rows if "secs" in r), key=lambda r: -r["secs"])
+    if slow:
+        print("slowest: " + ", ".join("%s %.0f s" % (r["stem"][:30], r["secs"])
+                                      for r in slow[:3]))
 
 
 if __name__ == "__main__":
