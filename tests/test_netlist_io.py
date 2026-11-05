@@ -123,5 +123,18 @@ class DeckLibraryTests(unittest.TestCase):
                     self.assertIn(nd, used)
 
 
+class DanglingNodeTests(unittest.TestCase):
+    def test_a_node_only_one_pin_touches_is_reported(self):
+        c = netlist_io.parse(".subckt D a b\n.iodir a=input b=output\n"
+                             "R1 a b\nR2 b x\n.ends\n")
+        self.assertEqual(["x"], netlist_io.dangling_nodes(c))
+
+    def test_ports_rails_and_bulk_do_not_count_as_dangling(self):
+        c = netlist_io.parse(".global VDD VEE\n.subckt D a\n"
+                             ".iodir a=input\nR1 a 0\nR2 VDD 0\n"
+                             "R3 VEE 0\nM1 a a 0 nb nmos\n.ends\n")
+        self.assertEqual([], netlist_io.dangling_nodes(c))
+
+
 if __name__ == "__main__":
     unittest.main()

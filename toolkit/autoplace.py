@@ -5353,6 +5353,10 @@ def place_deck(path, out_proj=None, out_svg=None, verbose=True, tune=True,
     import ring_corners as _RC
     c = _split_gate_inputs(N.parse(open(path, encoding="utf-8").read()))
     _sink_negatives(c)
+    if verbose:
+        for n in N.dangling_nodes(c):
+            print("  ~ node %s has a single terminal -- open on purpose, "
+                  "or a typo in the deck?" % n)
     c.mirror = (_mirror_map(c) if os.environ.get("AC_SYM", "1") == "1"
                 else None)
     # hints are a person's input, so the bench (topology only) never reads
