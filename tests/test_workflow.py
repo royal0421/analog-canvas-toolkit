@@ -134,5 +134,47 @@ class RenderProjectTests(unittest.TestCase):
             self.assertEqual(__file__, icproj.find_chrome())
 
 
+class ListValidateCliTests(unittest.TestCase):
+    """`list` and `validate` had no test (11-05)."""
+
+    def _run(self, *argv):
+        import contextlib
+        import io
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = {"list": cli.command_list,
+                    "validate": cli.command_validate}[argv[0]](
+                cli.build_parser().parse_args(list(argv)))
+        return code, buf.getvalue()
+
+    def test_list_names_every_generator_once(self):
+        code, text = self._run("list")
+        self.assertEqual(code, 0)
+        names = [p.name for p in cli.discover_projects()]
+        self.assertEqual(len(names), len(set(names)))
+        for n in names:
+            self.assertIn(n, text)
+
+    def test_validate_passes_a_tracked_output_and_fails_a_broken_copy(self):
+        import json
+        import tempfile
+        src = sorted(p.output for p in cli.discover_projects())[0]
+        code, text = self._run("validate", str(src))
+        self.assertEqual(code, 0, text)
+        data = json.loads(src.read_text(encoding="utf-8"))
+        data["schemaVersion"] = -1
+        with tempfile.TemporaryDirectory() as tmp:
+            bad = Path(tmp) / src.name
+            bad.write_text(json.dumps(data), encoding="utf-8")
+            code, text = self._run("validate", str(bad))
+        self.assertEqual(code, 1, text)
+        self.assertIn("FAIL", text)
+
+    def test_default_validate_skips_hand_drawn_references(self):
+        code, text = self._run("validate")
+        self.assertEqual(code, 0, text[-2000:])
+        self.assertIn("SKIP AIC-HW1_Q1d_PNP_hybrid-pi.icproj.json", text)
+
+
 if __name__ == "__main__":
     unittest.main()

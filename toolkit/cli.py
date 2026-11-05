@@ -269,8 +269,18 @@ def validate_file(project_file, toolkit=TOOLKIT):
 
 def command_validate(args):
     required_assets()
-    files = [Path(value).resolve() for value in args.files] if args.files \
-        else sorted(OUT.glob("*.icproj.json"))
+    if args.files:
+        files = [Path(value).resolve() for value in args.files]
+    else:
+        # only what a generator writes: out/ also holds hand-drawn website
+        # exports (the bench's references, e.g. AIC-HW1 Q1d/Q2f at schema
+        # v48) that no generator owns and that must not be rewritten
+        owned = {p.output.resolve() for p in discover_projects()}
+        files = sorted(p for p in OUT.glob("*.icproj.json")
+                       if p.resolve() in owned)
+        for p in sorted(OUT.glob("*.icproj.json")):
+            if p.resolve() not in owned:
+                print("SKIP %s (no generator: hand-drawn reference)" % p.name)
     failed = []
     for path in files:
         result = validate_file(path)
@@ -372,7 +382,9 @@ def build_parser():
                                "whose source SVG changed")
 
     validate = commands.add_parser("validate", help="validate output files")
-    validate.add_argument("files", nargs="*", help="defaults to every out/*.json")
+    validate.add_argument("files", nargs="*",
+                          help="defaults to every generator output in out/ "
+                               "(hand-drawn references are skipped)")
 
     regress = commands.add_parser(
         "regress", help="rebuild in a temporary directory and compare outputs")

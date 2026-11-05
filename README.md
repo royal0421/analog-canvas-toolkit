@@ -107,7 +107,7 @@ python -m toolkit regress
 | `setup` | 同步上游符號（schema v58 為 110 個）、正式站 schema、穩定 model adapter 與 schema 版本 |
 | `list` | 列出 generator 與對應輸出 |
 | `generate` | 生成單張或全部專案；名稱可用 generator 或輸出檔名；`--examples` 另把來源 SVG 有變的 gallery PNG 更新到 `examples/` |
-| `validate` | 以正式站 schema 驗證指定檔案，未指定時驗證全部 `out/` |
+| `validate` | 以正式站 schema 驗證指定檔案，未指定時驗證全部產生器輸出（`out/` 裡沒有產生器的手排參考檔，如 Q1d／Q2f 的 v48 網站匯出，列為 SKIP） |
 | `regress` | 在暫存目錄平行重建全部專案、驗證並逐位元比對 tracked outputs |
 
 仍可直接執行 `python toolkit/gen_fig848.py`。統一指令的優點是錯誤訊息、依賴檢查與退出狀態一致，也不需要記住每支輔助腳本的位置。
