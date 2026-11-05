@@ -31,6 +31,11 @@ ROOT = os.path.join(HERE, os.pardir, "out")
 AUTO = os.path.join(HERE, "auto")
 
 
+def _load_json(path):
+    with open(path, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
 def wire_len(doc, placed=None):
     """Total Manhattan length of every route leg.
 
@@ -261,7 +266,7 @@ def ref_crossings(stem):
     the better one).
     """
     path = os.path.join(ROOT, stem + ".icproj.json")
-    d = json.load(open(path, encoding="utf-8"))["documents"][0]
+    d = _load_json(path)["documents"][0]
     f = icproj.Schematic("ref", "ref", "ref", out_proj=os.devnull,
                          out_svg=os.devnull)
     for i in d["instances"]:
@@ -278,7 +283,7 @@ def ref_crossings(stem):
 
 def ref_placement(stem):
     p = os.path.join(ROOT, stem + ".icproj.json")
-    doc = json.load(open(p, encoding="utf-8"))["documents"][0]
+    doc = _load_json(p)["documents"][0]
     out = {}
     for i in doc["instances"]:
         if i["symbolId"] in N.MARKERS:
@@ -378,9 +383,9 @@ def run_one(stem, full=False, verbose=False):
                                          pl.get("rotation", 0))[0])
     ref = ref_placement(stem)
     pl_s, mi_s = score(ref, got)
-    refdoc = json.load(open(os.path.join(ROOT, stem + ".icproj.json"),
-                            encoding="utf-8"))["documents"][0]
-    gotdoc = json.load(open(p.out_proj, encoding="utf-8"))["documents"][0]
+    refdoc = _load_json(os.path.join(ROOT, stem + ".icproj.json")
+                        )["documents"][0]
+    gotdoc = _load_json(p.out_proj)["documents"][0]
     rw, gw = wire_len(refdoc), wire_len(gotdoc)
     r_wire = (gw / float(rw)) if rw else 0
     rb, gb = bend_count(refdoc), bend_count(gotdoc)
