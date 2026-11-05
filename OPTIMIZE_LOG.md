@@ -146,6 +146,7 @@
 - 11-05 測試覆蓋：補 `list`／`validate` CLI 測試，順帶查出 `python -m toolkit validate`（無參數）回報 36 OK／2 FAIL——失敗的是 `out/` 裡兩個沒有產生器的手排參考（AIC-HW1 Q1d／Q2f，網站 v48 匯出，bench 的對照），不得改寫。預設改為只驗產生器輸出，參考檔列 SKIP；README、help 同步。現在 36 valid、0 failed。
 - 11-05 推廣 deck +5（LDO、CS 主動負載、BJT 射極退化鏡、NOR SR latch、charge pump）：稽核全 0；SR latch crossings 3（交叉耦合本身需要跨線，S/R port 複本屬 NOR 允許範圍）。gen 79 張、0 變差，baseline 更新。bench 逐位元不變 8m20s：autoplace/icproj/netlist_io/bench_par 自 `ad6554c`（7m09s）起未改，差異是容器重啟後的機器（4 核同數）。(`7e63b13`, `044dd4a`)
 - 11-05 電流鏡配對同列（同 sym、同閘、同源的兩顆，汲極層級拉齊，`AC_MIRROW`）：bench place 49→50%、wire 0.94→0.95x、bends 0.96→0.97x、crossings 8 不變；Constant-gm resistorless、9.83 兩張已核可圖外觀變（9.83 M_2 掉到底、長回繞線，明顯較差）；gen cascode-current-mirror bends 9→7、two-stage-miller bends 22→18.5 但 crossings 0→1、wide-swing 結構對了但 bends +1。**退回**（`22fac09` 退），列入待決。
+- 11-05 量測工具：`bench_par.py` 每張圖印秒數、結尾列最慢三張（14.36(b) 212 s、Diff-amp LC-load 185 s、Midterm 143 s）。退回電流鏡同列後 bench 29 張逐位元回到基線，8m13s。(`3287f76`)
 
 ## 待使用者決定
 
