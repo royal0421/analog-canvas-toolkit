@@ -57,7 +57,7 @@ autoplace 的改動會影響兩組圖，兩組都要驗：
 cd toolkit
 python netlist_io.py              # 先從 out/ 匯出 decks/*.cir
 python bench_par.py               # 29 張有手排的圖：clean／place／wire／bends／crossings
-python bench_par.py --gen         # 54 份推廣測試 deck：與 gen_baseline.json 比，變差就 exit 1
+python bench_par.py --gen         # 79 份推廣測試 deck：與 gen_baseline.json 比，變差就 exit 1
 ```
 
 - `bench_par.py` 每張一行；任何一欄變差都要有理由，不然就撤回。
