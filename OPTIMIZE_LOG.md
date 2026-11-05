@@ -141,6 +141,7 @@
 - 11-04 已知限制（未改）：`ring-osc-3` 稽核 0、crossings 3。電晶體級環形回授必須跨過 V_DD 匯流排或地線其中之一；現行 trunk 只在圖內選列，回授線走中線切過兩條汲極立線，且第一級反相器被鏡射。要真修需新增「繞到外框」的走線模式，風險大，先記錄不動。
 - 11-04 效能：cProfile（AC_SERIAL）bandgap-core 顯示 `os.environ.get` 1100 萬次、約 5%。trunk 搜尋內 6 個 AC_* 開關改成 `Placer.env()` 每張圖讀一次。bench 逐位元不變 7m31s→7m09s；gen 68/68、0 變差、wall 466→453 s。(`e9472a7`)
 - 11-04 效能（續）：`opt()` 的 AC_* 後備也走 `Placer.env()`；快取改存「有沒有設」，不同預設值互不污染。bench 逐位元不變、7m09s 持平；gen 0 變差、453→447 s。收益小但無害，保留。(`ad6554c`)
+- 11-05 推廣 deck +6（Colpitts、精密整流、S/H、BJT cascode mirror、NMOS 差動電阻負載、bootstrap SF），稽核全 0、交叉 0。目視：精密整流的 IN- 引線沿 op amp 背邊直上到頂角（稽核看不到）。三次嘗試都**退回**：(1) 外層分數把「沿方塊邊」當 audit → 改成翻轉 op amp、多 1 交叉；(2) trunk cost 當 hard → 每條候選都犯（引線本身就從背邊出發），無效；(3) `_cross_detour` 偵測沿邊就繞 → 整流器好了，但 bench crossings 8→10、8.48/8.57/8.69/14.36(b) 外觀變、gen wien-bridge errors 0→1、sallen-key bends +1。此方向連 3 敗，換方向；整流器缺陷留作已知。(`ffd4c12` 退)
 
 ## 待使用者決定
 

@@ -3974,24 +3974,6 @@ class Placer(object):
                 return False
         return True
 
-    def _along_block_edge(self, axis, c, a0, a1):
-        """Does this run lie ON a block's straight back/front edge?
-
-        A pin on an op amp's back edge whose lead leaves straight up the
-        edge draws one line with the triangle (precision rectifier, 11-04).
-        `_seg_clear` allows the boundary, so the jog never fired.
-        """
-        if axis != "v" or os.environ.get("AC_EDGERUN", "1") != "1":
-            return False
-        lo, hi = min(a0, a1), max(a0, a1)
-        for iid, (sid, *_r) in self.f.placed.items():
-            if sid not in N.BLOCKS:
-                continue
-            b = self.f.ink(iid)
-            if c in (b[0], b[2]) and min(hi, b[3]) > max(lo, b[1]):
-                return True
-        return False
-
     def _cross_detour(self, nd, axis, k, v, c):
         """A jog for the leg that joins a pin to its trunk.
 
@@ -4002,8 +3984,7 @@ class Placer(object):
         comes back at both ends.
         """
         other = "v" if axis == "h" else "h"
-        if self._seg_clear(nd, other, k, v, c) \
-                and not self._along_block_edge(other, k, v, c):
+        if self._seg_clear(nd, other, k, v, c):
             return None
         best, bestk = None, None
         # the far steps only matter once a fixed name blocks the near ones
@@ -4017,8 +3998,6 @@ class Placer(object):
             if not (self._seg_clear(nd, other, k2, v, c)
                     and self._seg_clear(nd, axis, v, k, k2)
                     and self._seg_clear(nd, axis, c, k, k2)):
-                continue
-            if self._along_block_edge(other, k2, v, c):
                 continue
             if lbl and not (self._lbl_clear(other, k2, v, c)
                             and self._lbl_clear(axis, v, k, k2)
