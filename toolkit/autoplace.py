@@ -2250,11 +2250,23 @@ class Placer(object):
             poi.add((a0, cc) if ax == "h" else (cc, a0))
             poi.add((a1, cc) if ax == "h" else (cc, a1))
         n = 0
+        pinset = set(pts)
+        pindir = self._pindir
+        # plain loops: this runs once per trunk candidate (~10^6 per figure)
         for p in poi:
-            h = any(a0 <= p[0] <= a1 for a0, a1 in rows.get(p[1], ()))
-            v = any(a0 <= p[1] <= a1 for a0, a1 in cols.get(p[0], ()))
-            if not (h and v):
-                faces = self._pindir.get(p, ()) if p in pts else ()
+            px, py = p
+            h = False
+            for a0, a1 in rows.get(py, ()):
+                if a0 <= px <= a1:
+                    h = True
+                    break
+            v = False
+            for a0, a1 in cols.get(px, ()):
+                if a0 <= py <= a1:
+                    v = True
+                    break
+            if not (h and v) and p in pinset:
+                faces = pindir.get(p, ())
                 h = h or "H" in faces
                 v = v or "V" in faces
             if h and v:
