@@ -2282,14 +2282,22 @@ class Placer(object):
         for k in extra:
             bytap.setdefault(k, [])
         keys = sorted(bytap)
+        last = len(keys) - 1
+        allpins = self._allpins
         n = 0
         for i, k in enumerate(keys):
-            ends = 1 if i in (0, len(keys) - 1) else 2
-            legs = ends + len([1 for v in bytap[k] if v != c])
+            # the set lookup first: most taps are not on a pin, and then
+            # the legs never need counting (same answer, ~5% of a search)
+            pt = (k, c) if axis == "h" else (c, k)
+            if pt not in allpins:
+                continue
+            legs = 1 if i == 0 or i == last else 2
+            for v in bytap[k]:
+                if v != c:
+                    legs += 1
             if k in extra:
                 legs += 1
-            pt = (k, c) if axis == "h" else (c, k)
-            if legs >= 3 and pt in self._allpins:
+            if legs >= 3:
                 n += 1
         return n
 
