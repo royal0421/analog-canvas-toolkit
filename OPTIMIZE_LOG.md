@@ -150,12 +150,13 @@
 - 11-05 效能：`_trunk_cost` 內 `any(inside/near(s, bb) for s in …)` 改成逐框一次的迴圈（條件逐項相同）。14.36(b) 單跑 CPU 373→351 s、輸出相同；bench 29 張逐位元不變、8m13s→7m48s；gen 79 張 0 變差。(`9aabea3`)
 - 11-05 效能：`_spec_corners` 的 any(genexpr) 改迴圈、`p in pts`（list）改集合。bench 逐位元不變 7m48s→7m33s；gen 0 變差、546→531 s。(`27c6015`)
 - 11-05 推廣測試（邊界 deck：單一電阻、無地、懸空節點、op amp 跟隨器、跨電源的雙端件）：autoplace 全不崩、稽核 0。但懸空節點（只有一個端點）完全沒警告 → 新增 `netlist_io.dangling_nodes()`，`place_deck` 印 `~ node x has a single terminal`（只警告，不進 `export_project` 的 problems，以免把有意開路的圖踢出 bench）。掃描結果：`decks/new/5T-OTA`、`cs-degen-cascode` 的 `vb` 閘極偏壓沒宣告成 port（原作者 deck，未改，以免動到 gen 基準）；匯出 deck 中 AIC-HW2_CMP(_OFFSET)_TB、Comparator 19T（x9/x10）、bridge rectifier（in2）、CDR、ESD-LNA、BJT mirror block、Lab2 SR latch 也有單端點節點，屬使用者圖，僅記錄。(`7d5b680`)
+- 11-05 檢查 `folded-cascode-pmos-in`（crossings 3）：`_mirror_map` 有正確找到左右對稱（M3↔M4、M9↔M10、M1↔M2），但搜尋選了不鏡像的版面，所以 V_b1／V_b2 閘極匯流排要繞過 M3／M9 欄，另 fr 匯流排橫越 fl 欄。屬「分數看不到結構慣例」那一項，併入待決的例子，不自行改權重。
 
 ## 待使用者決定
 
 - 2026-11-04｜**兩級 Miller（decks/new，無手排）**，對照圖 `optimize/2026-11-04_two-stage-miller_auto.png`：(1) C_c 擺在 x 線上方，接 out 的腳往下穿過 x 線，是全圖唯一的交叉；放到 out 線下方可以不交叉，但目前搜尋評分選上方（擴大換列步進也沒選到）。(2) 尾電流 M5 的閘極偏壓線 V_b 橫過 M5 正上方，汲極只好從 M1 源極繞下去接。兩點都屬「看起來對不對」，沒有手排可給 bench 驗收，請看圖決定要不要照課本畫法修。
 - 2026-11-04｜**HW2 比較器多手排 2 個交叉**：要畫對需「兩級各自對稱、上下錯開」（第一級自己的鏡像軸、鎖存級另一條）。單一對稱軸版與分級提示版都更差（X 12、X 7）。這是較大的結構工程，請決定是否值得投入。
 - 2026-11-04｜**LC-load 左邊 L_2 仍往上繞一段**，對照圖 `optimize/2026-11-04_LC-load_auto.png`（已比原本好：V_out- 在最左、wire 1.6→1.4x）。原因已查到：兩半的欄距不對稱，左邊 L_2 撞到 C_1／C_2 而往上讓。修法會動到欄距分配，可能影響其他對稱圖。
-- 2026-11-04｜**搜尋評分看不到結構慣例**，對照圖 `optimize/2026-11-04_stress-decks_auto.png`（Gilbert cell、儀表放大器等 6 份壓力測試）：Gilbert cell 課本是兩對差動對各自並排（Q_3 Q_4｜Q_5 Q_6），但評分（交叉×80＋轉角×60＋線長/10）偏好交錯的排法，因為線比較短；儀表放大器課本是兩顆輸入級上下、差動級在右，自動版排成一列。給搜尋「差動對並排」的起點也沒被選。要畫對需在評分裡加結構項（例如「差動對不相鄰扣分」），會牽動其他圖，請決定方向。
+- 2026-11-04｜**搜尋評分看不到結構慣例**，對照圖 `optimize/2026-11-04_stress-decks_auto.png`（Gilbert cell、儀表放大器等 6 份壓力測試）：Gilbert cell 課本是兩對差動對各自並排（Q_3 Q_4｜Q_5 Q_6），但評分（交叉×80＋轉角×60＋線長/10）偏好交錯的排法，因為線比較短；儀表放大器課本是兩顆輸入級上下、差動級在右，自動版排成一列。11-05 再加一例：`folded-cascode-pmos-in` 的左右對稱已被 `_mirror_map` 找到，但沒被選用，閘極偏壓匯流排因此繞欄、多 2 個交叉。給搜尋「差動對並排」的起點也沒被選。要畫對需在評分裡加結構項（例如「差動對不相鄰扣分」），會牽動其他圖，請決定方向。
 - **compact 在 MOS 圖上是否啟用**（11-04）：`_col_boxes` 的 KeyError 讓 compact 從沒在 MOS 圖上生效。修好會讓 14 張已核可圖變窄（NAND2 下拉管翻到右邊、R_G 標籤擠），wire 0.91x 但 place/bends 略差。對照 `optimize/compact-mos_before-after.png`。目前保留舊行為（不修）。
 - **電流鏡兩顆是否強制同列**（11-05）：wide-swing cascode 變成教科書排法（M1/M2、M3/M4 各同列），但 9.83 的 M_2 被拉到底、多出長繞線；Constant-gm resistorless 的 N_2 移上去。對照 `optimize/mirror-row_before-after.png`。若要，可改成只在「鏡像對兩邊都接地、且不在差動對」時套用再量。
