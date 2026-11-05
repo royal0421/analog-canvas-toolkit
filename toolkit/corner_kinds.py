@@ -10,16 +10,20 @@ corners on pins, this lane put 77.  A gate faces sideways and a drain faces
 up, so ONE straight trunk always makes one of the two groups turn AT the
 pin -- which is what the L trunk (SOP 3J) exists to avoid.
 
-Same definition as `netlist_bench.bend_count`: a corner is a point where an
-H path meets a V path, paths being route segments AND pin escape
-directions; V_DD contacts and foreign-net crossings are excluded.
+Same corner definition as `netlist_bench.bend_count`: a corner is a point
+where an H path meets a V path, paths being route segments AND pin escape
+directions; V_DD contacts and foreign-net crossings are excluded.  The
+bench's number is this count PLUS 2.5 for every crossing over a gate net or
+through a body -- those are not corners and are not listed here (checked by
+tests/test_netlist_bench.py on every figure in out/).
 """
 import json, sys, pathlib
 sys.path.insert(0, '.')
 import icproj
 
 def corners(path):
-    doc = json.load(open(path, encoding='utf-8'))["documents"][0]
+    with open(path, encoding='utf-8') as fh:
+        doc = json.load(fh)["documents"][0]
     pos = {i["id"]: (i["placement"]["position"]["x"], i["placement"]["position"]["y"],
                      i["placement"].get("mirror","none"), i["placement"].get("rotation",0),
                      i["symbolId"]) for i in doc["instances"]}
@@ -96,8 +100,9 @@ def corners(path):
         out.append((p,kind,why[p]))
     return out
 
-for path in sys.argv[1:]:
-    cs = corners(path)
-    print("=====", path, len(cs))
-    for p,kind,w in cs:
-        print("   %-12s %-5s %s" % (p,kind,w))
+if __name__ == "__main__":
+    for path in sys.argv[1:]:
+        cs = corners(path)
+        print("=====", path, len(cs))
+        for p, kind, w in cs:
+            print("   %-12s %-5s %s" % (p, kind, w))

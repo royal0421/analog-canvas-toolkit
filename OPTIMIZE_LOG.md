@@ -153,6 +153,7 @@
 - 11-05 檢查 `folded-cascode-pmos-in`（crossings 3）：`_mirror_map` 有正確找到左右對稱（M3↔M4、M9↔M10、M1↔M2），但搜尋選了不鏡像的版面，所以 V_b1／V_b2 閘極匯流排要繞過 M3／M9 欄，另 fr 匯流排橫越 fl 欄。屬「分數看不到結構慣例」那一項，併入待決的例子，不自行改權重。
 - 11-05 測試覆蓋：`ring_corners` 原本零測試，新增 `tests/test_ring_corners.py`，用 4 張手排圖（7.94、Midterm、HW2 比較器、10.35a）核對 bench 的參考值（bends 3／17.5／29／15、crossings 0／2／2／1）。順帶釐清：`ring_corners.crossings` 只算「不經 gate net」的交叉（經 gate net 的另算 2.5 轉角），`Schematic._cross_count` 全算——兩者在手排圖上看似不同（Midterm 1 vs 2、HW2 0 vs 2）不是 bug，測試把兩種量法的關係寫死。`render_project.load` 開檔沒關（ResourceWarning）改 with。(`c964e7a`)
 - 11-05 測試覆蓋：官方評分器 `netlist_bench` 原本零測試，新增 `tests/test_netlist_bench.py`（換欄距不扣分、兩欄互換被看到、翻一顆電晶體只扣 mirror、無共同元件為 0、手排圖對自己滿分且 bends 3／crossings 0）。bench 讀檔改 `_load_json`（with 關檔）。bench 29 張分數相同、逐位元不變。(`208b7b6`)
+- 11-05 `corner_kinds.py`：沒有 `__main__` 守衛，import 就把 sys.argv 當檔名跑（測試一 import 就炸）→ 加守衛、讀檔改 with。docstring 說與 `bend_count`「同定義」只對一半：bench 的 bends ＝ 這裡的轉角數＋每個穿 gate net／穿元件的交叉 2.5，新增測試對 out/ 每張圖核對這個關係（差值 ≥0 且為 2.5 的倍數）並更正 docstring。命令列用法不變。(本 commit)
 
 ## 待使用者決定
 

@@ -56,5 +56,23 @@ class ReferenceFigureTests(unittest.TestCase):
         self.assertEqual(NB.ref_crossings(stem), 0)
 
 
+class CornerKindsTests(unittest.TestCase):
+    def test_bench_bends_are_corner_kinds_plus_whole_gate_penalties(self):
+        import os
+        cwd = os.getcwd()
+        os.chdir(str(ROOT / "toolkit"))
+        try:
+            import corner_kinds as K
+            for path in sorted((ROOT / "out").glob("*.icproj.json")):
+                with self.subTest(figure=path.name):
+                    doc = json.loads(path.read_text(encoding="utf-8")
+                                     )["documents"][0]
+                    extra = NB.bend_count(doc) - len(K.corners(str(path)))
+                    self.assertGreaterEqual(extra, 0)
+                    self.assertEqual(extra % 2.5, 0)
+        finally:
+            os.chdir(cwd)
+
+
 if __name__ == "__main__":
     unittest.main()
