@@ -2413,6 +2413,30 @@ class Placer(object):
         def near(seg, bb):
             return near_by(seg, bb, M)
 
+        # `any(inside(s, bb) for s in ...)` paid a generator frame and a
+        # call per segment; this inner loop runs tens of millions of times
+        # per figure, so the same tests are written out once per box.
+        def any_inside(sl, bb):
+            bx0, by0, bx1, by1 = bb[0] + 1, bb[1] + 1, bb[2] - 1, bb[3] - 1
+            for _k, ax, cc, s0, s1 in sl:
+                if ax == "h":
+                    if by0 < cc < by1 and not (s1 <= bb[0] + 1
+                                               or s0 >= bx1):
+                        return True
+                elif bx0 < cc < bx1 and not (s1 <= by0 or s0 >= by1):
+                    return True
+            return False
+
+        def any_near(sl, bb, m=M):
+            bx0, by0, bx1, by1 = bb[0] - m, bb[1] - m, bb[2] + m, bb[3] + m
+            for _k, ax, cc, s0, s1 in sl:
+                if ax == "h":
+                    if by0 <= cc <= by1 and not (s1 < bx0 or s0 > bx1):
+                        return True
+                elif bx0 <= cc <= bx1 and not (s1 < by0 or s0 > by1):
+                    return True
+            return False
+
         def shaving(seg, bb):
             """Closer to the body than HALF A GRID.
 
@@ -2478,9 +2502,9 @@ class Placer(object):
                         break
                 if onpin:
                     continue
-                if any(inside(s, bb) for s in trunks):
+                if any_inside(trunks, bb):
                     hard += 1                    # the trunk itself is inside
-                if any(inside(s, bb) for s in rsegs):
+                if any_inside(rsegs, bb):
                     hard += 1                    # a riser dips inside
                 # Owning a pin on this net buys the right to REACH the pin,
                 # not the right to shave the body on the way past.  8.69's
@@ -2499,7 +2523,7 @@ class Placer(object):
                 # no business grazing the sloping face.
                 if (mode != "off"
                         and self.f.placed.get(iid, ("",))[0] in N.BLOCKS
-                        and any(shaving(s, bb) for s in trunks)):
+                        and any_near(trunks, bb, TIGHT)):
                     if mode == "hard":
                         hard += 1
                     elif mode == "soft":
@@ -2534,10 +2558,10 @@ class Placer(object):
             # reshapes the whole search space, and the descent then loses the
             # layout it used to find -- the same failure as stage/gaterow.
             soft = iid.startswith("soft:")
-            if not soft and any(inside(s, bb) for s in trunks):
+            if not soft and any_inside(trunks, bb):
                 hard += 1
                 continue
-            if any(near(s, bb) for s in trunks):
+            if any_near(trunks, bb):
                 # `_wire_clearance` calls anything closer than M a wire that
                 # "reads as a connection that is not there", so on some
                 # figures the soft price is too cheap (14.36(b) parked three
@@ -2548,14 +2572,14 @@ class Placer(object):
                 else:
                     bodies += 1
                 continue
-            if not soft and any(inside(s, bb) for s in rsegs):
+            if not soft and any_inside(rsegs, bb):
                 hard += 1
                 continue
-            if any(near(s, bb) for s in rsegs):
+            if any_near(rsegs, bb):
                 risers += 1
         if self.env("AC_HARDDBG") == nd:
             blockers = [i for i, bb in inks
-                        if any(inside(s, bb) for s in trunks)]
+                        if any_inside(trunks, bb)]
             print("      HARD %s %s c=%-4d spur=%s short=%d pintouch=%d "
                   "junc=%d body=%d | crossing: %s"
                   % (nd, axis, c, spur, shorted, _h1 - shorted, _h2 - _h1,
