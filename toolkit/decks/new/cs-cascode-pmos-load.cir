@@ -1,0 +1,19 @@
+* hand-written deck, not exported from any drawing
+.title Cascode amplifier with cascoded PMOS current-source load
+.global VDD
+.subckt CascAmp in vb1 vb2 vb3 out
+.iodir in=input vb1=input vb2=input vb3=input out=output
+.name in V_in
+.name vb1 V_b1
+.name vb2 V_b2
+.name vb3 V_b3
+.name out V_out
+M4 p vb3 VDD VDD pmos
+.name M4 M_4
+M3 out vb2 p VDD pmos
+.name M3 M_3
+M2 out vb1 x 0 nmos
+.name M2 M_2
+M1 x in 0 0 nmos
+.name M1 M_1
+.ends

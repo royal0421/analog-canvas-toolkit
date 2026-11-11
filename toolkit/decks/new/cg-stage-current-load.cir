@@ -1,0 +1,15 @@
+* hand-written deck, not exported from any drawing
+.title Common-gate stage with current-source load
+.global VDD
+.subckt CG in vb out
+.iodir in=input vb=input out=output
+.name in V_in
+.name vb V_b
+.name out V_out
+I1 VDD out
+.name I1 I_1
+M1 out vb in 0 nmos
+.name M1 M_1
+RS in 0
+.name RS R_S
+.ends

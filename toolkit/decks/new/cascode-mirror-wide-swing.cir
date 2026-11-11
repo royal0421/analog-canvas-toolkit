@@ -1,0 +1,21 @@
+* hand-written deck, not exported from any drawing
+.title Wide-swing cascode current mirror
+.global VDD
+.subckt WideSwing iout
+.iodir iout=output
+.name iout I_out
+IREF VDD a
+.name IREF I_REF
+IB VDD vb
+.name IB I_B
+M5 vb vb 0 0 nmos
+.name M5 M_5
+M3 a vb x 0 nmos
+.name M3 M_3
+M1 x a 0 0 nmos
+.name M1 M_1
+M4 iout vb y 0 nmos
+.name M4 M_4
+M2 y a 0 0 nmos
+.name M2 M_2
+.ends

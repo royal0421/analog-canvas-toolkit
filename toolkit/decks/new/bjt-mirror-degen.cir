@@ -1,0 +1,17 @@
+* hand-written deck, not exported from any drawing
+.title Bipolar mirror with emitter degeneration
+.global VCC
+.subckt BMD iout
+.iodir iout=output
+.name iout I_out
+IREF VCC a
+.name IREF I_REF
+Q1 a a e1 npn
+.name Q1 Q_1
+RE1 e1 0
+.name RE1 R_E1
+Q2 iout a e2 npn
+.name Q2 Q_2
+RE2 e2 0
+.name RE2 R_E2
+.ends

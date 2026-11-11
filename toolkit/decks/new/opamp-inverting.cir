@@ -1,0 +1,13 @@
+* hand-written deck, not exported from any drawing
+.title Inverting amplifier
+.subckt Inv in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+R1 in x
+.name R1 R_1
+R2 x out
+.name R2 R_2
+XOA 0 x out opamp
+.alias XOA OA
+.ends

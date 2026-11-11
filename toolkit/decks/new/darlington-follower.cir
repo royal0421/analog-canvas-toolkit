@@ -1,0 +1,14 @@
+* hand-written deck, not exported from any drawing
+.title Darlington emitter follower
+.global VCC
+.subckt Darl in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+Q1 VCC in b2 npn
+.name Q1 Q_1
+Q2 VCC b2 out npn
+.name Q2 Q_2
+RE out 0
+.name RE R_E
+.ends

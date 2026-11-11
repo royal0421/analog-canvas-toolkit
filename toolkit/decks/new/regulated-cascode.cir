@@ -1,0 +1,18 @@
+* hand-written deck, not exported from any drawing
+.title Regulated cascode amplifier
+.global VDD
+.subckt RGC in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+RD VDD out
+.name RD R_D
+M2 out g s 0 nmos
+.name M2 M_2
+M1 s in 0 0 nmos
+.name M1 M_1
+M3 g s 0 0 nmos
+.name M3 M_3
+I1 VDD g
+.name I1 I_1
+.ends

@@ -1,0 +1,9 @@
+# 上游的 headless 工具：自己下載，不轉散布（見 README）
+*.mjs
+*.tgz
+pkg/
+# 執行時產生
+ws/
+out/
+plans/
+__pycache__/

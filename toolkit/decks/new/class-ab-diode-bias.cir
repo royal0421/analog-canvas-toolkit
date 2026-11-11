@@ -1,0 +1,22 @@
+* hand-written deck, not exported from any drawing
+.title Class-AB output stage with diode bias
+.global VCC VEE
+.subckt ClassAB in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+R1 VCC b1
+.name R1 R_1
+D1 b1 in diode
+.name D1 D_1
+D2 in b2 diode
+.name D2 D_2
+R2 b2 VEE
+.name R2 R_2
+Q1 VCC b1 out npn
+.name Q1 Q_1
+Q2 VEE b2 out pnp
+.name Q2 Q_2
+RL out 0
+.name RL R_L
+.ends

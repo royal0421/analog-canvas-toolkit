@@ -1,0 +1,18 @@
+* hand-written deck, not exported from any drawing
+.title Low-dropout regulator
+.global VDD
+.subckt LDO vref out
+.iodir vref=input out=output
+.name vref V_REF
+.name out V_out
+XOA fb vref g opamp
+.alias XOA OA
+MP out g VDD VDD pmos
+.name MP M_P
+R1 out fb
+.name R1 R_1
+R2 fb 0
+.name R2 R_2
+CL out 0
+.name CL C_L
+.ends

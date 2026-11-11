@@ -1,0 +1,19 @@
+* hand-written deck, not exported from any drawing
+.title Three-stage CMOS ring oscillator
+.global VDD
+.subckt Ring out
+.iodir out=output
+.name out V_out
+MP1 a out VDD VDD pmos
+.name MP1 M_P1
+MN1 a out 0 0 nmos
+.name MN1 M_N1
+MP2 b a VDD VDD pmos
+.name MP2 M_P2
+MN2 b a 0 0 nmos
+.name MN2 M_N2
+MP3 out b VDD VDD pmos
+.name MP3 M_P3
+MN3 out b 0 0 nmos
+.name MN3 M_N3
+.ends

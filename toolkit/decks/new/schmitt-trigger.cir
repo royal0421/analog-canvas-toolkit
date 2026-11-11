@@ -1,0 +1,13 @@
+* hand-written deck, not exported from any drawing
+.title Inverting Schmitt trigger
+.subckt Schmitt in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+XOA p in out opamp
+.alias XOA OA
+R1 out p
+.name R1 R_1
+R2 p 0
+.name R2 R_2
+.ends

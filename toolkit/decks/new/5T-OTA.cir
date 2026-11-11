@@ -5,6 +5,7 @@
 .iodir inp=input inn=input out=output
 .name inp V_inp
 .name inn V_inn
+.name vb V_b
 .name out V_out
 MM1 d1 inp tail 0 nmos
 .alias MM1 M1

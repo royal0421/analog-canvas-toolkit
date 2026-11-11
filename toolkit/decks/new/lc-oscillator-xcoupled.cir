@@ -1,0 +1,22 @@
+* hand-written deck, not exported from any drawing
+.title Cross-coupled LC oscillator
+.global VDD
+.subckt LCVCO outp outn
+.iodir outp=output outn=output
+.name outp V_out1
+.name outn V_out2
+L1 VDD outp
+.name L1 L_1
+L2 VDD outn
+.name L2 L_2
+C1 outp 0
+.name C1 C_1
+C2 outn 0
+.name C2 C_2
+M1 outp outn tail 0 nmos
+.name M1 M_1
+M2 outn outp tail 0 nmos
+.name M2 M_2
+ISS tail 0
+.name ISS I_SS
+.ends

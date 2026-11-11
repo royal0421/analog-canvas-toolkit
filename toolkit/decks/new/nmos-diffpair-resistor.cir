@@ -1,0 +1,20 @@
+* hand-written deck, not exported from any drawing
+.title NMOS differential pair with resistive loads
+.global VDD
+.subckt DP in1 in2 out1 out2
+.iodir in1=input in2=input out1=output out2=output
+.name in1 V_in1
+.name in2 V_in2
+.name out1 V_out1
+.name out2 V_out2
+RD1 VDD out1
+.name RD1 R_D1
+RD2 VDD out2
+.name RD2 R_D2
+M1 out1 in1 p 0 nmos
+.name M1 M_1
+M2 out2 in2 p 0 nmos
+.name M2 M_2
+ISS p 0
+.name ISS I_SS
+.ends

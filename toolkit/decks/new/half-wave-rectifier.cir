@@ -1,0 +1,13 @@
+* hand-written deck, not exported from any drawing
+.title Half-wave rectifier with RC load
+.subckt Rect in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+D1 in out diode
+.name D1 D_1
+C1 out 0
+.name C1 C_1
+RL out 0
+.name RL R_L
+.ends

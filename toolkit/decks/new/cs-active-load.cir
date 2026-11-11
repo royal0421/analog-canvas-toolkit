@@ -1,0 +1,13 @@
+* hand-written deck, not exported from any drawing
+.title Common-source stage with current-source load
+.global VDD
+.subckt CSAL in vb out
+.iodir in=input vb=input out=output
+.name in V_in
+.name vb V_b
+.name out V_out
+M2 out vb VDD VDD pmos
+.name M2 M_2
+M1 out in 0 0 nmos
+.name M1 M_1
+.ends

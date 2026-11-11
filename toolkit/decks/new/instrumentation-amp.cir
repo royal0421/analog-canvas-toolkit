@@ -1,0 +1,28 @@
+* hand-written deck, not exported from any drawing
+.title Three-op-amp instrumentation amplifier
+.subckt InAmp in1 in2 out
+.iodir in1=input in2=input out=output
+.name in1 V_in1
+.name in2 V_in2
+.name out V_out
+XOA1 in1 a x opamp
+.alias XOA1 OA1
+XOA2 in2 b y opamp
+.alias XOA2 OA2
+R1 x a
+.name R1 R_2
+RG a b
+.name RG R_G
+R2 b y
+.name R2 R_2
+R3 x c
+.name R3 R_3
+R4 c out
+.name R4 R_4
+R5 y d
+.name R5 R_3
+R6 d 0
+.name R6 R_4
+XOA3 d c out opamp
+.alias XOA3 OA3
+.ends

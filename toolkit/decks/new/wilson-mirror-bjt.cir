@@ -1,0 +1,15 @@
+* hand-written deck, not exported from any drawing
+.title Wilson current mirror (bipolar)
+.global VCC
+.subckt Wilson iout
+.iodir iout=output
+.name iout I_out
+IREF VCC a
+.name IREF I_REF
+Q3 iout a b npn
+.name Q3 Q_3
+Q1 a b 0 npn
+.name Q1 Q_1
+Q2 b b 0 npn
+.name Q2 Q_2
+.ends

@@ -1,0 +1,14 @@
+* hand-written deck, not exported from any drawing
+.title Emitter follower biased from V_EE
+.global VCC VEE
+.subckt EfVee in out
+.iodir in=input out=output
+.name in V_in
+.name out V_out
+Q1 VCC in out npn
+.name Q1 Q_1
+I1 out VEE
+.name I1 I_1
+RL out 0
+.name RL R_L
+.ends

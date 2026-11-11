@@ -1,0 +1,17 @@
+* hand-written deck, not exported from any drawing
+.title Bipolar cascode current mirror
+.global VCC
+.subckt BCasc iout
+.iodir iout=output
+.name iout I_out
+IREF VCC a
+.name IREF I_REF
+Q3 a a b npn
+.name Q3 Q_3
+Q1 b b 0 npn
+.name Q1 Q_1
+Q4 iout a c npn
+.name Q4 Q_4
+Q2 c b 0 npn
+.name Q2 Q_2
+.ends

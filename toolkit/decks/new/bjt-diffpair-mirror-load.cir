@@ -1,0 +1,19 @@
+* hand-written deck, not exported from any drawing
+.title Bipolar differential pair with active load
+.global VCC
+.subckt BjtDiff in1 in2 out
+.iodir in1=input in2=input out=output
+.name in1 V_in1
+.name in2 V_in2
+.name out V_out
+Q1 c1 in1 e npn
+.name Q1 Q_1
+Q2 out in2 e npn
+.name Q2 Q_2
+Q3 c1 c1 VCC pnp
+.name Q3 Q_3
+Q4 out c1 VCC pnp
+.name Q4 Q_4
+IEE e 0
+.name IEE I_EE
+.ends
