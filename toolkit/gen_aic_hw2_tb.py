@@ -26,8 +26,7 @@ TAG = {"pattern": "CMP_TB", "offset": "CMP_OFFSET_TB"}[MODE]
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, os.pardir, "out")   # analog-canvas root
 # working copy for the course folder (only on the author's machine)
-HW2_AI = os.path.join(os.path.expanduser("~"), "OneDrive", "桌面", "碩士班", "修課",
-                      "類比積體電路", "HW", "HW2", "AI")
+HW2_AI = os.environ.get("AIC_HW2_COPY_DIR", "")   # 設了才另外複製一份到那個資料夾
 OUT = os.path.join(ROOT, "AIC-HW2_%s.icproj.json" % TAG)
 f = Schematic("project-aic-hw2-" + TAG.lower(), "AIC HW2 " + TAG, TAG,
               out_proj=OUT,
@@ -156,5 +155,5 @@ f.build(long_haul={"r-vin", "r-vip", "r-cm3", "r-cm2", "r-vdd", "r-on1",
         viewbox=(180, 20, 640, 440),
         expect_differ={t[0] for t in txt})   # plain text on purpose (SOP 4)
 
-if os.path.isdir(HW2_AI):
+if HW2_AI and os.path.isdir(HW2_AI):
     shutil.copyfile(OUT, os.path.join(HW2_AI, os.path.basename(OUT)))

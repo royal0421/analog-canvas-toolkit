@@ -22,8 +22,7 @@ from icproj import Schematic, plain, LABEL_PORT
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, os.pardir, "out")   # analog-canvas root
 # working copy for the course folder (only on the author's machine)
-HW2_AI = os.path.join(os.path.expanduser("~"), "OneDrive", "桌面", "碩士班", "修課",
-                      "類比積體電路", "HW", "HW2", "AI")
+HW2_AI = os.environ.get("AIC_HW2_COPY_DIR", "")   # 設了才另外複製一份到那個資料夾
 OUT = os.path.join(ROOT, "AIC-HW2_Fig1_double-tail-comparator.icproj.json")
 f = Schematic("project-aic-hw2-cmp", "AIC HW2 Fig. 1 double-tail comparator",
               "CMP", out_proj=OUT,
@@ -211,5 +210,5 @@ f.build(long_haul={"r-clk", "r-ap3", "r-an3", "r-sp3", "r-sp4", "r-sp5",
         viewbox=(X(-80), 20, 740, 480),
         expect_differ={"n-clk", "n-clk2"})
 
-if os.path.isdir(HW2_AI):
+if HW2_AI and os.path.isdir(HW2_AI):
     shutil.copyfile(OUT, os.path.join(HW2_AI, os.path.basename(OUT)))
