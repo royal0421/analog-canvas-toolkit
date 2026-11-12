@@ -1,0 +1,13 @@
+* hand-written deck: first-order delta-sigma modulator (block diagram)
+.title First-order delta-sigma modulator
+.subckt DeltaSigma1 u v
+.iodir u=input v=output
+.name u U
+.name v V
+XS1 u fb e adder
+.sign XS1 + -
+XINT e w block
+.formula XINT z^-1/(1-z^-1)
+XQ w v quantizer
+XDAC v fb dac
+.ends

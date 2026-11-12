@@ -1,6 +1,6 @@
 {
   "schemaVersion": 78,
-  "id": "project-6d44fe34-c443-4022-b270-716bb44144b6",
+  "id": "project-e58fd955-ca86-46c0-9b15-39d9fbf76dd7",
   "name": "Untitled",
   "topDocumentId": "main",
   "defaults": {
@@ -244,8 +244,8 @@
       "routes": [
         {
           "end": { "terminal": ["G0", "0"] },
-          "id": "wire-a1edfacc-06ac-4cf8-8e68-792908b3334d-route",
-          "legId": "route-leg-c4e64b5b276ed911",
+          "id": "wire-f9f47067-6de7-4b31-9ccb-77a361d5e55f-route",
+          "legId": "route-leg-59ed35a301764c32",
           "start": { "terminal": ["CC2", "2"] }
         },
         {
@@ -306,25 +306,25 @@
           "start": { "terminal": ["CC1", "2"] }
         },
         {
-          "id": "wire-2619dcd5-fbe5-4d1b-a71b-f33b4e788d22-route",
+          "id": "wire-3a8cc101-b82c-4b0b-8247-62035b4a6a41-route",
           "legs": [
             {
-              "bend": "route-bend-391068b2218bf881",
+              "bend": "route-bend-e94db3b3aa86afe0",
               "coordinate": [350, 210],
-              "id": "route-leg-391068b2218bf881"
+              "id": "route-leg-e94db3b3aa86afe0"
             },
             {
-              "bend": "route-bend-391067b2218bf6ce",
+              "bend": "route-bend-e94db4b3aa86b193",
               "coordinate": [350, 270],
-              "id": "route-leg-391067b2218bf6ce"
+              "id": "route-leg-e94db4b3aa86b193"
             },
             {
-              "bend": "route-bend-68de31c79845a2d8",
+              "bend": "route-bend-851d12e2a4930f07",
               "coordinate": [450, 270],
-              "id": "route-leg-391066b2218bf51b"
+              "id": "route-leg-e94db5b3aa86b346"
             },
             {
-              "id": "route-leg-56369fff8da6f4b7",
+              "id": "route-leg-97c524aaaf3296a8",
               "junction": "route-net-1e450bcee5d6517d-to-junction"
             }
           ],

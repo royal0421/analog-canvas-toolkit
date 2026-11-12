@@ -1,0 +1,16 @@
+* hand-written deck: feedback loop with feedforward path (block diagram)
+.title Feedback loop with feedforward
+.subckt FeedForward x y
+.iodir x=input y=output
+.name x X
+.name y Y
+XS1 x fb e adder
+.sign XS1 + -
+XA e ya block
+.formula XA A(s)
+XS2 ya yf y adder
+XF x yf block
+.formula XF F(s)
+XB y fb block
+.formula XB β
+.ends

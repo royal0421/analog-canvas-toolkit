@@ -1,0 +1,17 @@
+* hand-written deck: second-order delta-sigma modulator (block diagram)
+.title Second-order delta-sigma modulator
+.subckt DeltaSigma2 x y
+.iodir x=input y=output
+.name x X
+.name y Y
+XS1 x fb e1 adder
+.sign XS1 + -
+XINT1 e1 w1 block
+.formula XINT1 z^-1/(1-z^-1)
+XS2 w1 fb e2 adder
+.sign XS2 + -
+XINT2 e2 w2 block
+.formula XINT2 z^-1/(1-z^-1)
+XQ w2 y quantizer
+XDAC y fb dac
+.ends

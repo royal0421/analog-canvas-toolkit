@@ -1,0 +1,19 @@
+* hand-written deck: PLL linear model with VCO phase noise (block diagram)
+.title PLL linear model with VCO phase noise
+.subckt PllNoise pin pn pout
+.iodir pin=input pn=input pout=output
+.name pin φ_in
+.name pn φ_n
+.name pout φ_out
+XS1 pin fb e adder
+.sign XS1 + -
+XPD e vpd block
+.formula XPD K_PD
+XLF vpd vc block
+.formula XLF F(s)
+XVCO vc pv block
+.formula XVCO K_VCO/s
+XS2 pv pn pout adder
+XDIV pout fb block
+.formula XDIV 1/N
+.ends

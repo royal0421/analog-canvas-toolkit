@@ -1,0 +1,17 @@
+* hand-written deck: PLL linear phase-domain model (block diagram)
+.title PLL linear model
+.subckt PllLinear pin pout
+.iodir pin=input pout=output
+.name pin φ_in
+.name pout φ_out
+XS1 pin fb e adder
+.sign XS1 + -
+XPD e vpd block
+.formula XPD K_PD
+XLF vpd vc block
+.formula XLF F(s)
+XVCO vc pout block
+.formula XVCO K_VCO/s
+XDIV pout fb block
+.formula XDIV 1/N
+.ends

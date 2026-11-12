@@ -1,0 +1,25 @@
+* hand-written deck, not exported from any drawing
+* two-stage op amp, PMOS input pair, NMOS mirror load, NMOS CS 2nd stage, R_z + C_c compensation
+* polarity: M2 gate -> x is inverting, M6 inverts again, so M2 gate = V_inp, M1 gate = V_inn
+.title Two-stage op amp (PMOS input, R_z + C_c)
+.global VDD
+.subckt TwoStagePin inp inn vb out
+.iodir inp=input inn=input vb=input out=output
+.name inp V_inp
+.name inn V_inn
+.name vb V_b
+.name out V_out
+M5 tail vb VDD VDD pmos
+M1 d1 inn tail VDD pmos
+M2 x inp tail VDD pmos
+M3 d1 d1 0 0 nmos
+M4 x d1 0 0 nmos
+M6 out x 0 0 nmos
+M7 out vb VDD VDD pmos
+RZ x n1
+.name RZ R_z
+CC n1 out
+.name CC C_c
+CL out 0
+.name CL C_L
+.ends

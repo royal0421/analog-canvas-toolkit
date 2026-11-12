@@ -6,7 +6,7 @@
 import json
 import os
 
-from acdraw import parse_deck, draw, world, HERE
+from acdraw import parse_deck, draw, world, HERE, FLOW_IN, FLOW_OUT
 
 PINS = json.load(open(os.path.join(HERE, "pins_table.json"), encoding="utf-8"))
 SUPPLY = {"vdd", "vcc", "0", "gnd", "vss", "vee"}
@@ -17,6 +17,7 @@ LEAD_MAX = 50          # 埠到它接的腳位／線，最長（他核可的 Mil
 LEAD = 30              # 預設引線長
 STACK_MIN, STACK_MAX = 70, 140     # 上下相鄰兩顆電晶體的列距
 AREA_PER_DEVICE = 22000            # 外框面積 ÷ 元件數 的上限（太鬆）
+FLOW_LEAD_MAX = 80                 # 方塊圖的埠引線上限（線上要放得下箭頭，比電路圖長）
 
 
 class Plan(object):
@@ -33,6 +34,8 @@ class Plan(object):
         self.rail_spec, self.gnd_drop, self.gnd_at = None, 20, {}
         self.extra_rails = []
         self.paths = []
+        self.body = {}
+        self.flow = any(d.get("block") for d in self.devs)
 
     # ---------- 放元件 ----------
     def place(self, ref, x, y, rot=0, mirror="none"):
@@ -72,6 +75,24 @@ class Plan(object):
         """運放：輸入在左 (x-40, y∓10)、輸出在右 (x+30, y)。plus＝IN+ 在下（預設）或在上 "top"。"""
         return self.place(ref, x, y, 0, "none" if plus == "bottom" else "vertical")
 
+    # ---------- 訊號方塊圖 ----------
+    def block(self, ref, x, y, flip=False, w=None, h=None):
+        """方塊圖的元件（方框、延遲、量化器、ADC／DAC、三角形增益、g_m、比較器）：輸入在左、輸出在右，中心 (x, y)。
+        flip＝訊號由右往左（回授路徑上的方塊）。w、h＝方框的寬高（20 的倍數；接點在框邊外 10，即 x∓(w/2+10)。不設＝寬 40、接點 x∓30；字太長被撐大時程式會報 w 要設多少）。"""
+        assert self.dev[ref].get("block") and self.dev[ref]["block"] not in ("adder", "multiplier"), ref
+        if w or h:
+            assert self.dev[ref]["symbol"] == "integrator", "只有 block（方框）能設寬高"
+            self.body[ref] = [w or 60, h or 60]
+        return self.place(ref, x, y, 0, MIRROR if flip else "none")
+
+    def adder(self, ref, x, y, b="D", flip=False):
+        """加法點／乘法點：A 進（左）、Y 出（右）、B 從下面進（b="D"，回授在下方時）或上面進（b="U"）。
+        flip＝訊號由右往左。正負號寫在 deck：.sign XS1 + -"""
+        assert self.dev[ref].get("block") in ("adder", "multiplier"), ref
+        rot, mir = {("D", False): (0, "none"), ("U", False): (0, "vertical"),
+                    ("D", True): (0, MIRROR), ("U", True): (180, "none")}[(b, flip)]
+        return self.place(ref, x, y, rot, mir)
+
     def two(self, ref, x, y, horizontal=False, first=None):
         """兩端元件（R、C、L、電流源、電壓源、二極體；二極體的第 1 支腳是陽極 A）：直放時腳在 (x, y∓20)；horizontal＝橫放。
         first＝netlist 裡寫在前面的那支腳朝哪邊（U 上／D 下／L 左／R 右）；預設直放朝上、橫放朝左。
@@ -89,7 +110,11 @@ class Plan(object):
     # ---------- 腳位 ----------
     def pin(self, ref, pin):
         x, y, rot, mir = self.parts[ref]
-        return world((x, y), tuple(PINS[self.dev[ref]["symbol"]][pin]), rot, mir)
+        local = tuple(PINS[self.dev[ref]["symbol"]][pin])
+        if ref in self.body:                 # 設了寬度的方框：腳在左右邊上
+            half = self.body[ref][0] // 2 + 10          # 框邊再往外 10 是接點
+            local = (-half if pin == "A" else half, 0)
+        return world((x, y), local, rot, mir)
 
     def net_pins(self, net):
         lab = set(k.split("@")[1] for k in self.ports if k.startswith(net + "@"))      # 掛了標籤的腳不算在走線裡
@@ -187,6 +212,10 @@ class Plan(object):
                 "gnd_drop": self.gnd_drop, "trunks": self.trunks, "free_wires": self.free, "label_at": self.label_at, "gnd_at": self.gnd_at, "extra_rails": self.extra_rails, "paths": self.paths}
         if self.rail_spec:
             plan["vdd_rail"] = self.rail_spec
+        if self.flow:
+            plan["body"] = self.body
+            plan["expect_pins"] = dict(("%s.%s" % (d["ref"], pn), list(self.pin(d["ref"], pn)))
+                                       for d in self.devs if d.get("block") for pn in d["pins"])
         if self.order:
             plan["order"] = self.order
         return plan
@@ -320,8 +349,24 @@ class Plan(object):
             for a, b in self.free:
                 if net in [self.dev[r]["pins"].get("G") for r, _ in self.through]:
                     ds.append(abs(x - a[0]) + abs(y - a[1]))
-            if ds and min(ds) > LEAD_MAX:
-                bad.append("埠 %s 的引線長 %d，超過 %d" % (net, min(ds), LEAD_MAX))
+            lead_max = FLOW_LEAD_MAX if self.flow else LEAD_MAX
+            if ds and min(ds) > lead_max:
+                bad.append("埠 %s 的引線長 %d，超過 %d" % (net, min(ds), lead_max))
+        # 3.5 方塊圖：訊號線要拉直；主路徑由左往右、回授由右往左
+        if self.flow:
+            wired = set(tuple(w["from"]) for w in self.paths)
+            for net, pins in self.nets.items():
+                drv = [(r, pn) for r, pn in pins if pn in FLOW_OUT and self.dev[r].get("block")]
+                for r, pn in pins:
+                    if pn not in FLOW_IN or not self.dev[r].get("block") or not drv or (r, pn) in wired:
+                        continue
+                    (dx_, dy_), (sx, sy) = self.pin(*drv[0]), self.pin(r, pn)
+                    if 0 < abs(dy_ - sy) <= 20 and self.dev[r]["block"] not in ("comparator",) and not (pn == "B"):
+                        bad.append("%s.%s 跟它的來源 %s 高度只差 %d：對齊成同一列，線才會是直的" % (r, pn, drv[0][0], abs(dy_ - sy)))
+                    if dy_ == sy:
+                        flipped = self.parts[drv[0][0]][3] == MIRROR or self.parts[drv[0][0]][2] == 180
+                        if (sx < dx_) != flipped:
+                            bad.append("%s → %s 同一列但方向反了：主路徑由左往右；回授路徑的方塊要 flip=True" % (drv[0][0], r))
         # 4. 整體鬆緊
         xs = [p[0] for p in self.parts.values()] + [p[0] for p in self.ports.values()]
         ys = [p[1] for p in self.parts.values()] + [p[1] for p in self.ports.values()]

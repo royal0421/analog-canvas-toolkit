@@ -11,8 +11,8 @@ p.mos("M6", 410, 110)                                      # 第二級
 p.mos("M7", 410, 290)
 p.two("CC", 350, 160, horizontal=True)
 p.two("CL", 460, 210)
-p.port_pin("inp", "M1", "G")
-p.port_pin("inn", "M2", "G")
+p.port_pin("inn", "M1", "G")
+p.port_pin("inp", "M2", "G")
 p.port_pin("vb", "M5", "G", lead=40)
 p.port("out", 510, 160, "R")
 p.gate_through("M5", "M7")                                 # V_b 貫穿 M5 接到 M7

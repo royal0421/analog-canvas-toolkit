@@ -1,0 +1,15 @@
+* hand-written deck, not exported from any drawing
+.title Widlar current source (bipolar)
+.global VCC
+.subckt Widlar iout
+.iodir iout=output
+.name iout I_out
+RREF VCC a
+.name RREF R_REF
+Q1 a a 0 npn
+.name Q1 Q_1
+Q2 iout a e2 npn
+.name Q2 Q_2
+RE e2 0
+.name RE R_E
+.ends

@@ -5,12 +5,21 @@ import json, os, re, shutil, sys
 from acsession import Session, save_render, HERE
 
 SYMBOL = {"nmos": "nmos", "pmos": "pmos", "npn": "npn", "pnp": "pnp"}
+# 訊號方塊圖：deck 寫 X<名稱> <net…> <類型>；類型 → (編輯器符號, 腳位順序)
+BLOCK = {"adder": ("adder", ["A", "B", "Y"]), "multiplier": ("multiplier", ["A", "B", "Y"]),
+         "block": ("integrator", ["A", "Y"]), "delay": ("unit-delay", ["A", "Y"]),
+         "quantizer": ("quantizer", ["A", "Y"]), "adc": ("adc", ["IN", "OUT"]), "dac": ("dac", ["IN", "OUT"]),
+         "amp": ("voltage-amplifier", ["IN", "OUT"]), "gm": ("transconductance", ["A", "Y"]),
+         "comparator": ("comparator", ["IN+", "IN-", "OUT"])}
+FLOW_IN = ("A", "B", "IN", "IN+", "IN-")          # 方塊的輸入腳：線接到這裡要畫箭頭
+FLOW_OUT = ("Y", "OUT")
 PASSIVE = {"R": "resistor", "C": "capacitor", "L": "inductor", "I": "current-source", "V": "voltage-source", "D": "diode"}
 
 
 def parse_deck(path):
     """我們的 .cir → (devices, ports, names)。devices: [{ref, symbol, pins:{pin:net}, value}]"""
     devs, ports, names = [], [], {}
+    formula, signs = {}, {}
     for ln in open(path, encoding="utf-8").read().splitlines():
         s = ln.strip()
         if not s or s.startswith("*"):
@@ -21,6 +30,10 @@ def parse_deck(path):
             ports = tok[2:]
         elif low in (".name", ".alias") and len(tok) >= 3:
             names[tok[1]] = tok[2]
+        elif low == ".formula" and len(tok) >= 3:          # .formula XH1 A(s)　方框裡的字（可寫 K_VCO/s、1/(1+s/ω_p)）
+            formula[tok[1]] = s.split(None, 2)[2]
+        elif low == ".sign" and len(tok) >= 4:             # .sign XS1 + -　加法點 A、B 兩個輸入的正負號
+            signs[tok[1]] = [tok[2], tok[3]]
         elif low.startswith("."):
             continue
         elif tok[0][0].upper() == "M":
@@ -33,12 +46,93 @@ def parse_deck(path):
             devs.append({"ref": tok[0], "symbol": "opamp", "pins": {"IN+": tok[1], "IN-": tok[2], "OUT": tok[3]}})
         elif tok[0][0].upper() == "X" and tok[-1].lower() == "inverter":
             devs.append({"ref": tok[0], "symbol": "inverter", "pins": {"A": tok[1], "Y": tok[2]}})
+        elif tok[0][0].upper() == "X" and tok[-1].lower() in BLOCK:
+            sym, order = BLOCK[tok[-1].lower()]
+            assert len(tok) == len(order) + 2, "%s：%s 要 %d 條 net（%s）" % (tok[0], tok[-1], len(order), " ".join(order))
+            devs.append({"ref": tok[0], "symbol": sym, "block": tok[-1].lower(), "pins": dict(zip(order, tok[1:-1]))})
         elif tok[0][0].upper() in PASSIVE:
             sym = PASSIVE[tok[0][0].upper()]
             a, b = ("+", "-") if sym in ("current-source", "voltage-source") else (("A", "K") if sym == "diode" else ("1", "2"))
             devs.append({"ref": tok[0], "symbol": sym, "pins": {a: tok[1], b: tok[2]},
                          "value": tok[3] if len(tok) > 3 else None})
+    for d in devs:
+        if d["ref"] in formula:
+            d["formula"] = formula[d["ref"]]
+        if d["ref"] in signs:
+            d["signs"] = signs[d["ref"]]
     return devs, ports, names
+
+
+def flow_arrows(ws, devs, plan):
+    """方塊圖的箭頭：上游沒有對應的指令，直接改專案檔裡每條線的樣式。
+    線的終點是方塊輸入腳或輸出埠 → 終點畫箭頭；線是「輸入腳→接點」的方向 → 先反過來。回傳 (箭頭數, 應有數)。"""
+    path = os.path.join(ws, "project.icproj.json")
+    doc = json.load(open(path, encoding="utf-8"))
+    sym = dict((d["ref"], d) for d in devs)
+    driven = set(n for d in devs for p_, n in d["pins"].items() if p_ in FLOW_OUT)
+    pid = lambda key: "P_" + "".join(c if (c.isalnum() or c in "_-") else "_" for c in key)
+    out_ports = set(pid(k) for k in plan.get("ports", {}) if k.split("@")[0] in driven)
+
+    def sink(tm):
+        return bool(tm) and ((tm[0] in sym and sym[tm[0]].get("block") and tm[1] in FLOW_IN) or tm[0] in out_ports)
+    n = 0
+    for r in doc["documents"][0]["routes"]:
+        if "legs" in r:
+            last = r["legs"][-1]
+            if sink(r["start"].get("terminal")) and not sink(last.get("terminal")):
+                new = [dict(l) for l in reversed(r["legs"][:-1])]
+                tail = {"id": last["id"]}
+                tail.update(r["start"])
+                r["start"] = dict((k, v) for k, v in last.items() if k != "id")
+                r["legs"] = new + [tail]
+                last = tail
+            end = last.get("terminal")
+        else:
+            if sink(r["start"].get("terminal")) and not sink(r["end"].get("terminal")):
+                r["start"], r["end"] = r["end"], r["start"]
+            end = r["end"].get("terminal")
+        if sink(end):
+            r["styleOverride"] = {"arrow": "end"}
+            n += 1
+    with open(path, "w", encoding="utf-8", newline=chr(10)) as f:
+        json.dump(doc, f, ensure_ascii=False)
+    want = sum(1 for d in devs if d.get("block") for p_ in d["pins"] if p_ in FLOW_IN) + len(out_ports)
+    return n, want
+
+
+def flow_connectivity(ws, devs, plan):
+    """方塊符號沒有 netlist 定義，匯不出 netlist；改成直接讀專案檔的線，確認每條 net 接到的腳跟 deck 一樣。"""
+    doc = json.load(open(os.path.join(ws, "project.icproj.json"), encoding="utf-8"))["documents"][0]
+    par = {}
+
+    def find(a):
+        par.setdefault(a, a)
+        while par[a] != a:
+            par[a] = par[par[a]]
+            a = par[a]
+        return a
+
+    def key(e):
+        return ("T",) + tuple(e["terminal"]) if "terminal" in e else ("J", e["junction"])
+    for r in doc["routes"]:
+        ends = [key(r["start"])] + ([key(l) for l in r["legs"] if "terminal" in l or "junction" in l] if "legs" in r else [key(r["end"])])
+        for e in ends[1:]:
+            par[find(e)] = find(ends[0])
+    pid = lambda k: "P_" + "".join(c if (c.isalnum() or c in "_-") else "_" for c in k)
+    want = {}
+    for d in devs:
+        for p_, n in d["pins"].items():
+            want.setdefault(n, set()).add(("T", d["ref"], p_))
+    for k in plan.get("ports", {}):
+        want.setdefault(k.split("@")[0], set()).add(("T", pid(k), "P"))
+    roots = {}
+    for n, terms in want.items():
+        rs = set(find(x) for x in terms)
+        if len(rs) != 1 and len(terms) > 1:
+            return False, "net %s 沒有全部接在一起" % n
+        roots.setdefault(rs.pop(), []).append(n)
+    dup = [v for v in roots.values() if len(v) > 1]
+    return (not dup), ("不同的 net 被接在一起：%s" % dup if dup else "")
 
 
 def reference_spice(devs, ports, name):
@@ -147,6 +241,8 @@ def draw(plan_path):
             mir = spec[3] if len(spec) > 3 else "none"
             a = {"kind": "place-component", "symbol": d["symbol"], "id": d["ref"], "reference": d["ref"],
                  "position": {"x": x, "y": y}, "rotation": rot, "mirror": mir}
+            if d.get("signs"):
+                a["parameters"] = {"signA": d["signs"][0], "signB": d["signs"][1]}
             acts.append(a)
         pid = lambda key: "P_" + "".join(c if (c.isalnum() or c in "_-") else "_" for c in key)
         for key, spec in plan.get("ports", {}).items():
@@ -160,6 +256,21 @@ def draw(plan_path):
                          "reference": re.sub(r"\W", "_", names.get(net, net)),
                          "position": {"x": x, "y": y}, "mirror": mir, "rotation": rot})
         must(s.call("circuit_place", {"actions": acts}), "place")
+        flow = any(d.get("block") for d in devs)
+        for d in devs:
+            if not d.get("block"):
+                continue
+            sf = {}
+            if d.get("formula"):
+                sf["formula"] = d["formula"]
+            if d["ref"] in plan.get("body", {}):
+                sf["bodyWidth"], sf["bodyHeight"] = plan["body"][d["ref"]]
+            if sf:
+                sf.update({"kind": "set-signal-flow", "target": {"kind": "instance", "id": d["ref"]}})
+                must(s.call("apply_actions", {"actions": [sf]}), "formula " + d["ref"])
+        hide = [d["ref"] for d in devs if d.get("block") and d["ref"] not in names]
+        if hide:
+            must(s.call("apply_actions", {"actions": [{"kind": "set-instance-display", "instanceIds": hide, "showReference": False}]}), "hide refs")
         # 2. 讀腳位（絕對座標自己算：localPosition 轉向後加原點）
         ids = [d["ref"] for d in devs] + [pid(n) for n in plan.get("ports", {})]
         info = must(s.call("inspect", {"target": {"kind": "pins", "instanceIds": ids}}), "pins")
@@ -170,6 +281,18 @@ def draw(plan_path):
                 lp = p["localPosition"]
                 pinpos[(inst["id"], p["name"])] = world((pl["position"]["x"], pl["position"]["y"]),
                                                         (lp["x"], lp["y"]), pl["rotation"], pl["mirror"])
+        for d in devs:                       # 方框會被字撐大，腳位以編輯器回報的實際接點為準
+            if d.get("block"):
+                o = must(s.call("inspect", {"target": {"kind": "object", "id": d["ref"]}}), "object " + d["ref"])
+                for p in o["pins"]:
+                    cp = p["connection"]["contactPoint"]
+                    pinpos[(d["ref"], p["name"])] = (cp["x"], cp["y"])
+        for k_, want_ in plan.get("expect_pins", {}).items():      # 方框被字撐大時，腳位會跟位置表算的不一樣
+            ref_, pin_ = k_.split(".")
+            got = pinpos[(ref_, pin_)]
+            if tuple(want_) != tuple(got):
+                raise RuntimeError("%s 的方框比位置表設定的寬：%s 腳實際在 %s、位置表以為在 %s。把 p.block(..., w=) 設成 %d"
+                                   % (ref_, pin_, list(got), want_, 2 * (abs(got[0] - plan["parts"][ref_][0]) - 10)))
         # 3. 整理每條 net 的腳位
         nets = {}
         for d in devs:
@@ -290,23 +413,39 @@ def draw(plan_path):
             r = s.call("apply_actions", {"actions": [{"kind": "move-annotation", "annotationId": "instance-label-" + ref_,
                                                       "position": {"x": lx, "y": ly}, "alignment": "middle"}]})
             log.append(("label@ " + ref_, r.get("ok"), J(r, 400)))
-        rr = save_render(s, svg, os.path.join(out, name + ".png"))
-        ref = reference_spice(devs, ports, re.sub(r"\W", "_", name))
-        open(os.path.join(ws, "reference.sp"), "w", encoding="utf-8", newline="\n").write(ref)
-        v = s.call("verify", {"expectedNetlist": {"text": ref, "compare": {"parameters": False, "portOrder": False, "declarations": False, "bindings": False}}})
-        diag = s.call("inspect", {"target": {"kind": "diagnostics"}})
-        exported = (s.call("netlist_code", {"action": "read"}).get("netlist") or {}).get("text") or ""
-        open(os.path.join(out, name + ".exported.sp"), "w", encoding="utf-8", newline=chr(10)).write(exported)
-        merged, seen = ref, {}
-        for net in plan.get("ports", {}):       # 同顯示名＝同一條 net
-            if "@" in net:
-                continue
-            disp = names.get(net, net)
-            if disp in seen:
-                merged = re.sub(r"(?<![\w-])%s(?![\w-])" % re.escape(net), seen[disp], merged)
-            else:
-                seen[disp] = net
-        same = signature(exported) == signature(merged)
+        if not flow:
+            rr = save_render(s, svg, os.path.join(out, name + ".png"))
+            ref = reference_spice(devs, ports, re.sub(r"\W", "_", name))
+            open(os.path.join(ws, "reference.sp"), "w", encoding="utf-8", newline="\n").write(ref)
+            v = s.call("verify", {"expectedNetlist": {"text": ref, "compare": {"parameters": False, "portOrder": False, "declarations": False, "bindings": False}}})
+            diag = s.call("inspect", {"target": {"kind": "diagnostics"}})
+            exported = (s.call("netlist_code", {"action": "read"}).get("netlist") or {}).get("text") or ""
+            open(os.path.join(out, name + ".exported.sp"), "w", encoding="utf-8", newline=chr(10)).write(exported)
+            merged, seen = ref, {}
+            for net in plan.get("ports", {}):       # 同顯示名＝同一條 net
+                if "@" in net:
+                    continue
+                disp = names.get(net, net)
+                if disp in seen:
+                    merged = re.sub(r"(?<![\w-])%s(?![\w-])" % re.escape(net), seen[disp], merged)
+                else:
+                    seen[disp] = net
+            same = signature(exported) == signature(merged)
+            shutil.copy2(os.path.join(ws, "project.icproj.json"), os.path.join(out, name + ".icproj.json"))
+    if flow:
+        n_arrow, n_want = flow_arrows(ws, devs, plan)
+        log.append(("arrows", n_arrow == n_want, "箭頭 %d 個，輸入端共 %d 個（有輸入端的線不是停在腳上：那支腳改用 p.wire 從來源接過去）" % (n_arrow, n_want)))
+        same, why = flow_connectivity(ws, devs, plan)
+        if why:
+            log.append(("connectivity", False, why))
+        with Session(ws) as s:
+            rr = save_render(s, svg, os.path.join(out, name + ".png"))
+            diag = s.call("inspect", {"target": {"kind": "diagnostics"}})
+        skip = ("MISSING_DEVICE_DEFINITION", "GENERATED_NET_NAME")      # 方塊符號本來就沒有 netlist 定義
+        items = [it for it in diag.get("items", []) if it["code"] not in skip]
+        diag = {"items": items, "counts": {"errors": sum(1 for it in items if it.get("severity") == "error"),
+                                           "warnings": sum(1 for it in items if it.get("severity") == "warning")}}
+        v = {"comparison": {"summary": "（方塊圖不匯出 netlist，改比對專案檔的接線）"}}
         shutil.copy2(os.path.join(ws, "project.icproj.json"), os.path.join(out, name + ".icproj.json"))
     print("== %s" % name)
     for what, ok, err in log:

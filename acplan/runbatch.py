@@ -7,7 +7,7 @@ names = sys.argv[1:]
 for n in names:
     r = subprocess.run([sys.executable, os.path.join(HERE, "plans_py", n + ".py")], capture_output=True, text=True,
                        encoding="utf-8", errors="replace", env=dict(os.environ, PYTHONIOENCODING="utf-8"))
-    if "走線失敗" in r.stdout or "WORKSPACE_SAVE_FAILED" in (r.stdout + r.stderr):          # 整批連跑時偶發（2026-11-11 見過 2/46，單獨重跑都過）：原樣重跑一次，兩次都失敗才算
+    if "走線失敗" in r.stdout or any(k in (r.stdout + r.stderr) for k in ("WORKSPACE_SAVE_FAILED", "OSError: [Errno 22]")):          # 整批連跑時偶發（2026-11-11 見過 2/46，單獨重跑都過）：原樣重跑一次，兩次都失敗才算
         print("（%s 走線失敗，原樣重跑一次）" % n)
         r = subprocess.run([sys.executable, os.path.join(HERE, "plans_py", n + ".py")], capture_output=True, text=True,
                            encoding="utf-8", errors="replace", env=dict(os.environ, PYTHONIOENCODING="utf-8"))

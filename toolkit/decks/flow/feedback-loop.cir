@@ -1,0 +1,13 @@
+* hand-written deck: negative feedback system (block diagram)
+.title Negative feedback loop
+.subckt FeedbackLoop x y
+.iodir x=input y=output
+.name x X
+.name y Y
+XS1 x fb e adder
+.sign XS1 + -
+XH1 e y block
+.formula XH1 A(s)
+XB1 y fb block
+.formula XB1 β
+.ends

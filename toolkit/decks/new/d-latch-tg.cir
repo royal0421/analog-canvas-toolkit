@@ -1,0 +1,26 @@
+* hand-written deck, not exported from any drawing
+.title Transmission-gate D latch
+.global VDD
+.subckt DLatchTG d q ck ckb
+.iodir d=input q=output ck=input ckb=input
+.name d D
+.name q Q
+.name ck CK
+.name ckb CKb
+MN1 x ck d 0 nmos
+.name MN1 M_1
+MP1 x ckb d VDD pmos
+.name MP1 M_2
+MPA qb x VDD VDD pmos
+.name MPA M_3
+MNA qb x 0 0 nmos
+.name MNA M_4
+MPB q qb VDD VDD pmos
+.name MPB M_5
+MNB q qb 0 0 nmos
+.name MNB M_6
+MN2 q ckb x 0 nmos
+.name MN2 M_7
+MP2 q ck x VDD pmos
+.name MP2 M_8
+.ends

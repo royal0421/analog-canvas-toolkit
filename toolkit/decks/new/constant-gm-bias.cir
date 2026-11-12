@@ -1,0 +1,15 @@
+* hand-written deck, not exported from any drawing
+* constant-gm (beta multiplier) bias: PMOS mirror on top, NMOS pair below, R_S at M2 source
+.title Constant-gm bias (beta multiplier)
+.global VDD
+.subckt ConstGm vbn vbp
+.iodir vbn=output vbp=output
+.name vbn V_BN
+.name vbp V_BP
+M3 vbn vbp VDD VDD pmos
+M4 vbp vbp VDD VDD pmos
+M1 vbn vbn 0 0 nmos
+M2 vbp vbn s2 0 nmos
+RS s2 0
+.name RS R_S
+.ends

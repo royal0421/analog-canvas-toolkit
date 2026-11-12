@@ -1,0 +1,17 @@
+* hand-written deck: feedback loop with a disturbance injected at the output (block diagram)
+.title Feedback loop with output disturbance
+.subckt LoopDist r d y
+.iodir r=input d=input y=output
+.name r R
+.name d D
+.name y Y
+XS1 r fb e adder
+.sign XS1 + -
+XC e u block
+.formula XC C(s)
+XP u yp block
+.formula XP P(s)
+XS2 yp d y adder
+XH y fb block
+.formula XH H(s)
+.ends

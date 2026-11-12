@@ -1,5 +1,6 @@
 * hand-written deck, not exported from any drawing
 * two-stage Miller op amp: 5T OTA + common-source second stage, C_c
+* polarity: x is taken at M2 drain and the second stage inverts, so M2 gate is the non-inverting input
 .title Two-stage Miller op amp
 .global VDD
 .subckt MILLER inp inn vb out
@@ -8,8 +9,8 @@
 .name inn V_inn
 .name vb V_b
 .name out V_out
-M1 d1 inp tail 0 nmos
-M2 x inn tail 0 nmos
+M1 d1 inn tail 0 nmos
+M2 x inp tail 0 nmos
 M3 d1 d1 VDD VDD pmos
 M4 x d1 VDD VDD pmos
 M5 tail vb 0 0 nmos

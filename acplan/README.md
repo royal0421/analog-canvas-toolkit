@@ -4,10 +4,13 @@
 走線、接點、匯出 `.icproj.json` 交給 Analog Canvas 上游提供的**本機 headless 編輯器**。
 產物用編輯器自己的引擎產生，所以在網站上按 Import 就能開。
 
-適用：電晶體級與運放級的課本電路（差動對、電流鏡、疊接、比較器、邏輯閘、運放回授電路）。
-方塊圖、剖面圖、要照原圖比例的圖，請用 repo 根目錄 `SOP.md` 的產生器路線。
+適用：沒有參照圖、要自己決定怎麼擺的圖。電晶體級與運放級的課本電路（差動對、電流鏡、疊接、比較器、邏輯閘、運放回授電路），
+以及訊號方塊圖（回授系統、PLL 線性模型、ΔΣ 調變器、收發機訊號鏈；箭頭自動加，見 `SOP.md` §6a）。
+有參照圖要照著畫的、剖面圖、波形示意，請用 repo 根目錄 `SOP.md` 的產生器路線。
 
 ![two-stage Miller op amp](examples/two-stage-miller.png)
+
+![second-order delta-sigma modulator](examples/flowtest-ds2.png)
 
 ## 需要的東西
 
@@ -67,7 +70,7 @@ p.draw()
 ## 內容
 
 - `acplan.py`：位置表產生器＋慣例檢查器。`acdraw.py`：照位置表呼叫編輯器。`acsession.py`：跟 headless 編輯器的連線。
-- `plans_py/`：55 張範例，新圖先找最像的照抄。`examples/`：這些範例的 PNG 與 `.icproj.json`。
+- `plans_py/`：68 張範例（其中 8 張是訊號方塊圖），新圖先找最像的照抄。`examples/`：這些範例的 PNG 與 `.icproj.json`。
 - `SOP.md`：完整做法，包含走線被拒絕時的修法表、交付前的看圖清單、上游改版時的處理程序。
 - deck 在 `../toolkit/decks/`。
 
@@ -76,5 +79,6 @@ p.draw()
 `SOP.md` 寫完後，請另一個沒看過這些電路的模型只靠 SOP 與範例畫 10 張保留的電路
 （folded cascode、StrongARM latch、交叉耦合 LC 振盪器、儀表放大器等），10 張都通過檢查，每張跑 1～3 次；
 其中 1 張因為檢查器少一條規則而畫得不像課本，補規則後重畫。過程中回報的缺口都補回 SOP 了。
+方塊圖的部分用同樣的方式測了 3 張（二階 ΔΣ、帶前饋的回授、PLL 加相位雜訊），3 張都通過，每張跑 1～2 次；回報的 4 處缺口也補回 SOP 了。
 
 已知限制：偶爾會遇到工作區檔案暫時被鎖（`WORKSPACE_SAVE_FAILED`），原樣重跑即可，`runbatch.py` 會自動重跑一次。

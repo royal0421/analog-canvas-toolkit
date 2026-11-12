@@ -1,0 +1,30 @@
+* hand-written deck, not exported from any drawing
+.title Tow-Thomas biquad
+.subckt TowThomas in bp lp
+.iodir in=input bp=output lp=output
+.name in V_in
+.name bp V_BP
+.name lp V_LP
+R1 in x1
+.name R1 R_1
+RQ x1 bp
+.name RQ R_Q
+C1 x1 bp
+.name C1 C_1
+XOA1 0 x1 bp opamp
+.alias XOA1 OA1
+R2 bp x2
+.name R2 R_2
+C2 x2 lp
+.name C2 C_2
+XOA2 0 x2 lp opamp
+.alias XOA2 OA2
+R3 lp x3
+.name R3 R_3
+R4 x3 v3
+.name R4 R_4
+XOA3 0 x3 v3 opamp
+.alias XOA3 OA3
+RF x1 v3
+.name RF R_F
+.ends

@@ -1,0 +1,14 @@
+* hand-written deck: direct-conversion receiver chain (block diagram)
+.title Receiver chain
+.subckt Receiver rf lo dout
+.iodir rf=input lo=input dout=output
+.name rf RF
+.name lo LO
+.name dout D_out
+XLNA rf a amp
+.name XLNA LNA
+XMIX a lo b multiplier
+XLPF b c block
+.formula XLPF H(s)
+XADC c dout adc
+.ends
