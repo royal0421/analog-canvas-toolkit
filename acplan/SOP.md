@@ -136,7 +136,7 @@ CC x out                 ← 兩端元件：R／C／L／I／V／D，第一個 ne
 | 多級運放迴路（biquad） | `tow-thomas-biquad` |
 | 傳輸閘 latch | `d-latch-tg` |
 | 偏壓電路 | `constant-gm-bias`、`widlar-current-source` |
-| 小訊號等效電路（§6b） | `ss-cs`、`ss-cs-degen`、`ss-ce-hybrid-pi` |
+| 小訊號等效電路（§6b） | `ss-cs`、`ss-cs-degen`、`ss-ce-hybrid-pi`、`sstest-cg`（共閘） |
 | 訊號方塊圖（§6a） | `feedback-loop`、`pll-linear-model`、`delta-sigma-1st`、`loop-with-disturbance`（干擾從上面進）、`receiver-chain`（三角形、乘法點、ADC） |
 | 多顆運放串接 | `instrumentation-amp`（上下兩顆的 IN− 都朝向中間的電阻串；運放輸入腳的分支可以貼著三角形往上／下拉，不會被判碰到本體） |
 | 其他 | `bandgap-core`、`ldo-regulator`、`charge-pump`、`colpitts-osc`、`esd-2stage-clamp`、`half-wave-rectifier` |
@@ -199,7 +199,7 @@ XH1 e y block            ← 方框：輸入、輸出
 
 ## 6b. 小訊號等效電路（2026-11-13 加入）
 
-受控源＋電阻＋「+ v_gs −」這類圖也用這份 SOP，流程六步不變。差別只有下面幾點。先抄範例：`ss-cs`（共源）、`ss-cs-degen`（源極退化）、`ss-ce-hybrid-pi`（BJT hybrid-π）。
+受控源＋電阻＋「+ v_gs −」這類圖也用這份 SOP，流程六步不變。差別只有下面幾點。先抄範例：`ss-cs`（共源）、`ss-cs-degen`（源極退化）、`ss-ce-hybrid-pi`（BJT hybrid-π）、`sstest-cg`（共閘：閘極接地、輸入在源極）。
 
 **deck**（放 `toolkit/decks/new/`）：
 
@@ -218,8 +218,8 @@ RO d s
 |---|---|
 | 受控源 | `p.source(ref, x, y)`：直放，腳在 `(x, y∓20)`，箭頭由上往下（第 1 條 net 在上）；要朝上寫 `first="D"`。預設菱形，要圓形寫 `shape="circle"` |
 | 開路的輸入端子（閘極） | `p.open_port(net, x, y, x_end)`：端子在 `(x, y)`，引線水平拉到 `x_end` 停住 |
-| 標控制電壓 | `p.vmark("v_gs", x, y_plus, y_minus)`：`x` 用線頭的 x；`y_plus`＝上面那條線 +15、`y_minus`＝下面那條線 −15 |
-| 三顆以上接地 | `p.ground_bus(y, x0, x1, at=x)`：一條共用地線、只畫一個接地符號；`at` 要是 10 的倍數、不要跟任何接地腳同 x |
+| 標控制電壓 | `p.vmark("v_gs", x, y_plus, y_minus)`：`x` 用線頭的 x；`y_plus`＝上面那條線 +15、`y_minus`＝下面那條線 −15。**＋、− 相距至少 50**（不到 50 會壓到中間的字，檢查器會擋）。＋ 要在下面就把兩個 y 對調（`y_plus` > `y_minus`） |
+| 三顆以上接地 | `p.ground_bus(y, x0, x1, at=x)`：一條共用地線、只畫一個接地符號；`at` 要是 10 的倍數、不要跟任何接地腳同 x。**它會把圖上所有接地腳都接上去**，不能只接其中幾支；接地腳不在同一列（例：R_S 在下面、R_D 在上面）就不要用，讓每支腳各畫一個接地符號 |
 
 **慣例**（他 2026-11-13 看圖後的裁示，檢查器會抓前三條）：
 
@@ -227,7 +227,8 @@ RO d s
 2. 控制電壓「+ v_gs −」標在線頭正下方；下面那條線（源極線或共用地線）往左拉到線頭正下方，當「−」的參考。
 3. 輸出線設成幹線，比元件上端腳高 20（`p.hline("d", 80, …)`，元件中心 y=120）；下面那條線比下端腳低 20（y=160）。腳剛好落在幹線中段會走線失敗。
 4. 並聯的元件欄距 70（受控源右邊要放得下 g_m v_gs）；整張圖不要超過需要的寬度。
-5. 輸入端不是開路的（BJT 的 r_π 接在基極）：用一般的 `p.port`＋`p.hline`，基極線跟集極線同高；v_π 標在 r_π 左邊 25。
+5. 控制端有一端是地（共閘：閘極接地、輸入在源極）：deck 的控制端寫 `0 s`，不用 `open_port`；輸入用一般的 `p.port` 接在源極線上，v_gs 標在源極到地的那顆元件（R_S）左邊 30，＋ 在地那一側、− 在源極那一側（範例 `sstest-cg`）。
+6. 輸入端不是開路的（BJT 的 r_π 接在基極）：用一般的 `p.port`＋`p.hline`，基極線跟集極線同高；v_π 標在 r_π 左邊 25。
 
 **驗收**：受控源的控制端不接線，所以不匯出 netlist；`NETLIST EQUIVALENT` 改成比對專案檔裡的接線跟 deck 是否一致（含每支接地腳有沒有接到接地符號）。`CHECK: PASS`＋看圖的要求不變，另外多看：受控源箭頭方向、＋／− 沒有壓到線或字。
 

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 78,
-  "id": "project-f03bd79a-c719-4fbe-8372-73151d8d8d1e",
+  "id": "project-0d9944f5-0b28-4701-88d0-d1c29da1dfe2",
   "name": "Untitled",
   "topDocumentId": "main",
   "defaults": {
@@ -252,9 +252,9 @@
           "start": { "terminal": ["RD", "2"] }
         },
         {
-          "end": { "junction": "wire-db58e963-ef8e-4d11-ac35-78583398103e-to-junction" },
-          "id": "wire-db58e963-ef8e-4d11-ac35-78583398103e-route",
-          "legId": "route-leg-cef804fae89c69f3",
+          "end": { "junction": "wire-33f4c307-c469-4d68-9e10-111dfb3a237f-to-junction" },
+          "id": "wire-33f4c307-c469-4d68-9e10-111dfb3a237f-route",
+          "legId": "route-leg-d884b041cea428b4",
           "start": { "terminal": ["P_g", "P"] }
         },
         {
@@ -337,7 +337,7 @@
         },
         {
           "coordinate": [150, 80],
-          "id": "wire-db58e963-ef8e-4d11-ac35-78583398103e-to-junction",
+          "id": "wire-33f4c307-c469-4d68-9e10-111dfb3a237f-to-junction",
           "role": "route-anchor"
         },
         {
@@ -366,7 +366,7 @@
               "position": { "x": 150, "y": 95 }
             },
             "content": { "runs": ["+"] },
-            "id": "text-bd5ca967-8943-4047-9f7a-94278e9264e2",
+            "id": "text-324fc068-7695-44ea-86eb-d22e038637fd",
             "kind": "text",
             "locked": false,
             "rotation": 0,
@@ -396,7 +396,7 @@
                 }
               ]
             },
-            "id": "text-cfdb59ad-adbe-4a64-a35e-bc829275c0ae",
+            "id": "text-7e3bab0a-a4f3-4c51-b24b-b1a831169bf3",
             "kind": "text",
             "locked": false,
             "rotation": 0,
@@ -410,7 +410,7 @@
               "position": { "x": 150, "y": 145 }
             },
             "content": { "runs": ["−"] },
-            "id": "text-61d8316e-cded-4159-85e9-983e78f6f10a",
+            "id": "text-aa36fe5d-63e8-4e57-b250-e5411d0213de",
             "kind": "text",
             "locked": false,
             "rotation": 0,

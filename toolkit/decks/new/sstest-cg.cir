@@ -1,0 +1,15 @@
+* hand-written deck, not exported from any drawing
+.title Small-signal model of a common-gate stage (low freq, with ro)
+.subckt SSCG s d
+.iodir s=input d=output
+.name s v_in
+.name d v_out
+G1 d s 0 s
+.label G1 g_m v_gs
+RO d s
+.name RO r_o
+RS s 0
+.name RS R_S
+RD d 0
+.name RD R_D
+.ends

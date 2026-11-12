@@ -399,6 +399,9 @@ class Plan(object):
                 bad.append("開路端子 %s 在 y=%d：要跟最上面那條輸出線同高（y=%d）" % (ol["port"], py, min(ys)))
             if not any(v["x"] == ol["to"][0] for v in self.vmarks):
                 bad.append("開路端子 %s 的線頭正下方沒有 p.vmark（控制電壓要標在線頭 x=%d）" % (ol["port"], ol["to"][0]))
+        for v in self.vmarks:
+            if abs(v["y_plus"] - v["y_minus"]) < 50:
+                bad.append("vmark %s 的 ＋、− 只相距 %d：至少 50，不然會壓到中間的字" % (v["text"], abs(v["y_plus"] - v["y_minus"])))
         # 3.5 方塊圖：訊號線要拉直；主路徑由左往右、回授由右往左
         if self.flow:
             wired = set(tuple(w["from"]) for w in self.paths)

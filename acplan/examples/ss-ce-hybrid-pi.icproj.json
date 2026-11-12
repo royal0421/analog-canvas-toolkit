@@ -1,6 +1,6 @@
 {
   "schemaVersion": 78,
-  "id": "project-71b515a9-408b-4e2c-801b-fdfc38d068b9",
+  "id": "project-a7e92e53-8e66-4586-afc2-4dedb9c4c51c",
   "name": "Untitled",
   "topDocumentId": "main",
   "defaults": {
@@ -402,10 +402,10 @@
             "alignment": "middle",
             "anchor": {
               "kind": "free",
-              "position": { "x": 125, "y": 100 }
+              "position": { "x": 125, "y": 95 }
             },
             "content": { "runs": ["+"] },
-            "id": "text-b648aa13-dc33-4813-8aeb-d74c801c258d",
+            "id": "text-350e1a37-d636-4392-97be-c280b07f6f28",
             "kind": "text",
             "locked": false,
             "rotation": 0,
@@ -435,7 +435,7 @@
                 }
               ]
             },
-            "id": "text-058aa4bd-3f6a-4d5b-8354-1af30bf57dbd",
+            "id": "text-660dda18-af0b-4343-88d1-65849af1702a",
             "kind": "text",
             "locked": false,
             "rotation": 0,
@@ -446,10 +446,10 @@
             "alignment": "middle",
             "anchor": {
               "kind": "free",
-              "position": { "x": 125, "y": 140 }
+              "position": { "x": 125, "y": 145 }
             },
             "content": { "runs": ["−"] },
-            "id": "text-f1c06f58-c150-498d-9ad2-c7f08d92feb0",
+            "id": "text-32dcbfcc-694d-418c-9ade-d59d0dfd976f",
             "kind": "text",
             "locked": false,
             "rotation": 0,
