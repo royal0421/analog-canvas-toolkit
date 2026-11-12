@@ -1,0 +1,13 @@
+* hand-written deck, not exported from any drawing
+.title Small-signal model of a common-source stage with resistive load
+.subckt SSCS g d
+.iodir g=input d=output
+.name g v_in
+.name d v_out
+G1 d 0 g 0
+.label G1 g_m v_gs
+RO d 0
+.name RO r_o
+RD d 0
+.name RD R_D
+.ends

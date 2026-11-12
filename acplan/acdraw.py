@@ -13,13 +13,16 @@ BLOCK = {"adder": ("adder", ["A", "B", "Y"]), "multiplier": ("multiplier", ["A",
          "comparator": ("comparator", ["IN+", "IN-", "OUT"])}
 FLOW_IN = ("A", "B", "IN", "IN+", "IN-")          # 方塊的輸入腳：線接到這裡要畫箭頭
 FLOW_OUT = ("Y", "OUT")
+SS_SKIP = ("MISSING_CONTROL_NET", "ERC_DANGLING_WIRE", "GENERATED_NET_NAME", "MISSING_DEVICE_DEFINITION")          # 小訊號等效電路可以忽略的診斷代碼
+# 小訊號等效電路的受控源：G＝壓控電流源、E＝壓控電壓源、F＝流控電流源、H＝流控電壓源。只接前兩條 net（＋、−），控制端只拿來標字
+CTRL = {"G": "vccs", "E": "vcvs", "F": "cccs", "H": "ccvs"}
 PASSIVE = {"R": "resistor", "C": "capacitor", "L": "inductor", "I": "current-source", "V": "voltage-source", "D": "diode"}
 
 
 def parse_deck(path):
     """我們的 .cir → (devices, ports, names)。devices: [{ref, symbol, pins:{pin:net}, value}]"""
     devs, ports, names = [], [], {}
-    formula, signs = {}, {}
+    formula, signs, labels = {}, {}, {}
     for ln in open(path, encoding="utf-8").read().splitlines():
         s = ln.strip()
         if not s or s.startswith("*"):
@@ -34,6 +37,8 @@ def parse_deck(path):
             formula[tok[1]] = s.split(None, 2)[2]
         elif low == ".sign" and len(tok) >= 4:             # .sign XS1 + -　加法點 A、B 兩個輸入的正負號
             signs[tok[1]] = [tok[2], tok[3]]
+        elif low == ".label" and len(tok) >= 3:            # .label G1 g_m v_gs　受控源旁邊的字（空白分段，每段 字_下標）
+            labels[tok[1]] = s.split(None, 2)[2]
         elif low.startswith("."):
             continue
         elif tok[0][0].upper() == "M":
@@ -50,6 +55,9 @@ def parse_deck(path):
             sym, order = BLOCK[tok[-1].lower()]
             assert len(tok) == len(order) + 2, "%s：%s 要 %d 條 net（%s）" % (tok[0], tok[-1], len(order), " ".join(order))
             devs.append({"ref": tok[0], "symbol": sym, "block": tok[-1].lower(), "pins": dict(zip(order, tok[1:-1]))})
+        elif tok[0][0].upper() in CTRL:
+            assert len(tok) >= 3, "%s：受控源至少要兩條 net（＋ −）" % tok[0]
+            devs.append({"ref": tok[0], "symbol": CTRL[tok[0][0].upper()], "ctrl": True, "pins": {"+": tok[1], "-": tok[2]}})
         elif tok[0][0].upper() in PASSIVE:
             sym = PASSIVE[tok[0][0].upper()]
             a, b = ("+", "-") if sym in ("current-source", "voltage-source") else (("A", "K") if sym == "diode" else ("1", "2"))
@@ -60,6 +68,8 @@ def parse_deck(path):
             d["formula"] = formula[d["ref"]]
         if d["ref"] in signs:
             d["signs"] = signs[d["ref"]]
+        if d["ref"] in labels:
+            d["label"] = labels[d["ref"]]
     return devs, ports, names
 
 
@@ -100,7 +110,18 @@ def flow_arrows(ws, devs, plan):
     return n, want
 
 
-def flow_connectivity(ws, devs, plan):
+def rich(text):
+    """"g_m v_gs" → 編輯器的 RichText：空白分段，每段「字_下標」；字斜體、整串粗體（跟元件名同一個樣子）。"""
+    kids = []
+    for tok in text.split():
+        base, _, sub = tok.partition("_")
+        kids.append({"kind": "span", "style": "italic", "children": [{"kind": "text", "value": base}]})
+        if sub:
+            kids.append({"kind": "span", "style": "subscript", "children": [{"kind": "text", "value": sub}]})
+    return {"runs": [{"kind": "span", "style": "bold", "children": kids}]}
+
+
+def flow_connectivity(ws, devs, plan, gnd_nets=(), gnd_id="G"):
     """方塊符號沒有 netlist 定義，匯不出 netlist；改成直接讀專案檔的線，確認每條 net 接到的腳跟 deck 一樣。"""
     doc = json.load(open(os.path.join(ws, "project.icproj.json"), encoding="utf-8"))["documents"][0]
     par = {}
@@ -119,17 +140,26 @@ def flow_connectivity(ws, devs, plan):
         for e in ends[1:]:
             par[find(e)] = find(ends[0])
     pid = lambda k: "P_" + "".join(c if (c.isalnum() or c in "_-") else "_" for c in k)
-    want = {}
+    want, gwant = {}, []
     for d in devs:
         for p_, n in d["pins"].items():
-            want.setdefault(n, set()).add(("T", d["ref"], p_))
+            if n in gnd_nets:
+                gwant.append(("T", d["ref"], p_))
+            else:
+                want.setdefault(n, set()).add(("T", d["ref"], p_))
     for k in plan.get("ports", {}):
         want.setdefault(k.split("@")[0], set()).add(("T", pid(k), "P"))
+    groots = set(find(k) for k in list(par) if k[0] == "T" and re.match(r"^%s\d+$" % gnd_id, k[1]) and k[2] == "0")
+    for t_ in gwant:
+        if find(t_) not in groots:
+            return False, "%s.%s 應該接地，圖上沒接到接地符號" % (t_[1], t_[2])
     roots = {}
     for n, terms in want.items():
         rs = set(find(x) for x in terms)
         if len(rs) != 1 and len(terms) > 1:
             return False, "net %s 沒有全部接在一起" % n
+        if rs & groots:
+            return False, "net %s 被接到地了" % n
         roots.setdefault(rs.pop(), []).append(n)
     dup = [v for v in roots.values() if len(v) > 1]
     return (not dup), ("不同的 net 被接在一起：%s" % dup if dup else "")
@@ -257,6 +287,17 @@ def draw(plan_path):
                          "position": {"x": x, "y": y}, "mirror": mir, "rotation": rot})
         must(s.call("circuit_place", {"actions": acts}), "place")
         flow = any(d.get("block") for d in devs)
+        ss = any(d.get("ctrl") for d in devs)          # 小訊號等效電路：有受控源
+        gid = "GND" if ss else "G"                     # 接地符號的代號（受控源會用掉 G1、G2…）
+        for d in devs:
+            if not d.get("ctrl"):
+                continue
+            shape = plan.get("source_shape", {}).get(d["ref"], "diamond")
+            if shape != "circle":
+                must(s.call("apply_actions", {"actions": [{"kind": "set-properties", "instanceId": d["ref"], "shape": shape}]}), "shape " + d["ref"])
+            if d.get("label"):
+                must(s.call("circuit_text", {"actions": [{"kind": "edit-text", "target": {"kind": "annotation", "id": "instance-label-" + d["ref"]},
+                                                         "text": rich(d["label"])}]}), "label " + d["ref"])
         for d in devs:
             if not d.get("block"):
                 continue
@@ -331,16 +372,25 @@ def draw(plan_path):
         # 5. 接地符號：每個接地腳下方放一個（drop＝往下幾格）
         drop = plan.get("gnd_drop", 20)
         gnd_pins = [pp for n in nets if n in gnd_nets for pp in nets[n]]
+        bus = plan.get("gnd_bus")
+        if gnd_pins and bus:                 # 共用地線：一條橫線接所有接地腳，只畫一個接地符號
+            must(s.call("circuit_place", {"actions": [{"kind": "place-component", "symbol": "ground", "id": gid + "0",
+                        "pinAnchor": {"pinName": "0", "position": {"x": bus["at"], "y": bus["y"] + 20}}}]}), "ground")
+            r = s.call("apply_actions", {"actions": [{"kind": "route-net", "target": {"kind": "pins", "pins":
+                        [{"instanceId": i, "pinName": p} for i, p in gnd_pins] + [{"instanceId": gid + "0", "pinName": "0"}]},
+                        "trunk": {"start": {"x": bus["x"][0], "y": bus["y"]}, "end": {"x": bus["x"][1], "y": bus["y"]}}}]})
+            log.append(("gnd bus", r.get("ok"), J(r, 600)))
+            gnd_pins = []
         if gnd_pins:
             acts = []
             for k, (i, p) in enumerate(gnd_pins):
                 x, y = pinpos[(i, p)]
                 gx, gy = plan.get("gnd_at", {}).get("%s.%s" % (i, p), [x, y + drop])   # 預設在腳正下方；可指定位置
-                acts.append({"kind": "place-component", "symbol": "ground", "id": "G%d" % k,
+                acts.append({"kind": "place-component", "symbol": "ground", "id": "%s%d" % (gid, k),
                              "pinAnchor": {"pinName": "0", "position": {"x": gx, "y": gy}}})
             must(s.call("circuit_place", {"actions": acts}), "ground")
             acts = [{"kind": "connect", "from": {"kind": "pin", "instance": {"kind": "instance", "id": i}, "pin": p},
-                     "to": {"kind": "pin", "instance": {"kind": "instance", "id": "G%d" % k}, "pin": "0"}}
+                     "to": {"kind": "pin", "instance": {"kind": "instance", "id": "%s%d" % (gid, k)}, "pin": "0"}}
                     for k, (i, p) in enumerate(gnd_pins)]
             r = s.call("circuit_wire", {"actions": acts})
             log.append(("gnd leads", r.get("ok"), J(r, 600)))
@@ -350,6 +400,11 @@ def draw(plan_path):
             r = s.call("circuit_wire", {"actions": [{"kind": "connect", "from": {"kind": "point", "x": x0, "y": y0},
                                                      "to": {"kind": "point", "x": x1, "y": y1}}]})
             log.append(("free wire", r.get("ok"), J(r, 600)))
+        # 5.6 開路端子的引線：從埠拉一段線到一個空的點（小訊號等效電路的閘極／基極端子）
+        for st in plan.get("open_leads", []):
+            r = s.call("circuit_wire", {"actions": [{"kind": "connect", "from": {"kind": "pin", "instance": {"kind": "instance", "id": pid(st["port"])}, "pin": "P"},
+                                                     "to": {"kind": "point", "x": st["to"][0], "y": st["to"][1]}}]})
+            log.append(("open lead " + st["port"], r.get("ok"), J(r, 600)))
         # 5.7 指定路徑的線：從某支腳出發，照 via 轉折，停在一個點（之後 route-net 的幹線或別的線會接上它）。
         #     用在編輯器自己繞不過去的地方（例：回授線要從運放下方繞回 IN-）。
         late_paths = [p_ for p_ in plan.get("paths", []) if not isinstance(p_["to"][0], str)]
@@ -413,7 +468,14 @@ def draw(plan_path):
             r = s.call("apply_actions", {"actions": [{"kind": "move-annotation", "annotationId": "instance-label-" + ref_,
                                                       "position": {"x": lx, "y": ly}, "alignment": "middle"}]})
             log.append(("label@ " + ref_, r.get("ok"), J(r, 400)))
-        if not flow:
+        for vm in plan.get("vmarks", []):          # 兩點之間標電壓：＋、名稱、−（純文字，不影響接線）
+            x_, ya, yb = vm["x"], vm["y_plus"], vm["y_minus"]
+            acts = [{"kind": "annotate", "position": {"x": x_, "y": ya}, "alignment": "middle", "text": "+"},
+                    {"kind": "annotate", "position": {"x": x_, "y": (ya + yb) / 2.0}, "alignment": "middle", "text": rich(vm["text"])},
+                    {"kind": "annotate", "position": {"x": x_, "y": yb}, "alignment": "middle", "text": chr(0x2212)}]
+            r = s.call("circuit_text", {"actions": acts})
+            log.append(("vmark " + vm["text"], r.get("ok"), J(r, 500)))
+        if not (flow or ss):
             rr = save_render(s, svg, os.path.join(out, name + ".png"))
             ref = reference_spice(devs, ports, re.sub(r"\W", "_", name))
             open(os.path.join(ws, "reference.sp"), "w", encoding="utf-8", newline="\n").write(ref)
@@ -432,6 +494,19 @@ def draw(plan_path):
                     seen[disp] = net
             same = signature(exported) == signature(merged)
             shutil.copy2(os.path.join(ws, "project.icproj.json"), os.path.join(out, name + ".icproj.json"))
+    if ss and not flow:
+        with Session(ws) as s:
+            rr = save_render(s, svg, os.path.join(out, name + ".png"))
+            diag = s.call("inspect", {"target": {"kind": "diagnostics"}})
+        same, why = flow_connectivity(ws, devs, plan, gnd_nets, gid)
+        if why:
+            log.append(("connectivity", False, why))
+        skip = SS_SKIP
+        items = [it for it in diag.get("items", []) if it["code"] not in skip]
+        diag = {"items": items, "counts": {"errors": sum(1 for it in items if it.get("severity") == "error"),
+                                           "warnings": sum(1 for it in items if it.get("severity") == "warning")}}
+        v = {"comparison": {"summary": "（小訊號等效電路不匯出 netlist，改比對專案檔的接線）"}}
+        shutil.copy2(os.path.join(ws, "project.icproj.json"), os.path.join(out, name + ".icproj.json"))
     if flow:
         n_arrow, n_want = flow_arrows(ws, devs, plan)
         log.append(("arrows", n_arrow == n_want, "箭頭 %d 個，輸入端共 %d 個（有輸入端的線不是停在腳上：那支腳改用 p.wire 從來源接過去）" % (n_arrow, n_want)))

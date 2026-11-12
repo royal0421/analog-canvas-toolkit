@@ -1,6 +1,6 @@
 {
   "schemaVersion": 78,
-  "id": "project-e0c8d1b8-72af-415d-95e9-0d3d02904548",
+  "id": "project-2201d2ba-993e-4df0-b2b2-77aa4fe4e6d7",
   "name": "Untitled",
   "topDocumentId": "main",
   "defaults": {
@@ -275,20 +275,20 @@
       "routes": [
         {
           "end": { "terminal": ["G0", "0"] },
-          "id": "wire-87e2ba35-898c-4f4f-8e94-801b719f3fe0-route",
-          "legId": "route-leg-89026db476206c30",
+          "id": "wire-b4085a97-cc9f-4485-a393-d90f16ab46d5-route",
+          "legId": "route-leg-5495cffbcc958f5b",
           "start": { "terminal": ["RP", "2"] }
         },
         {
           "end": { "terminal": ["G1", "0"] },
-          "id": "wire-ca19cde7-5f81-45d7-8785-eeb874db78be-route",
-          "legId": "route-leg-97d1680cde931945",
+          "id": "wire-2dd586d0-2b81-4603-971a-d69dbc5c3ced-route",
+          "legId": "route-leg-6857c10d0ffe385f",
           "start": { "terminal": ["CP", "2"] }
         },
         {
           "end": { "terminal": ["G2", "0"] },
-          "id": "wire-6d468ff0-ad11-45f4-8732-0aa07aff9275-route",
-          "legId": "route-leg-c252d54a1ff84ff6",
+          "id": "wire-047581e9-c138-4c11-b092-85b9235528e2-route",
+          "legId": "route-leg-2ab54a9569789601",
           "start": { "terminal": ["RG", "2"] }
         },
         {
@@ -334,15 +334,15 @@
           "start": { "terminal": ["XOA", "OUT"] }
         },
         {
-          "id": "wire-64aa74b3-1e66-4138-a473-39771c04b921-route",
+          "id": "wire-10941638-2121-46b4-a04e-a514c443c770-route",
           "legs": [
             {
-              "bend": "route-bend-d22d5ed1aaf08e7a",
+              "bend": "route-bend-e6c4f5006b2699e5",
               "coordinate": [190, 350],
-              "id": "route-leg-d22d5ed1aaf08e7a"
+              "id": "route-leg-e6c4f5006b2699e5"
             },
             {
-              "id": "route-leg-d22d5fd1aaf0902d",
+              "id": "route-leg-e6c4f4006b269832",
               "junction": "route-net-84ccc1907f4591d1-to-junction"
             }
           ],
@@ -382,15 +382,15 @@
           "start": { "junction": "route-net-84ccc1907f4591d1-to-junction" }
         },
         {
-          "id": "wire-183a0ca3-2100-44ee-9b68-b32046f82893-route",
+          "id": "wire-3e202188-44e5-427b-8717-eb2182999509-route",
           "legs": [
             {
-              "bend": "route-bend-501bacfa270c8e0e",
+              "bend": "route-bend-bfacbae794bd9ecd",
               "coordinate": [160, 190],
-              "id": "route-leg-501bacfa270c8e0e"
+              "id": "route-leg-bfacbae794bd9ecd"
             },
             {
-              "id": "route-leg-501badfa270c8fc1",
+              "id": "route-leg-bfacb9e794bd9d1a",
               "junction": "route-net-4a8abc50eb47c0f8-to-junction"
             }
           ],

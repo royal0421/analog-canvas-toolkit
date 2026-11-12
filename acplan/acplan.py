@@ -36,6 +36,9 @@ class Plan(object):
         self.paths = []
         self.body = {}
         self.flow = any(d.get("block") for d in self.devs)
+        self.ss = any(d.get("ctrl") for d in self.devs)      # 小訊號等效電路（有受控源）
+        self.vmarks, self.shape, self.open_leads = [], {}, []
+        self.gnd_bus = None
 
     # ---------- 放元件 ----------
     def place(self, ref, x, y, rot=0, mirror="none"):
@@ -106,6 +109,35 @@ class Plan(object):
             if (first == "L" and px < x) or (first == "R" and px > x) or (first == "U" and py < y) or (first == "D" and py > y):
                 return self
         raise AssertionError("two(%s): 轉不出 first=%s" % (ref, first))
+
+    # ---------- 小訊號等效電路 ----------
+    def source(self, ref, x, y, first="U", shape="diamond"):
+        """受控源（deck 的 G／E／F／H）：直放，腳在 (x, y∓20)。first＝netlist 第 1 條 net（＋端）朝上 "U" 或朝下 "D"；
+        電流源的箭頭由第 1 條 net 指向第 2 條。shape＝"diamond"（菱形，預設）或 "circle"。旁邊的字寫在 deck：.label G1 g_m v_gs"""
+        assert self.dev[ref].get("ctrl"), "%s 不是受控源" % ref
+        assert shape in ("diamond", "circle")
+        self.shape[ref] = shape
+        return self.two(ref, x, y, first=first)
+
+    def open_port(self, net, x, y, x_end, name=None):
+        """開路端子（小訊號下的閘極／基極）：埠在 (x, y)，引線水平拉到 (x_end, y) 後停住，線頭是空的。
+        慣例：跟輸出那條線（汲極／集極）同高；引線長 50～60；線頭正下方用 p.vmark 標控制電壓。"""
+        assert net not in self.nets, "%s 有接元件，用 p.port" % net
+        self.port(net, x, y, "L" if x_end > x else "R", name)
+        self.open_leads.append({"port": net, "to": [x_end, y]})
+        return self
+
+    def ground_bus(self, y, x0, x1, at):
+        """共用地線：所有接地腳接到 y 這條橫線（x0～x1），只在 x=at 畫一個接地符號。
+        小訊號等效電路裡三顆以上元件接地時用，比每顆各畫一個接地符號乾淨。at 不要跟任何接地腳同一個 x。"""
+        self.gnd_bus = {"y": y, "x": [x0, x1], "at": at}
+        return self
+
+    def vmark(self, text, x, y_plus, y_minus):
+        """在兩點之間標電壓：(x, y_plus) 畫「+」、(x, y_minus) 畫「−」、中間寫 text（例 "v_gs"）。純文字，不影響接線。
+        ＋、− 各放在離線或埠 15～20 的地方，兩者相距 40～60。"""
+        self.vmarks.append({"text": text, "x": x, "y_plus": y_plus, "y_minus": y_minus})
+        return self
 
     # ---------- 腳位 ----------
     def pin(self, ref, pin):
@@ -218,6 +250,10 @@ class Plan(object):
                                        for d in self.devs if d.get("block") for pn in d["pins"])
         if self.order:
             plan["order"] = self.order
+        if self.ss:
+            plan["vmarks"], plan["source_shape"], plan["open_leads"] = self.vmarks, self.shape, self.open_leads
+        if self.gnd_bus:
+            plan["gnd_bus"] = self.gnd_bus
         return plan
 
     def draw(self):
@@ -352,6 +388,17 @@ class Plan(object):
             lead_max = FLOW_LEAD_MAX if self.flow else LEAD_MAX
             if ds and min(ds) > lead_max:
                 bad.append("埠 %s 的引線長 %d，超過 %d" % (net, min(ds), lead_max))
+        # 3.4 小訊號等效電路：開路端子跟輸出線同高、引線 50～60（他 2026-11-13 的裁示）
+        for ol in self.open_leads:
+            px, py = self.ports[ol["port"]][0], self.ports[ol["port"]][1]
+            ln = abs(ol["to"][0] - px)
+            if not 50 <= ln <= 60:
+                bad.append("開路端子 %s 的引線長 %d：要 50～60" % (ol["port"], ln))
+            ys = set(seg[0][1] for n_, seg in self.trunks.items() if seg[0][1] == seg[1][1] and n_.lower() not in SUPPLY)
+            if ys and py != min(ys):
+                bad.append("開路端子 %s 在 y=%d：要跟最上面那條輸出線同高（y=%d）" % (ol["port"], py, min(ys)))
+            if not any(v["x"] == ol["to"][0] for v in self.vmarks):
+                bad.append("開路端子 %s 的線頭正下方沒有 p.vmark（控制電壓要標在線頭 x=%d）" % (ol["port"], ol["to"][0]))
         # 3.5 方塊圖：訊號線要拉直；主路徑由左往右、回授由右往左
         if self.flow:
             wired = set(tuple(w["from"]) for w in self.paths)
