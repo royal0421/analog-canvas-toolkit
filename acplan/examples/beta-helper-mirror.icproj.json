@@ -1,6 +1,6 @@
 {
   "schemaVersion": 78,
-  "id": "project-5f602de0-8732-4ea3-a4a8-f83a857a24c3",
+  "id": "project-3a7b6ab6-cd4a-464f-9ac5-61b8239613dc",
   "name": "Untitled",
   "topDocumentId": "main",
   "defaults": {
@@ -224,48 +224,48 @@
       ],
       "routes": [
         {
-          "end": { "junction": "wire-20778230-f453-46da-835f-00587f7af184-to-junction" },
-          "id": "route-agent-rail-37c6ad1bd54c3ec0-rail-a-wire-20778230-f453-46da-835f-00587f7af184-to",
+          "end": { "junction": "wire-04a15e8f-26c8-42c1-94ca-d8ed3bc2de26-to-junction" },
+          "id": "route-agent-rail-37c6ad1bd54c3ec0-rail-a-wire-04a15e8f-26c8-42c1-94ca-d8ed3bc2de26-to",
           "legId": "route-leg-40c707079e8ac853",
           "presentation": "power-rail",
           "start": { "junction": "junction-agent-rail-37c6ad1bd54c3ec0-start" }
         },
         {
-          "end": { "junction": "wire-fefa6a22-2d19-4f51-8816-932251e26fb7-to-junction" },
-          "id": "route-15224e0a8cc29541",
-          "legId": "route-leg-dc0a85973469e790",
+          "end": { "junction": "wire-623bf4f5-9699-47eb-90a5-b5c1e90f424c-to-junction" },
+          "id": "route-ba47f7698e9e65e8",
+          "legId": "route-leg-9312bd9d6caa342f",
           "presentation": "power-rail",
-          "start": { "junction": "wire-20778230-f453-46da-835f-00587f7af184-to-junction" }
+          "start": { "junction": "wire-04a15e8f-26c8-42c1-94ca-d8ed3bc2de26-to-junction" }
         },
         {
           "end": { "junction": "junction-agent-rail-37c6ad1bd54c3ec0-end" },
-          "id": "route-7d713ffb86b6d4a0",
-          "legId": "route-leg-c9d3afafd7d80ee5",
+          "id": "route-af5d5e683f49be35",
+          "legId": "route-leg-287c328f841ad88d",
           "presentation": "power-rail",
-          "start": { "junction": "wire-fefa6a22-2d19-4f51-8816-932251e26fb7-to-junction" }
+          "start": { "junction": "wire-623bf4f5-9699-47eb-90a5-b5c1e90f424c-to-junction" }
         },
         {
-          "end": { "junction": "wire-20778230-f453-46da-835f-00587f7af184-to-junction" },
-          "id": "wire-20778230-f453-46da-835f-00587f7af184-route",
-          "legId": "route-leg-6c7713033b0f1726",
+          "end": { "junction": "wire-04a15e8f-26c8-42c1-94ca-d8ed3bc2de26-to-junction" },
+          "id": "wire-04a15e8f-26c8-42c1-94ca-d8ed3bc2de26-route",
+          "legId": "route-leg-247edfdafe46b073",
           "start": { "terminal": ["IREF", "+"] }
         },
         {
-          "end": { "junction": "wire-fefa6a22-2d19-4f51-8816-932251e26fb7-to-junction" },
-          "id": "wire-fefa6a22-2d19-4f51-8816-932251e26fb7-route",
-          "legId": "route-leg-1396077dd69b3501",
+          "end": { "junction": "wire-623bf4f5-9699-47eb-90a5-b5c1e90f424c-to-junction" },
+          "id": "wire-623bf4f5-9699-47eb-90a5-b5c1e90f424c-route",
+          "legId": "route-leg-779011dd9e7fd68f",
           "start": { "terminal": ["Q3", "C"] }
         },
         {
           "end": { "terminal": ["G0", "0"] },
-          "id": "wire-577f245c-afb7-4b85-b43d-d5e9e602cbc1-route",
-          "legId": "route-leg-5a73ff4d7dd68753",
+          "id": "wire-e60de3f6-243f-474d-8dbf-53ad66b75655-route",
+          "legId": "route-leg-4cdf84bf74ef2aa7",
           "start": { "terminal": ["Q1", "E"] }
         },
         {
           "end": { "terminal": ["G1", "0"] },
-          "id": "wire-8e50a6ab-9b36-44d4-bacc-be1eb6d7ba89-route",
-          "legId": "route-leg-1ba4bb8f7eb7acf6",
+          "id": "wire-f5b1e761-e532-46f7-a925-be92d9d29d8b-route",
+          "legId": "route-leg-a169cc606bfe9203",
           "start": { "terminal": ["Q2", "E"] }
         },
         {
@@ -351,12 +351,12 @@
         },
         {
           "coordinate": [200, 50],
-          "id": "wire-20778230-f453-46da-835f-00587f7af184-to-junction",
+          "id": "wire-04a15e8f-26c8-42c1-94ca-d8ed3bc2de26-to-junction",
           "role": "branch"
         },
         {
           "coordinate": [270, 50],
-          "id": "wire-fefa6a22-2d19-4f51-8816-932251e26fb7-to-junction",
+          "id": "wire-623bf4f5-9699-47eb-90a5-b5c1e90f424c-to-junction",
           "role": "branch"
         },
         {

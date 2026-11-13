@@ -1,6 +1,6 @@
 {
   "schemaVersion": 78,
-  "id": "project-376239fb-b719-48f9-a24d-a4c0b279cbf7",
+  "id": "project-e21bc03e-898f-4554-bba8-19a8432550b6",
   "name": "Untitled",
   "topDocumentId": "main",
   "defaults": {
@@ -195,14 +195,14 @@
       "routes": [
         {
           "end": { "terminal": ["G0", "0"] },
-          "id": "wire-e0a6d9a0-6e24-4baf-82cd-8340149be741-route",
-          "legId": "route-leg-5b6c8601c9992ba8",
+          "id": "wire-79ea4893-89e2-43cb-91a7-9da944cc40aa-route",
+          "legId": "route-leg-f2c70f1dc9a95878",
           "start": { "terminal": ["C1", "2"] }
         },
         {
           "end": { "terminal": ["G1", "0"] },
-          "id": "wire-5e0943ff-36c6-449f-bd2b-c5f82e3ef6ea-route",
-          "legId": "route-leg-ba072e98b88879ef",
+          "id": "wire-e7328bf9-ce59-42ba-9bc5-9aacad6c4a5c-route",
+          "legId": "route-leg-7671019114158bbe",
           "start": { "terminal": ["RL", "2"] }
         },
         {

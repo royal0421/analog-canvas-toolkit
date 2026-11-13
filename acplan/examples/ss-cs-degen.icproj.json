@@ -1,6 +1,6 @@
 {
   "schemaVersion": 78,
-  "id": "project-cccb00a0-c732-4558-92a8-9fdf6be2fd40",
+  "id": "project-d0873789-6de8-4ab6-9e97-975c811218d8",
   "name": "Untitled",
   "topDocumentId": "main",
   "defaults": {
@@ -238,20 +238,20 @@
       "routes": [
         {
           "end": { "terminal": ["GND0", "0"] },
-          "id": "wire-5fb08ebb-e428-4c43-b552-41b6ed7fcf52-route",
-          "legId": "route-leg-a3af51392bbd05df",
+          "id": "wire-c60c9632-b604-4e4e-856f-4d96af2302c1-route",
+          "legId": "route-leg-378bf3e9c8282399",
           "start": { "terminal": ["RS", "2"] }
         },
         {
           "end": { "terminal": ["GND1", "0"] },
-          "id": "wire-9446db3b-5d03-413b-8d04-7c81dc9c234c-route",
-          "legId": "route-leg-456ddb616b37b50b",
+          "id": "wire-50249912-fb34-48e3-bf28-1f8faea75d59-route",
+          "legId": "route-leg-97603bb802927172",
           "start": { "terminal": ["RD", "2"] }
         },
         {
-          "end": { "junction": "wire-3365eb89-6634-4990-a67b-ace70003ea8d-to-junction" },
-          "id": "wire-3365eb89-6634-4990-a67b-ace70003ea8d-route",
-          "legId": "route-leg-0fee598dbc514eda",
+          "end": { "junction": "wire-81067608-9450-4852-926f-fd97acc580cf-to-junction" },
+          "id": "wire-81067608-9450-4852-926f-fd97acc580cf-route",
+          "legId": "route-leg-6b7381b5be6b0e9a",
           "start": { "terminal": ["P_g", "P"] }
         },
         {
@@ -347,7 +347,7 @@
       "junctions": [
         {
           "coordinate": [150, 80],
-          "id": "wire-3365eb89-6634-4990-a67b-ace70003ea8d-to-junction",
+          "id": "wire-81067608-9450-4852-926f-fd97acc580cf-to-junction",
           "role": "route-anchor"
         },
         {
@@ -391,7 +391,7 @@
               "position": { "x": 150, "y": 95 }
             },
             "content": { "runs": ["+"] },
-            "id": "text-070c05b3-4541-47e3-9f06-40dac03236aa",
+            "id": "text-71cda2c9-97e2-4f5d-9031-f4589189b41a",
             "kind": "text",
             "locked": false,
             "rotation": 0,
@@ -421,7 +421,7 @@
                 }
               ]
             },
-            "id": "text-53090d54-6e8f-4db0-9143-bea4e27d02b6",
+            "id": "text-0dfd43e6-56be-4fb9-bc82-be2d95c3643b",
             "kind": "text",
             "locked": false,
             "rotation": 0,
@@ -435,7 +435,7 @@
               "position": { "x": 150, "y": 145 }
             },
             "content": { "runs": ["−"] },
-            "id": "text-f0df707b-e8df-4f80-a406-78c500d63e8d",
+            "id": "text-f202684e-3c1d-4b1d-a32c-2c2028cc0f15",
             "kind": "text",
             "locked": false,
             "rotation": 0,

@@ -72,8 +72,8 @@ p.draw()
 
 ## 內容
 
-- `acplan.py`：位置表產生器＋慣例檢查器。`acdraw.py`：照位置表呼叫編輯器。`acsession.py`：跟 headless 編輯器的連線。
-- `plans_py/`：72 張範例（其中 8 張是訊號方塊圖、4 張是小訊號等效電路），新圖先找最像的照抄。`examples/`：這些範例的 PNG 與 `.icproj.json`。
+- `acplan.py`：位置表產生器＋慣例檢查器。`acoverlap.py`：出圖後自動檢查字有沒有壓到字或線。`acdraw.py`：照位置表呼叫編輯器。`acsession.py`：跟 headless 編輯器的連線。
+- `plans_py/`：74 張範例（其中 8 張是訊號方塊圖、6 張是小訊號等效電路），新圖先找最像的照抄。`examples/`：這些範例的 PNG 與 `.icproj.json`。
 - `SOP.md`：完整做法，包含走線被拒絕時的修法表、交付前的看圖清單、上游改版時的處理程序。
 - deck 在 `../toolkit/decks/`。
 

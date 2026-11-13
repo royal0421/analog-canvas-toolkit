@@ -39,6 +39,7 @@ class Plan(object):
         self.ss = any(d.get("ctrl") for d in self.devs)      # 小訊號等效電路（有受控源）
         self.vmarks, self.shape, self.open_leads = [], {}, []
         self.gnd_bus = None
+        self.imarks = []
 
     # ---------- 放元件 ----------
     def place(self, ref, x, y, rot=0, mirror="none"):
@@ -131,6 +132,15 @@ class Plan(object):
         """共用地線：所有接地腳接到 y 這條橫線（x0～x1），只在 x=at 畫一個接地符號。
         小訊號等效電路裡三顆以上元件接地時用，比每顆各畫一個接地符號乾淨。at 不要跟任何接地腳同一個 x。"""
         self.gnd_bus = {"y": y, "x": [x0, x1], "at": at}
+        return self
+
+    def imark(self, text, x0, y0, x1, y1):
+        """標電流：在線旁邊畫一支箭頭 (x0, y0)→(x1, y1)，字寫在箭頭外側。
+        慣例：箭頭跟線平行、離線 10、長 30；橫線放在線的上方（y＝線的 y − 10），字再往上 15。流控源（β i_b）的控制電流用這個標。"""
+        assert (x0 == x1) != (y0 == y1), "箭頭要水平或垂直"
+        mx, my = (x0 + x1) / 2.0, (y0 + y1) / 2.0
+        label = [mx, my - 15] if y0 == y1 else [mx - 18, my]
+        self.imarks.append({"text": text, "from": [x0, y0], "to": [x1, y1], "label": label})
         return self
 
     def vmark(self, text, x, y_plus, y_minus):
@@ -254,6 +264,8 @@ class Plan(object):
             plan["vmarks"], plan["source_shape"], plan["open_leads"] = self.vmarks, self.shape, self.open_leads
         if self.gnd_bus:
             plan["gnd_bus"] = self.gnd_bus
+        if self.imarks:
+            plan["imarks"] = self.imarks
         return plan
 
     def draw(self):
@@ -277,6 +289,15 @@ class Plan(object):
             bad.append("有 %d 條線穿過元件，但只宣告了 %d 條貫穿閘極" % (thr, len(self.free)))
         if not same:
             bad.append("netlist 不等價")
+        try:                                  # 看圖檢查的自動版：字壓到字、字壓到線
+            from acoverlap import overlaps
+            svg = os.path.join(HERE, "out", self.name + ".svg")
+            found = overlaps([svg]).get(svg, [])
+            print("  重疊檢查：%s" % ("沒有字壓到字或線" if not found else "%d 處" % len(found)))
+            for msg in found:
+                bad.append("重疊：" + msg)
+        except ImportError:
+            self.notes.append("沒裝 playwright，沒做重疊檢查")
         print("  CHECK: %s" % ("PASS" if not bad else "FAIL (%d)" % len(bad)))
         for b in bad:
             print("    - " + b)

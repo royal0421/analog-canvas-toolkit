@@ -1,0 +1,15 @@
+* hand-written deck, not exported from any drawing
+.title Small-signal model of an emitter-degenerated CE stage (low freq, no ro)
+.subckt SSTESTCEDEGEN b c
+.iodir b=input c=output
+.name b v_in
+.name c v_out
+RPI b e
+.name RPI r_π
+F1 c e RPI
+.label F1 β i_b
+RE e 0
+.name RE R_E
+RC c 0
+.name RC R_C
+.ends

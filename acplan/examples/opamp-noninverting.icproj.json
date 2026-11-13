@@ -1,6 +1,6 @@
 {
   "schemaVersion": 78,
-  "id": "project-4868e1b4-49ab-4839-8591-0c7b6fa072d8",
+  "id": "project-8a7f64f3-5a18-4374-8cf2-5be8d62cf321",
   "name": "Untitled",
   "topDocumentId": "main",
   "defaults": {
@@ -188,8 +188,8 @@
       "routes": [
         {
           "end": { "terminal": ["G0", "0"] },
-          "id": "wire-a2dc1064-8c80-4db2-b18a-1cb610766527-route",
-          "legId": "route-leg-26a0b20f01b26fc1",
+          "id": "wire-7bea7f85-fe1a-46e6-89bf-a470643744df-route",
+          "legId": "route-leg-5078ebf9ea72d29b",
           "start": { "terminal": ["R1", "2"] }
         },
         {

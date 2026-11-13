@@ -1,0 +1,15 @@
+* hand-written deck, not exported from any drawing
+.title Small-signal model of a common-emitter stage with a current-controlled source (beta i_b)
+.subckt SSCEBETA b c
+.iodir b=input c=output
+.name b v_in
+.name c v_out
+RPI b 0
+.name RPI r_π
+F1 c 0 RPI
+.label F1 β i_b
+RO c 0
+.name RO r_o
+RC c 0
+.name RC R_C
+.ends

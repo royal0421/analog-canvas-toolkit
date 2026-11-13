@@ -1,6 +1,6 @@
 {
   "schemaVersion": 78,
-  "id": "project-8fbd1d78-510d-4807-81c7-42a546b1558a",
+  "id": "project-dc290054-77a4-4db3-ac2b-97ca7ba44e23",
   "name": "Untitled",
   "topDocumentId": "main",
   "defaults": {
@@ -457,45 +457,45 @@
       ],
       "routes": [
         {
-          "id": "wire-fa22f346-efc2-4564-a0cf-94c87b0caf2d-route",
+          "id": "wire-9cbf7cf5-6693-4c1f-ac81-cdad3fe0fa36-route",
           "legs": [
             {
-              "bend": "route-bend-0059f3623551f10b",
+              "bend": "route-bend-d4150d5f02b2d625",
               "coordinate": [240, 260],
-              "id": "route-leg-0059f3623551f10b"
+              "id": "route-leg-d4150d5f02b2d625"
             },
             {
-              "id": "route-leg-0059f2623551ef58",
+              "id": "route-leg-d4150c5f02b2d472",
               "terminal": ["G0", "0"]
             }
           ],
           "start": { "terminal": ["XOA1", "IN+"] }
         },
         {
-          "id": "wire-dc8f3860-f469-4de3-95f4-c098287937f7-route",
+          "id": "wire-bc4bfcbe-42fc-4e08-a48c-24354e7d51ea-route",
           "legs": [
             {
-              "bend": "route-bend-8ffe9a3f20247a71",
+              "bend": "route-bend-eea9ad818e0de156",
               "coordinate": [440, 270],
-              "id": "route-leg-8ffe9a3f20247a71"
+              "id": "route-leg-eea9ad818e0de156"
             },
             {
-              "id": "route-leg-8ffe993f202478be",
+              "id": "route-leg-eea9ae818e0de309",
               "terminal": ["G1", "0"]
             }
           ],
           "start": { "terminal": ["XOA2", "IN+"] }
         },
         {
-          "id": "wire-192376eb-5cb4-478b-a5a9-7d7f9f5a667c-route",
+          "id": "wire-ab8bdce9-184c-46aa-9fb8-d37e398cac5c-route",
           "legs": [
             {
-              "bend": "route-bend-3301bc6105e73ce4",
+              "bend": "route-bend-b785e609e768173a",
               "coordinate": [640, 280],
-              "id": "route-leg-3301bc6105e73ce4"
+              "id": "route-leg-b785e609e768173a"
             },
             {
-              "id": "route-leg-3301bd6105e73e97",
+              "id": "route-leg-b785e709e76818ed",
               "terminal": ["G2", "0"]
             }
           ],

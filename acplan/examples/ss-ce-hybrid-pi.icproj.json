@@ -1,6 +1,6 @@
 {
   "schemaVersion": 78,
-  "id": "project-a7e92e53-8e66-4586-afc2-4dedb9c4c51c",
+  "id": "project-8577f7ec-0e9a-411c-a8b6-e8d96e18ab56",
   "name": "Untitled",
   "topDocumentId": "main",
   "defaults": {
@@ -405,7 +405,7 @@
               "position": { "x": 125, "y": 95 }
             },
             "content": { "runs": ["+"] },
-            "id": "text-350e1a37-d636-4392-97be-c280b07f6f28",
+            "id": "text-8195ae46-2ab4-4d34-b412-dc62957db37b",
             "kind": "text",
             "locked": false,
             "rotation": 0,
@@ -435,7 +435,7 @@
                 }
               ]
             },
-            "id": "text-660dda18-af0b-4343-88d1-65849af1702a",
+            "id": "text-f0002e65-36b6-4e2f-88f5-03737c55a821",
             "kind": "text",
             "locked": false,
             "rotation": 0,
@@ -449,7 +449,7 @@
               "position": { "x": 125, "y": 145 }
             },
             "content": { "runs": ["−"] },
-            "id": "text-32dcbfcc-694d-418c-9ade-d59d0dfd976f",
+            "id": "text-72075be3-6327-45f2-875c-63e2f947dace",
             "kind": "text",
             "locked": false,
             "rotation": 0,

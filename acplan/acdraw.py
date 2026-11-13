@@ -13,7 +13,7 @@ BLOCK = {"adder": ("adder", ["A", "B", "Y"]), "multiplier": ("multiplier", ["A",
          "comparator": ("comparator", ["IN+", "IN-", "OUT"])}
 FLOW_IN = ("A", "B", "IN", "IN+", "IN-")          # 方塊的輸入腳：線接到這裡要畫箭頭
 FLOW_OUT = ("Y", "OUT")
-SS_SKIP = ("MISSING_CONTROL_NET", "ERC_DANGLING_WIRE", "GENERATED_NET_NAME", "MISSING_DEVICE_DEFINITION")          # 小訊號等效電路可以忽略的診斷代碼
+SS_SKIP = ("MISSING_CONTROL_NET", "MISSING_CONTROL_SENSOR", "ERC_DANGLING_WIRE", "GENERATED_NET_NAME", "MISSING_DEVICE_DEFINITION")          # 小訊號等效電路可以忽略的診斷代碼
 # 小訊號等效電路的受控源：G＝壓控電流源、E＝壓控電壓源、F＝流控電流源、H＝流控電壓源。只接前兩條 net（＋、−），控制端只拿來標字
 CTRL = {"G": "vccs", "E": "vcvs", "F": "cccs", "H": "ccvs"}
 PASSIVE = {"R": "resistor", "C": "capacitor", "L": "inductor", "I": "current-source", "V": "voltage-source", "D": "diode"}
@@ -119,6 +119,24 @@ def rich(text):
         if sub:
             kids.append({"kind": "span", "style": "subscript", "children": [{"kind": "text", "value": sub}]})
     return {"runs": [{"kind": "span", "style": "bold", "children": kids}]}
+
+
+def add_current_arrows(ws, plan):
+    """電流標記的箭頭：編輯器沒有畫箭頭的動作，直接在專案檔的 drafting 層加 arrow 物件（跟線平行、不壓在線上）。"""
+    marks = plan.get("imarks", [])
+    if not marks:
+        return 0
+    path = os.path.join(ws, "project.icproj.json")
+    proj = json.load(open(path, encoding="utf-8"))
+    objs = proj["documents"][0].setdefault("drafting", {"objects": []})["objects"]
+    for k, m in enumerate(marks):
+        objs.append({"id": "iarrow-%d" % k, "kind": "arrow", "locked": False, "zIndex": 0,
+                     "anchor": {"kind": "free", "position": {"x": m["from"][0], "y": m["from"][1]}},
+                     "styleOverride": {"arrowHead": "filled", "arrowHeadAt": "end"},
+                     "from": {"kind": "free", "position": {"x": m["from"][0], "y": m["from"][1]}},
+                     "to": {"kind": "free", "position": {"x": m["to"][0], "y": m["to"][1]}}})
+    json.dump(proj, open(path, "w", encoding="utf-8", newline="\n"), ensure_ascii=False)
+    return len(marks)
 
 
 def flow_connectivity(ws, devs, plan, gnd_nets=(), gnd_id="G"):
@@ -471,10 +489,14 @@ def draw(plan_path):
         for vm in plan.get("vmarks", []):          # 兩點之間標電壓：＋、名稱、−（純文字，不影響接線）
             x_, ya, yb = vm["x"], vm["y_plus"], vm["y_minus"]
             acts = [{"kind": "annotate", "position": {"x": x_, "y": ya}, "alignment": "middle", "text": "+"},
-                    {"kind": "annotate", "position": {"x": x_, "y": (ya + yb) / 2.0}, "alignment": "middle", "text": rich(vm["text"])},
+                    {"kind": "annotate", "position": {"x": x_, "y": int(round((ya + yb) / 2.0))}, "alignment": "middle", "text": rich(vm["text"])},
                     {"kind": "annotate", "position": {"x": x_, "y": yb}, "alignment": "middle", "text": chr(0x2212)}]
             r = s.call("circuit_text", {"actions": acts})
             log.append(("vmark " + vm["text"], r.get("ok"), J(r, 500)))
+        for im in plan.get("imarks", []):          # 電流標記的字（箭頭在存檔後加）
+            r = s.call("circuit_text", {"actions": [{"kind": "annotate", "position": {"x": im["label"][0], "y": im["label"][1]},
+                                                     "alignment": "middle", "text": rich(im["text"])}]})
+            log.append(("imark " + im["text"], r.get("ok"), J(r, 500)))
         if not (flow or ss):
             rr = save_render(s, svg, os.path.join(out, name + ".png"))
             ref = reference_spice(devs, ports, re.sub(r"\W", "_", name))
@@ -495,6 +517,7 @@ def draw(plan_path):
             same = signature(exported) == signature(merged)
             shutil.copy2(os.path.join(ws, "project.icproj.json"), os.path.join(out, name + ".icproj.json"))
     if ss and not flow:
+        add_current_arrows(ws, plan)
         with Session(ws) as s:
             rr = save_render(s, svg, os.path.join(out, name + ".png"))
             diag = s.call("inspect", {"target": {"kind": "diagnostics"}})
